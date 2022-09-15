@@ -1,0 +1,7 @@
+
+.ssl
+dist
+node_modules
+.env
+pubsubServiceAccount.json
+test.js
