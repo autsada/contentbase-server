@@ -1,6 +1,5 @@
 import type { Request, Response } from 'express'
 
-import { webSocket } from './socketIO'
 import { pubsub } from '../apollo/pubsub'
 import { isValidSignatureForStringBody } from '../lib/utils/helpers'
 import type { NexusGenObjects } from '../apollo/typegen'
@@ -34,12 +33,6 @@ export async function onAddressUpdated(req: Request, res: Response) {
         }
       )
     }
-
-    // const io = webSocket.io
-
-    // if (io) {
-    //   io.emit('notificaiton', JSON.stringify({ event: body.event.activity }))
-    // }
 
     res.status(200).end()
   } catch (error) {
