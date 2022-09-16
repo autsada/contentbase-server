@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1.2
+FROM node:14-alpine AS builder
+
+ENV NPM_CONFIG_PREFIX=/home/node/.npm-global
+ENV PATH=$PATH:/home/node/.npm-global/bin
+WORKDIR /usr/src/app
+COPY package*.json .
+RUN npm install
+COPY . .
+CMD [ "npm", "run", "dev" ]

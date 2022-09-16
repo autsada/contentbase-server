@@ -1,0 +1,6 @@
+.ssl
+node_modules
+.dockerignore
+.env
+Dockerfile.dev
+pubsubServiceAccount.json
