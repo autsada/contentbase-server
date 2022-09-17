@@ -1,8 +1,10 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest'
 
 import { NexusGenObjects, NexusGenEnums } from '../typegen'
+import type { Environment } from '../../types'
 
-const { KMS_ACCESS_KEY } = process.env
+const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
+  process.env
 
 export interface CreateProfileNftArgs {
   key: string
@@ -15,8 +17,10 @@ export interface CreateProfileNftArgs {
 export class BlockchainAPI extends RESTDataSource {
   constructor() {
     super()
-    // this.baseURL = KMS_DEV_BASE_URL!
-    this.baseURL = 'http://localhost:8000'
+    this.baseURL =
+      (NODE_ENV as Environment) === 'production'
+        ? KMS_PROD_BASE_URL
+        : KMS_DEV_BASE_URL!
     this.willSendRequest = (req: RequestOptions) => {
       req.headers.set('authorization', KMS_ACCESS_KEY!)
     }
