@@ -4,7 +4,7 @@ declare module 'http' {
   }
 }
 
-export type Environment = 'production' | 'development'
+export type Environment = 'production' | 'development' | 'staging'
 
 export type EnvConfig = {
   ssl: boolean

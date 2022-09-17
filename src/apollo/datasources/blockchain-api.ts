@@ -18,7 +18,8 @@ export class BlockchainAPI extends RESTDataSource {
   constructor() {
     super()
     this.baseURL =
-      (NODE_ENV as Environment) === 'production'
+      (NODE_ENV as Environment) === 'production' ||
+      (NODE_ENV as Environment) === 'staging'
         ? KMS_PROD_BASE_URL
         : KMS_DEV_BASE_URL!
     this.willSendRequest = (req: RequestOptions) => {
