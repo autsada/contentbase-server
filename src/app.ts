@@ -95,6 +95,7 @@ async function startServer() {
 
       return result
     },
+    introspection: true, // Only for development mode
   })
 
   await server.start()
