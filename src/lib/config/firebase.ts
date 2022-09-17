@@ -8,10 +8,24 @@ import {
 import { getFirestore } from 'firebase-admin/firestore'
 import { getAuth } from 'firebase-admin/auth'
 
+const {
+  FIREBASE_PROJECT_ID,
+  FIREBASE_PRIVATE_KEY,
+  FIREBASE_CLIENT_EMAIL,
+  NODE_ENV,
+} = process.env
+
 function initializeFirebaseAdmin() {
   return !getApps.length
     ? initializeApp({
-        credential: applicationDefault(),
+        credential:
+          NODE_ENV === 'production' || NODE_ENV === 'staging'
+            ? applicationDefault()
+            : admin.credential.cert({
+                projectId: FIREBASE_PROJECT_ID,
+                privateKey: FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+                clientEmail: FIREBASE_CLIENT_EMAIL,
+              }),
       })
     : getApp()
 }
