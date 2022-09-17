@@ -19,9 +19,7 @@ import { FirestoreAPI } from './apollo/datasources/firestore-api'
 import { WebhooksAPI } from './apollo/datasources/webhooks-api'
 import { db } from './lib/config/firebase'
 import { router } from './webhooks/router'
-import { webSocket } from './webhooks/socketIO'
 import { getUserFromAuthorizationHeader } from './lib/utils/helpers'
-// import type { Environment, EnvConfig } from './types'
 
 const { PORT } = process.env
 

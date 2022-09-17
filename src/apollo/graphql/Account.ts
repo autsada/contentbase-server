@@ -246,7 +246,7 @@ export const ProfileSubscriptions = extendType({
           variables: { input: NexusGenInputs['AddressSubscriptionInput'] }
         ) => {
           try {
-            const { event, fromAddress, toAddress } =
+            const { fromAddress, toAddress } =
               payload as NexusGenObjects['AddressSubscriptionResult']
             const {
               input: { address },
