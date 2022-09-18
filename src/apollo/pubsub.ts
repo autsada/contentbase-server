@@ -1,7 +1,7 @@
 import { PubSubEngine } from 'graphql-subscriptions'
 import { PubSub, Message } from '@google-cloud/pubsub'
 
-const { FIREBASE_PROJECT_ID } = process.env
+const { GCLOUD_PROJECT_ID } = process.env
 
 // Name of topic and subscription created in Google cloud pubsub
 type TopicName = 'blockchain-notifications'
@@ -17,14 +17,14 @@ export default class GCPPubSub extends PubSubEngine {
 
   constructor() {
     super()
-    this.pubsub = new PubSub({ projectId: FIREBASE_PROJECT_ID })
+    this.pubsub = new PubSub({ projectId: GCLOUD_PROJECT_ID })
   }
 
   // Get topic
   async getPubSubTopic(topicName: TopicName) {
     const [topics] = await this.pubsub.getTopics()
     const topic = topics.find(
-      (t) => t.name === `projects/${FIREBASE_PROJECT_ID}/topics/${topicName}`
+      (t) => t.name === `projects/${GCLOUD_PROJECT_ID}/topics/${topicName}`
     )
 
     if (!topic) throw new Error('No topic found')
@@ -46,7 +46,7 @@ export default class GCPPubSub extends PubSubEngine {
     const subscription = subscriptions.find(
       (sub) =>
         sub.name ===
-        `projects/${FIREBASE_PROJECT_ID}/subscriptions/${subscriptionName}`
+        `projects/${GCLOUD_PROJECT_ID}/subscriptions/${subscriptionName}`
     )
 
     if (!subscription) throw new Error('No subscription found')
