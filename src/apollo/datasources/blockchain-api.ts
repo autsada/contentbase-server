@@ -1,6 +1,7 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest'
 
 import { NexusGenObjects, NexusGenEnums } from '../typegen'
+import { authClient } from '../../lib/config/authClient'
 import type { Environment } from '../../types'
 
 const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
@@ -22,8 +23,10 @@ export class BlockchainAPI extends RESTDataSource {
       (NODE_ENV as Environment) === 'staging'
         ? KMS_PROD_BASE_URL
         : KMS_DEV_BASE_URL!
-    this.willSendRequest = (req: RequestOptions) => {
-      req.headers.set('authorization', KMS_ACCESS_KEY!)
+    this.willSendRequest = async (req: RequestOptions) => {
+      const token = await authClient.getIdToken()
+      req.headers.set('x-access-key', KMS_ACCESS_KEY!)
+      req.headers.set('Authorization', token || '')
     }
   }
 
