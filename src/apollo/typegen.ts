@@ -52,6 +52,7 @@ export interface NexusGenObjects {
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
     toAddress: string; // String!
+    value?: number | null; // Float
   }
   CreateProfileResult: { // root type
     profileId?: number | null; // Int
@@ -132,6 +133,7 @@ export interface NexusGenFieldTypes {
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
     toAddress: string; // String!
+    value: number | null; // Float
   }
   CreateProfileResult: { // field return type
     profileId: number | null; // Int
@@ -214,6 +216,7 @@ export interface NexusGenFieldTypeNames {
     event: 'WebHookEventCategory'
     fromAddress: 'String'
     toAddress: 'String'
+    value: 'Float'
   }
   CreateProfileResult: { // field return type name
     profileId: 'Int'

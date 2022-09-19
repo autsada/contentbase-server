@@ -154,6 +154,7 @@ export const AddressSubscriptionResult = objectType({
     })
     t.nonNull.string('fromAddress')
     t.nonNull.string('toAddress')
+    t.float('value')
   },
 })
 

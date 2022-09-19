@@ -30,6 +30,7 @@ export async function onAddressUpdated(req: Request, res: Response) {
           event: activity.category,
           fromAddress: activity.fromAddress,
           toAddress: activity.toAddress,
+          value: activity.value,
         }
       )
     }

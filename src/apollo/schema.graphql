@@ -19,6 +19,7 @@ type AddressSubscriptionResult {
   event: WebHookEventCategory!
   fromAddress: String!
   toAddress: String!
+  value: Float
 }
 
 input CreateProfileInput {
