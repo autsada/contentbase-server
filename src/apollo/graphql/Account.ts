@@ -213,9 +213,6 @@ export const AccountMutation = extendType({
           if (!walletResult) throw new Error('Create wallet failed')
           const { address, key } = walletResult
 
-          // Add the address to Alchemy notify list
-          await dataSources.webhooksApi.addAddress(address)
-
           // Create a new doc in wallets collection
           await dataSources.firestoreAPI.createWallet(uid, { address, key })
 
@@ -224,6 +221,9 @@ export const AccountMutation = extendType({
             address,
             profiles: [], // Important to set profiles field to an empty array at the first time account is created
           })
+
+          // Add the address to Alchemy notify list
+          await dataSources.webhooksApi.addAddress(address)
 
           return { address }
         } catch (error) {
