@@ -6,11 +6,11 @@ import * as types from './graphql'
 export const schema = makeSchema({
   types,
   outputs: {
-    typegen: path.join(__dirname, '.', 'typegen.ts'),
-    schema: path.join(__dirname, '.', 'schema.graphql'),
+    typegen: path.join(process.cwd(), 'src/apollo/typegen.ts'),
+    schema: path.join(process.cwd(), 'src/apollo/schema.graphql'),
   },
   contextType: {
-    module: path.join(__dirname, '../types', 'context.ts'),
+    module: path.join(process.cwd(), 'src/types/context.ts'),
     export: 'Context',
   },
 })
