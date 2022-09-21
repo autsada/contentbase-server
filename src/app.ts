@@ -56,8 +56,14 @@ async function startServer() {
           | string
           | undefined
         const result = await getUserFromAuthorizationHeader(authorizationHeader)
-
+        console.log('result -->', result)
         return result
+      },
+      onConnect: () => {
+        console.log('client connected')
+      },
+      onDisconnect: () => {
+        console.log('client disconnected')
       },
     },
     wsServer
@@ -92,7 +98,6 @@ async function startServer() {
       // Get the user token from the headers.
       const authorizationHeaders = req.headers['authorization']
       const result = await getUserFromAuthorizationHeader(authorizationHeaders)
-
       return result
     },
     introspection: true, // Only for development mode

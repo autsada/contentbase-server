@@ -1,8 +1,8 @@
 import { UserRecord } from 'firebase-admin/auth'
 
-import { FirestoreAPI } from './datasources/firestore-api'
-import { BlockchainAPI } from './datasources/blockchain-api'
-import { WebhooksAPI } from './datasources/webhooks-api'
+import { FirestoreAPI } from '../apollo/datasources/firestore-api'
+import { BlockchainAPI } from '../apollo/datasources/blockchain-api'
+import { WebhooksAPI } from '../apollo/datasources/webhooks-api'
 
 export interface Context {
   dataSources: {

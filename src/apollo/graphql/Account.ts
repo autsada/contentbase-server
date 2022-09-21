@@ -267,6 +267,7 @@ export const ProfileSubscriptions = extendType({
         eventPromise: Promise<NexusGenObjects['AddressSubscriptionResult']>
       ) {
         const result = await eventPromise
+        console.log('resolve result -->', result)
         return result
       },
     })
