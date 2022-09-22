@@ -24,6 +24,7 @@ export interface NexusGenInputs {
 }
 
 export interface NexusGenEnums {
+  AccountType: "traditional" | "wallet"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
   WebHookEventCategory: "external" | "internal" | "token"
 }
@@ -44,6 +45,7 @@ export interface NexusGenObjects {
     loggedInProfile: number; // Int!
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
     testnet: boolean; // Boolean!
+    type: NexusGenEnums['AccountType']; // AccountType!
   }
   AddressActivity: { // root type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
@@ -126,6 +128,7 @@ export interface NexusGenFieldTypes {
     loggedInProfile: number; // Int!
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
     testnet: boolean; // Boolean!
+    type: NexusGenEnums['AccountType']; // AccountType!
   }
   AddressActivity: { // field return type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
@@ -208,6 +211,7 @@ export interface NexusGenFieldTypeNames {
     loggedInProfile: 'Int'
     profiles: 'Profile'
     testnet: 'Boolean'
+    type: 'AccountType'
   }
   AddressActivity: { // field return type name
     event: 'WebHookEventCategory'

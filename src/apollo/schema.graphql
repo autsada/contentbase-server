@@ -9,6 +9,12 @@ type Account {
   loggedInProfile: Int!
   profiles: [Profile!]!
   testnet: Boolean!
+  type: AccountType!
+}
+
+enum AccountType {
+  traditional
+  wallet
 }
 
 type AddressActivity {

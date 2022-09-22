@@ -11,6 +11,11 @@ import { AuthenticationError, UserInputError } from 'apollo-server-express'
 const authErrMessage = '*** You must be logged in ***'
 const badRequestErrMessage = 'Bad Request'
 
+export const AccountType = enumType({
+  name: 'AccountType',
+  members: ['traditional', 'wallet'],
+})
+
 /**
  * @notice
  *
@@ -32,6 +37,7 @@ export const Account = objectType({
     t.nonNull.int('loggedInProfile')
     t.nonNull.boolean('testnet')
     t.nonNull.string('authUid')
+    t.nonNull.field('type', { type: 'AccountType' })
   },
 })
 
@@ -225,6 +231,7 @@ export const AccountMutation = extendType({
           await dataSources.firestoreAPI.createAccount(uid, {
             address: address.toLowerCase(),
             profiles: [], // Important to set profiles field to an empty array at the first time account is created
+            type: 'traditional',
           })
 
           // Add the address to Alchemy notify list
