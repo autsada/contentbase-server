@@ -214,11 +214,14 @@ export const AccountMutation = extendType({
           const { address, key } = walletResult
 
           // Create a new doc in wallets collection
-          await dataSources.firestoreAPI.createWallet(uid, { address, key })
+          await dataSources.firestoreAPI.createWallet(uid, {
+            address: address.toLowerCase(),
+            key,
+          })
 
           // Save wallet to user's account
           await dataSources.firestoreAPI.createAccount(uid, {
-            address,
+            address: address.toLowerCase(),
             profiles: [], // Important to set profiles field to an empty array at the first time account is created
           })
 
