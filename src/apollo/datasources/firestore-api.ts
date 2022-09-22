@@ -100,21 +100,24 @@ export class FirestoreAPI extends DataSource {
   /**
    *
    * @param id - user's uid
-   * @param data - {address, profiles} blockchain address and profiles empty array
+   * @param data - {address, profiles, type} blockchain address and profiles empty array
    * @returns
    */
   async createAccount(
     id: string,
-    data: Partial<Omit<NexusGenObjects['Account'], 'id'>>
+    data: Pick<NexusGenObjects['Account'], 'address' | 'profiles' | 'type'>
   ) {
-    const { address, profiles } = data
-    return createDocWithId<Partial<Omit<NexusGenObjects['Account'], 'id'>>>({
+    const { address, profiles, type } = data
+    return createDocWithId<
+      Pick<NexusGenObjects['Account'], 'address' | 'profiles' | 'type'>
+    >({
       db: this.db,
       collectionName: accountsCollection,
       docId: id || '',
       data: {
         address,
         profiles,
+        type,
       },
     })
   }

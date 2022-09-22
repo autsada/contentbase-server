@@ -25,6 +25,7 @@ export const AccountType = enumType({
  * @dev "authUid" the uid of the Firsbase Auth user who owns the account
  * @dev "loggedInProfile" the user's profile id that is currently used to log in
  * @dev "testnet" set to true if the app runs on testnet blockchain
+ * @dev "type" if user signs in with phone,email,google set to "traditional", if wallet set to "wallet"
  */
 export const Account = objectType({
   name: 'Account',
