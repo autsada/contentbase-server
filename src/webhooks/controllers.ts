@@ -1,6 +1,11 @@
 import type { Request, Response } from 'express'
 
-import { pubsub } from '../apollo/pubsub'
+import {
+  db,
+  accountsCollection,
+  activitiesCollection,
+} from '../lib/config/firebase'
+import { searchDocByField, updateDocById } from '../lib/utils/firebaseHelpers'
 import { isValidSignatureForStringBody } from '../lib/utils/helpers'
 import type { NexusGenObjects } from '../apollo/typegen'
 
@@ -23,15 +28,43 @@ export async function onAddressUpdated(req: Request, res: Response) {
     const activity = body.event.activity[0]
 
     if (activity) {
-      // Publish the activity
-      pubsub.publish<NexusGenObjects['AddressSubscriptionResult']>(
-        'blockchain-notifications',
-        {
-          event: activity.category,
-          fromAddress: activity.fromAddress,
-          toAddress: activity.toAddress,
-          value: activity.value,
-        }
+      // Find users that relate to the activity
+      const fromAddress = activity.fromAddress
+      const toAddress = activity.toAddress
+
+      const fromUserDocs = await searchDocByField<NexusGenObjects['Account']>({
+        db,
+        collectionName: accountsCollection,
+        fieldName: 'address',
+        fieldValue: fromAddress,
+      })
+
+      const toUserDocs = await searchDocByField<NexusGenObjects['Account']>({
+        db,
+        collectionName: accountsCollection,
+        fieldName: 'address',
+        fieldValue: toAddress,
+      })
+
+      // Combine the users array
+      const relatedUsers = [...fromUserDocs, ...toUserDocs]
+
+      // Update activity of these users in Firestore
+      // Use Promise.allSettled because if one item rejects it will not reject the rest
+      await Promise.allSettled(
+        relatedUsers.map((user) => {
+          return updateDocById<Omit<NexusGenObjects['AddressActivity'], 'id'>>({
+            db,
+            collectionName: activitiesCollection,
+            docId: user.id,
+            data: {
+              event: activity.category,
+              fromAddress,
+              toAddress,
+              value: activity.value,
+            },
+          })
+        })
       )
     }
 

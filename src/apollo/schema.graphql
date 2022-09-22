@@ -11,13 +11,10 @@ type Account {
   testnet: Boolean!
 }
 
-input AddressSubscriptionInput {
-  address: String!
-}
-
-type AddressSubscriptionResult {
+type AddressActivity {
   event: WebHookEventCategory!
   fromAddress: String!
+  id: ID!
   toAddress: String!
   value: Float
 }
@@ -74,10 +71,6 @@ enum Role {
   ADMIN_ROLE
   DEFAULT_ADMIN_ROLE
   UPGRADER_ROLE
-}
-
-type Subscription {
-  addressUpdated(input: AddressSubscriptionInput!): AddressSubscriptionResult!
 }
 
 type Wallet {

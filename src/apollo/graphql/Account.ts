@@ -7,10 +7,6 @@ import {
   enumType,
 } from 'nexus'
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
-import { withFilter } from 'graphql-subscriptions'
-
-import { pubsub } from '../pubsub'
-import type { NexusGenObjects, NexusGenInputs } from '../typegen'
 
 const authErrMessage = '*** You must be logged in ***'
 const badRequestErrMessage = 'Bad Request'
@@ -39,12 +35,35 @@ export const Account = objectType({
   },
 })
 
+/**
+ * @dev "address" a blockchain address
+ * @dev "key" an encrypted key
+ */
 export const Wallet = objectType({
   name: 'Wallet',
   definition(t) {
     t.nonNull.id('id')
     t.nonNull.string('address')
     t.nonNull.string('key')
+  },
+})
+
+/**
+ * @dev "event" an event category
+ * @dev "fromAddress" a blockchain address
+ * @dev "toAddress" a blockchain address
+ * @dev "value" the value if the activity
+ */
+export const AddressActivity = objectType({
+  name: 'AddressActivity',
+  definition(t) {
+    t.nonNull.id('id')
+    t.nonNull.field('event', {
+      type: 'WebHookEventCategory',
+    })
+    t.nonNull.string('fromAddress')
+    t.nonNull.string('toAddress')
+    t.float('value')
   },
 })
 
@@ -139,25 +158,6 @@ export const WebHookRequestBody = objectType({
   },
 })
 
-export const AddressSubscriptionInput = inputObjectType({
-  name: 'AddressSubscriptionInput',
-  definition(t) {
-    t.nonNull.string('address')
-  },
-})
-
-export const AddressSubscriptionResult = objectType({
-  name: 'AddressSubscriptionResult',
-  definition(t) {
-    t.nonNull.field('event', {
-      type: nonNull('WebHookEventCategory'),
-    })
-    t.nonNull.string('fromAddress')
-    t.nonNull.string('toAddress')
-    t.float('value')
-  },
-})
-
 export const AccountQuery = extendType({
   type: 'Query',
   definition(t) {
@@ -229,46 +229,6 @@ export const AccountMutation = extendType({
         } catch (error) {
           throw error
         }
-      },
-    })
-  },
-})
-
-export const ProfileSubscriptions = extendType({
-  type: 'Subscription',
-  definition(t) {
-    t.field('addressUpdated', {
-      type: nonNull('AddressSubscriptionResult'),
-      args: { input: nonNull('AddressSubscriptionInput') },
-      subscribe: withFilter(
-        () => pubsub.asyncIterator('address_updated'),
-        (
-          payload,
-          variables: { input: NexusGenInputs['AddressSubscriptionInput'] }
-        ) => {
-          try {
-            const { fromAddress, toAddress } =
-              payload as NexusGenObjects['AddressSubscriptionResult']
-            const {
-              input: { address },
-            } = variables
-
-            const isMatched =
-              fromAddress.toLowerCase() === address.toLowerCase() ||
-              toAddress.toLowerCase() === address.toLocaleLowerCase()
-
-            return isMatched
-          } catch (error) {
-            return false
-          }
-        }
-      ),
-      async resolve(
-        eventPromise: Promise<NexusGenObjects['AddressSubscriptionResult']>
-      ) {
-        const result = await eventPromise
-        console.log('resolve result -->', result)
-        return result
       },
     })
   },

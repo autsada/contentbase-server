@@ -14,9 +14,6 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  AddressSubscriptionInput: { // input type
-    address: string; // String!
-  }
   CreateProfileInput: { // input type
     handle: string; // String!
     imageURI?: string | null; // String
@@ -48,9 +45,10 @@ export interface NexusGenObjects {
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
     testnet: boolean; // Boolean!
   }
-  AddressSubscriptionResult: { // root type
+  AddressActivity: { // root type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
+    id: string; // ID!
     toAddress: string; // String!
     value?: number | null; // Float
   }
@@ -76,7 +74,6 @@ export interface NexusGenObjects {
     uid: string; // String!
   }
   Query: {};
-  Subscription: {};
   Wallet: { // root type
     address: string; // String!
     id: string; // ID!
@@ -129,9 +126,10 @@ export interface NexusGenFieldTypes {
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
     testnet: boolean; // Boolean!
   }
-  AddressSubscriptionResult: { // field return type
+  AddressActivity: { // field return type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
+    id: string; // ID!
     toAddress: string; // String!
     value: number | null; // Float
   }
@@ -166,9 +164,6 @@ export interface NexusGenFieldTypes {
     getMyProfiles: Array<NexusGenRootTypes['Profile'] | null>; // [Profile]!
     getProfilesCount: number; // Int!
     isHandleUnique: boolean; // Boolean!
-  }
-  Subscription: { // field return type
-    addressUpdated: NexusGenRootTypes['AddressSubscriptionResult']; // AddressSubscriptionResult!
   }
   Wallet: { // field return type
     address: string; // String!
@@ -212,9 +207,10 @@ export interface NexusGenFieldTypeNames {
     profiles: 'Profile'
     testnet: 'Boolean'
   }
-  AddressSubscriptionResult: { // field return type name
+  AddressActivity: { // field return type name
     event: 'WebHookEventCategory'
     fromAddress: 'String'
+    id: 'ID'
     toAddress: 'String'
     value: 'Float'
   }
@@ -249,9 +245,6 @@ export interface NexusGenFieldTypeNames {
     getMyProfiles: 'Profile'
     getProfilesCount: 'Int'
     isHandleUnique: 'Boolean'
-  }
-  Subscription: { // field return type name
-    addressUpdated: 'AddressSubscriptionResult'
   }
   Wallet: { // field return type name
     address: 'String'
@@ -304,11 +297,6 @@ export interface NexusGenArgTypes {
     }
     isHandleUnique: { // args
       handle: string; // String!
-    }
-  }
-  Subscription: {
-    addressUpdated: { // args
-      input: NexusGenInputs['AddressSubscriptionInput']; // AddressSubscriptionInput!
     }
   }
 }

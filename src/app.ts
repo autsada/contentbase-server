@@ -9,8 +9,6 @@ import {
   ApolloServerPluginDrainHttpServer,
   ApolloServerPluginLandingPageLocalDefault,
 } from 'apollo-server-core'
-import { WebSocketServer } from 'ws'
-import { useServer } from 'graphql-ws/lib/use/ws'
 
 import './lib/config/firebase' // import firebase config to initialize firebase admin
 import { schema } from './apollo/schema'
@@ -20,8 +18,10 @@ import { WebhooksAPI } from './apollo/datasources/webhooks-api'
 import { db } from './lib/config/firebase'
 import { router } from './webhooks/router'
 import { getUserFromAuthorizationHeader } from './lib/utils/helpers'
+import type { Environment } from './types'
 
-const { PORT } = process.env
+const { PORT, NODE_ENV } = process.env
+const env = NODE_ENV as Environment
 
 async function startServer() {
   const app = express()
@@ -41,34 +41,6 @@ async function startServer() {
 
   const httpServer = http.createServer(app)
 
-  // Create our WebSocket server using the HTTP server we just set up.
-  const wsServer = new WebSocketServer({
-    server: httpServer,
-    path: '/graphql',
-  })
-
-  // Save the returned server's info so we can shutdown this server later
-  const serverCleanup = useServer(
-    {
-      schema,
-      context: async (ctx, msg, args) => {
-        const authorizationHeader = ctx.connectionParams?.authorization as
-          | string
-          | undefined
-        const result = await getUserFromAuthorizationHeader(authorizationHeader)
-        console.log('result -->', result)
-        return result
-      },
-      onConnect: () => {
-        console.log('client connected')
-      },
-      onDisconnect: () => {
-        console.log('client disconnected')
-      },
-    },
-    wsServer
-  )
-
   // Set up ApolloServer.
   const server = new ApolloServer({
     schema,
@@ -77,16 +49,6 @@ async function startServer() {
     plugins: [
       // Proper shutdown for the HTTP server.
       ApolloServerPluginDrainHttpServer({ httpServer }),
-      // Proper shutdown for the WebSocket server.
-      {
-        async serverWillStart() {
-          return {
-            async drainServer() {
-              await serverCleanup.dispose()
-            },
-          }
-        },
-      },
       ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ],
     dataSources: () => ({
@@ -100,7 +62,7 @@ async function startServer() {
       const result = await getUserFromAuthorizationHeader(authorizationHeaders)
       return result
     },
-    introspection: true, // Only for development mode
+    introspection: env === 'development' || env === 'staging', // Only for development mode
   })
 
   await server.start()
