@@ -10,7 +10,7 @@ export const schema = makeSchema({
     schema: path.join(process.cwd(), 'src/apollo/schema.graphql'),
   },
   contextType: {
-    module: path.join(process.cwd(), 'src/types/context.ts'),
+    module: path.join(process.cwd(), 'src/apollo/context.ts'),
     export: 'Context',
   },
 })
