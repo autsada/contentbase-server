@@ -15,6 +15,7 @@ type AddressActivity {
   event: WebHookEventCategory!
   fromAddress: String!
   id: ID!
+  isAcknowledged: Boolean!
   toAddress: String!
   value: Float
 }

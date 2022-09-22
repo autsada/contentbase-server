@@ -63,6 +63,7 @@ export async function onAddressUpdated(req: Request, res: Response) {
               fromAddress,
               toAddress,
               value: activity.value,
+              isAcknowledged: false,
             },
           })
         })

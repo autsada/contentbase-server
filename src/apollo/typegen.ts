@@ -49,6 +49,7 @@ export interface NexusGenObjects {
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
     id: string; // ID!
+    isAcknowledged: boolean; // Boolean!
     toAddress: string; // String!
     value?: number | null; // Float
   }
@@ -130,6 +131,7 @@ export interface NexusGenFieldTypes {
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
     fromAddress: string; // String!
     id: string; // ID!
+    isAcknowledged: boolean; // Boolean!
     toAddress: string; // String!
     value: number | null; // Float
   }
@@ -211,6 +213,7 @@ export interface NexusGenFieldTypeNames {
     event: 'WebHookEventCategory'
     fromAddress: 'String'
     id: 'ID'
+    isAcknowledged: 'Boolean'
     toAddress: 'String'
     value: 'Float'
   }

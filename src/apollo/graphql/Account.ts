@@ -49,10 +49,11 @@ export const Wallet = objectType({
 })
 
 /**
- * @dev "event" an event category
- * @dev "fromAddress" a blockchain address
- * @dev "toAddress" a blockchain address
- * @dev "value" the value if the activity
+ * @dev "event" - enum:an event category
+ * @dev "fromAddress" - string:a blockchain address
+ * @dev "toAddress" - string:a blockchain address
+ * @dev "value" - number:the value if the activity
+ * @dev "isAcknowledged" - boolean:whether the frontend acknowledged already or not, set to false by default
  */
 export const AddressActivity = objectType({
   name: 'AddressActivity',
@@ -64,6 +65,7 @@ export const AddressActivity = objectType({
     t.nonNull.string('fromAddress')
     t.nonNull.string('toAddress')
     t.float('value')
+    t.nonNull.boolean('isAcknowledged')
   },
 })
 
