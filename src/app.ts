@@ -15,9 +15,8 @@ import { schema } from './apollo/schema'
 import { BlockchainAPI } from './apollo/datasources/blockchain-api'
 import { FirestoreAPI } from './apollo/datasources/firestore-api'
 import { WebhooksAPI } from './apollo/datasources/webhooks-api'
-import { db } from './lib/config/firebase'
+import { db, getUserFromAuthorizationHeader } from './lib'
 import { router } from './webhooks/router'
-import { getUserFromAuthorizationHeader } from './lib/utils/helpers'
 import type { Environment } from './types'
 
 const { PORT, NODE_ENV } = process.env

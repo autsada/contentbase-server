@@ -4,9 +4,10 @@ import {
   db,
   accountsCollection,
   activitiesCollection,
-} from '../lib/config/firebase'
-import { searchDocByField, updateDocById } from '../lib/utils/firebaseHelpers'
-import { isValidSignatureForStringBody } from '../lib/utils/helpers'
+  searchDocByField,
+  updateDocById,
+  isValidSignatureForStringBody,
+} from '../lib'
 import type { NexusGenObjects } from '../apollo/typegen'
 
 export async function onAddressUpdated(req: Request, res: Response) {

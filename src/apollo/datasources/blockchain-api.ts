@@ -1,7 +1,7 @@
 import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest'
 
 import { NexusGenObjects, NexusGenEnums } from '../typegen'
-import { authClient } from '../../lib/config/authClient'
+import { authClient } from '../../lib'
 import type { Environment } from '../../types'
 
 const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =

@@ -5,13 +5,11 @@ import { NexusGenObjects } from '../typegen'
 import {
   accountsCollection,
   walletsCollection,
-} from '../../lib/config/firebase'
-import {
   getDocById,
   createDocRef,
   createDocWithId,
   updateDocById,
-} from '../../lib/utils/firebaseHelpers'
+} from '../../lib'
 
 export class FirestoreAPI extends DataSource {
   db: Firestore
