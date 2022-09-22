@@ -205,7 +205,7 @@ export const ProfileMutation = extendType({
           if (wallet.address !== account.address)
             throw new ForbiddenError('Forbidden')
 
-          const { address, profiles } = account
+          const { address, profiles, loggedInProfile } = account
           const isDefault = !profiles || profiles.length === 0
 
           // Construct raw profile object
@@ -239,6 +239,8 @@ export const ProfileMutation = extendType({
             docId: account.id,
             data: {
               profiles: !profiles ? [newProfile] : [...profiles, newProfile],
+              // Set logged in profile
+              loggedInProfile: !loggedInProfile ? profileId : loggedInProfile,
             },
           })
 
