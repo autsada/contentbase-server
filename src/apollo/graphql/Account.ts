@@ -167,6 +167,39 @@ export const WebHookRequestBody = objectType({
   },
 })
 
+/**
+ * Type of  the file uploaded to ipfs
+ */
+export const UploadType = enumType({
+  name: 'UploadType',
+  members: ['avatar', 'post'],
+})
+
+/**
+ * Metadata of the file uploaded to ipfs
+ */
+export const Metadata = objectType({
+  name: 'Metadata',
+  definition(t) {
+    t.nonNull.string('handle')
+    t.nonNull.string('fileName')
+    t.nonNull.field('type', { type: 'UploadType' })
+  },
+})
+
+/**
+ * Metadata of the file uploaded to ipfs
+ */
+export const UploadReturnType = objectType({
+  name: 'UploadReturnType',
+  definition(t) {
+    t.nonNull.string('metadataGateWayURL')
+    t.nonNull.string('metadataURI')
+    t.nonNull.string('imageGateWayURL')
+    t.nonNull.string('imageURI')
+  },
+})
+
 export const AccountQuery = extendType({
   type: 'Query',
   definition(t) {

@@ -51,6 +51,12 @@ input HasRoleInput {
   role: Role!
 }
 
+type Metadata {
+  fileName: String!
+  handle: String!
+  type: UploadType!
+}
+
 type Mutation {
   createProfileNft(input: CreateProfileInput!): CreateProfileResult!
   createWallet: CreateWalletResult!
@@ -78,6 +84,18 @@ enum Role {
   ADMIN_ROLE
   DEFAULT_ADMIN_ROLE
   UPGRADER_ROLE
+}
+
+type UploadReturnType {
+  imageGateWayURL: String!
+  imageURI: String!
+  metadataGateWayURL: String!
+  metadataURI: String!
+}
+
+enum UploadType {
+  avatar
+  post
 }
 
 type Wallet {

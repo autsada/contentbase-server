@@ -26,6 +26,7 @@ export interface NexusGenInputs {
 export interface NexusGenEnums {
   AccountType: "traditional" | "wallet"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
+  UploadType: "avatar" | "post"
   WebHookEventCategory: "external" | "internal" | "token"
 }
 
@@ -67,6 +68,11 @@ export interface NexusGenObjects {
   GetAccount: { // root type
     account?: NexusGenRootTypes['Account'] | null; // Account
   }
+  Metadata: { // root type
+    fileName: string; // String!
+    handle: string; // String!
+    type: NexusGenEnums['UploadType']; // UploadType!
+  }
   Mutation: {};
   Profile: { // root type
     handle: string; // String!
@@ -77,6 +83,12 @@ export interface NexusGenObjects {
     uid: string; // String!
   }
   Query: {};
+  UploadReturnType: { // root type
+    imageGateWayURL: string; // String!
+    imageURI: string; // String!
+    metadataGateWayURL: string; // String!
+    metadataURI: string; // String!
+  }
   Wallet: { // root type
     address: string; // String!
     id: string; // ID!
@@ -150,6 +162,11 @@ export interface NexusGenFieldTypes {
   GetAccount: { // field return type
     account: NexusGenRootTypes['Account'] | null; // Account
   }
+  Metadata: { // field return type
+    fileName: string; // String!
+    handle: string; // String!
+    type: NexusGenEnums['UploadType']; // UploadType!
+  }
   Mutation: { // field return type
     createProfileNft: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
@@ -169,6 +186,12 @@ export interface NexusGenFieldTypes {
     getMyProfiles: Array<NexusGenRootTypes['Profile'] | null>; // [Profile]!
     getProfilesCount: number; // Int!
     isHandleUnique: boolean; // Boolean!
+  }
+  UploadReturnType: { // field return type
+    imageGateWayURL: string; // String!
+    imageURI: string; // String!
+    metadataGateWayURL: string; // String!
+    metadataURI: string; // String!
   }
   Wallet: { // field return type
     address: string; // String!
@@ -233,6 +256,11 @@ export interface NexusGenFieldTypeNames {
   GetAccount: { // field return type name
     account: 'Account'
   }
+  Metadata: { // field return type name
+    fileName: 'String'
+    handle: 'String'
+    type: 'UploadType'
+  }
   Mutation: { // field return type name
     createProfileNft: 'CreateProfileResult'
     createWallet: 'CreateWalletResult'
@@ -252,6 +280,12 @@ export interface NexusGenFieldTypeNames {
     getMyProfiles: 'Profile'
     getProfilesCount: 'Int'
     isHandleUnique: 'Boolean'
+  }
+  UploadReturnType: { // field return type name
+    imageGateWayURL: 'String'
+    imageURI: 'String'
+    metadataGateWayURL: 'String'
+    metadataURI: 'String'
   }
   Wallet: { // field return type name
     address: 'String'

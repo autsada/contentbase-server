@@ -17,6 +17,7 @@ import { FirestoreAPI } from './apollo/datasources/firestore-api'
 import { WebhooksAPI } from './apollo/datasources/webhooks-api'
 import { db, getUserFromAuthorizationHeader } from './lib'
 import { router } from './webhooks/router'
+import { restRouter } from './rest/router'
 import type { Environment } from './types'
 
 const { PORT, NODE_ENV } = process.env
@@ -34,6 +35,9 @@ async function startServer() {
   ) // for parsing application/json
   app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
   app.use(cors())
+
+  // Rest APIs route
+  app.use('/api', restRouter)
 
   // Webhooks route for listening to activity occurred to user's blockchain address
   app.use('/webhooks', router)
