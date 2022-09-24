@@ -28,7 +28,8 @@ type AddressActivity {
 
 input CreateProfileInput {
   handle: String!
-  imageURI: String
+  imageURI1: String
+  imageURI2: String
 }
 
 type CreateProfileResult {
@@ -66,7 +67,8 @@ type Mutation {
 
 type Profile {
   handle: String!
-  imageURI: String
+  imageURI1: String
+  imageURI2: String
   isDefault: Boolean!
   owner: String!
   profileId: Int!

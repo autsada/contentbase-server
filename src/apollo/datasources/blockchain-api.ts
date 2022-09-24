@@ -9,10 +9,13 @@ const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
 
 export interface CreateProfileNftArgs {
   key: string
-  uid: string
-  handle: string
-  imageURI: string
-  isDefault: boolean
+  data: {
+    uid: string
+    handle: string
+    imageURI1?: string
+    imageURI2?: string
+    isDefault: boolean
+  }
 }
 
 export class BlockchainAPI extends RESTDataSource {
@@ -79,18 +82,12 @@ export class BlockchainAPI extends RESTDataSource {
    */
   async createProfileNft({
     key,
-    uid,
-    handle,
-    imageURI,
-    isDefault,
+    data,
   }: CreateProfileNftArgs): Promise<{ profileId: number }> {
     try {
       const result = await this.post('/profiles/create', {
         key,
-        uid,
-        handle,
-        imageURI,
-        isDefault,
+        data,
       })
 
       return result
@@ -121,14 +118,11 @@ export class BlockchainAPI extends RESTDataSource {
   async estimateCreateProfileGas(
     input: CreateProfileNftArgs
   ): Promise<{ gas: string }> {
-    const { key, uid, handle, imageURI, isDefault } = input
+    const { key, data } = input
 
     return this.post(`/profiles/estimateGas`, {
       key,
-      uid,
-      handle,
-      imageURI,
-      isDefault,
+      data,
     })
   }
 }

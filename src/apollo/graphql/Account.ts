@@ -92,21 +92,6 @@ export const CreateWalletResult = objectType({
   },
 })
 
-export const CreateProfileInput = inputObjectType({
-  name: 'CreateProfileInput',
-  definition(t) {
-    t.nonNull.string('handle')
-    t.string('imageURI')
-  },
-})
-
-export const CreateProfileResult = objectType({
-  name: 'CreateProfileResult',
-  definition(t) {
-    t.int('profileId')
-  },
-})
-
 export const EstimateCreateProfileGasResult = objectType({
   name: 'EstimateCreateProfileGasResult',
   definition(t) {

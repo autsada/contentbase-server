@@ -16,7 +16,8 @@ declare global {
 export interface NexusGenInputs {
   CreateProfileInput: { // input type
     handle: string; // String!
-    imageURI?: string | null; // String
+    imageURI1?: string | null; // String
+    imageURI2?: string | null; // String
   }
   HasRoleInput: { // input type
     role: NexusGenEnums['Role']; // Role!
@@ -76,7 +77,8 @@ export interface NexusGenObjects {
   Mutation: {};
   Profile: { // root type
     handle: string; // String!
-    imageURI?: string | null; // String
+    imageURI1?: string | null; // String
+    imageURI2?: string | null; // String
     isDefault: boolean; // Boolean!
     owner: string; // String!
     profileId: number; // Int!
@@ -175,7 +177,8 @@ export interface NexusGenFieldTypes {
   }
   Profile: { // field return type
     handle: string; // String!
-    imageURI: string | null; // String
+    imageURI1: string | null; // String
+    imageURI2: string | null; // String
     isDefault: boolean; // Boolean!
     owner: string; // String!
     profileId: number; // Int!
@@ -269,7 +272,8 @@ export interface NexusGenFieldTypeNames {
   }
   Profile: { // field return type name
     handle: 'String'
-    imageURI: 'String'
+    imageURI1: 'String'
+    imageURI2: 'String'
     isDefault: 'Boolean'
     owner: 'String'
     profileId: 'Int'

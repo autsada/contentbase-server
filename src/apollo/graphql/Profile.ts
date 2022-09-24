@@ -18,9 +18,6 @@ import { NexusGenObjects } from '../typegen'
 const authErrMessage = '*** You must be logged in ***'
 const badRequestErrMessage = 'Bad Request'
 
-const privateKey =
-  '0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80'
-
 export const Role = enumType({
   name: 'Role',
   members: ['DEFAULT_ADMIN_ROLE', 'ADMIN_ROLE', 'UPGRADER_ROLE'],
@@ -33,7 +30,8 @@ export const Role = enumType({
  * @dev "owner" the blockchain address that owns the profile
  * @dev "uid" the id of the user doc in Firestore
  * @dev "handle" handle of the profile
- * @dev "imageURI" ipfs uri of the profile image
+ * @dev "imageURI1" ipfs uri of the profile image
+ * @dev "imageURI2" cloud storage uri of the profile image
  * @dev "isDefault" whether the profile is default profile of the user or not
  */
 export const Profile = objectType({
@@ -43,8 +41,25 @@ export const Profile = objectType({
     t.nonNull.string('owner')
     t.nonNull.string('uid')
     t.nonNull.string('handle')
-    t.string('imageURI')
+    t.string('imageURI1')
+    t.string('imageURI2')
     t.nonNull.boolean('isDefault')
+  },
+})
+
+export const CreateProfileInput = inputObjectType({
+  name: 'CreateProfileInput',
+  definition(t) {
+    t.nonNull.string('handle')
+    t.string('imageURI1')
+    t.string('imageURI2')
+  },
+})
+
+export const CreateProfileResult = objectType({
+  name: 'CreateProfileResult',
+  definition(t) {
+    t.int('profileId')
   },
 })
 
@@ -179,7 +194,7 @@ export const ProfileMutation = extendType({
           // Check if handle is given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, imageURI } = input
+          const { handle, imageURI1, imageURI2 } = input
 
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
@@ -212,13 +227,14 @@ export const ProfileMutation = extendType({
           const rawProfile = {
             uid,
             handle,
-            imageURI: imageURI || '',
+            imageURI1: imageURI1 || '',
+            imageURI2: imageURI2 || '',
             isDefault,
           }
           const createProfileResult =
             await dataSources.blockchainAPI.createProfileNft({
               key: wallet.key,
-              ...rawProfile,
+              data: rawProfile,
             })
 
           if (!createProfileResult)
@@ -266,7 +282,7 @@ export const ProfileMutation = extendType({
           // Check if handle is given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, imageURI } = input
+          const { handle, imageURI1, imageURI2 } = input
 
           if (!handle) throw new UserInputError(badRequestErrMessage)
           // Check if handle has correct length and unique
@@ -286,10 +302,13 @@ export const ProfileMutation = extendType({
           const estimateGasResult =
             await dataSources.blockchainAPI.estimateCreateProfileGas({
               key: wallet.key,
-              uid,
-              handle,
-              imageURI: imageURI || '',
-              isDefault: true, // Assume its's true
+              data: {
+                uid,
+                handle,
+                imageURI1: imageURI1 || '',
+                imageURI2: imageURI2 || '',
+                isDefault: true, // Assume its's true
+              },
             })
 
           return { gas: estimateGasResult.gas }
