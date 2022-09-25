@@ -11,7 +11,7 @@ import { uploadProfileImage } from './controllers'
 export const restRouter = Router()
 
 restRouter.post(
-  '/uploads',
+  '/uploads/profile',
   verifyAuth,
   upload.single('avatar'),
   uploadProfileImage
