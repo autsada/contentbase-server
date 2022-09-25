@@ -23,11 +23,13 @@ export async function onAddressUpdated(req: Request, res: Response) {
     // Validate signature
     const isValid = isValidSignatureForStringBody(rawBody, signature as string)
 
+    console.log('isValid -->', isValid)
     if (!isValid) throw new Error('Request corrupted in transit.')
 
     const body = req.body as NexusGenObjects['WebHookRequestBody']
     const activity = body.event.activity[0]
 
+    console.log('activity -->', activity)
     if (activity) {
       // Find users that relate to the activity
       const fromAddress = activity.fromAddress.toLowerCase()
@@ -50,6 +52,7 @@ export async function onAddressUpdated(req: Request, res: Response) {
       // Combine the users array
       const relatedUsers = [...fromUserDocs, ...toUserDocs]
 
+      console.log('users -->', relatedUsers)
       // Update activity of these users in Firestore
       // Use Promise.allSettled because if one item rejects it will not reject the rest
       await Promise.allSettled(
@@ -70,6 +73,7 @@ export async function onAddressUpdated(req: Request, res: Response) {
       )
     }
 
+    console.log('Done -->')
     res.status(200).end()
   } catch (error) {
     res.status(500).end()

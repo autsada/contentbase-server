@@ -220,9 +220,17 @@ export const ProfileMutation = extendType({
           if (wallet.address !== account.address)
             throw new ForbiddenError('Forbidden')
 
-          const { address, profiles, loggedInProfile } = account
+          const { address, loggedInProfile } = account
+
+          // Get user's profiles from blockchain
+          const { profiles } = await dataSources.blockchainAPI.getMyProfiles(
+            address,
+            wallet.key
+          )
+          console.log('profiles -->', profiles)
           const isDefault = !profiles || profiles.length === 0
 
+          console.log('is default -->', isDefault)
           // Construct raw profile object
           const rawProfile = {
             uid,
@@ -237,6 +245,7 @@ export const ProfileMutation = extendType({
               data: rawProfile,
             })
 
+          console.log('result -->', createProfileResult)
           if (!createProfileResult)
             throw new Error(
               'Error occured while attempting to create a profile nft.'
@@ -244,6 +253,7 @@ export const ProfileMutation = extendType({
 
           const profileId = createProfileResult.profileId
 
+          console.log('profile id -->', profileId)
           // Update user's account in Firestore
           const newProfile: NexusGenObjects['Profile'] = {
             profileId,
@@ -260,6 +270,7 @@ export const ProfileMutation = extendType({
             },
           })
 
+          console.log('new profile -->', newProfile)
           return { profileId }
         } catch (error) {
           throw error
