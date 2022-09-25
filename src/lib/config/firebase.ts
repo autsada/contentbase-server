@@ -37,7 +37,7 @@ const firebaseApp = initializeFirebaseAdmin()
 
 export const db = getFirestore(firebaseApp)
 export const auth = getAuth(firebaseApp)
-export const bucket = getStorage().bucket()
+export const bucket = getStorage().bucket(FIREBASE_STORAGE_BUCKET)
 
 // Collections
 export const accountsCollection = 'accounts'
