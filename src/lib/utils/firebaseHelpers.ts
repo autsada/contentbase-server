@@ -1,7 +1,9 @@
 import { firestore } from 'firebase-admin'
 
-import { auth, bucket } from '../config/firebase'
+import { auth, storage } from '../config/firebase'
 import { NexusGenObjects } from '../../apollo/typegen'
+
+const { FIREBASE_STORAGE_BUCKET } = process.env
 
 type Args<T = Record<string, any>> = {
   db: firestore.Firestore
@@ -160,6 +162,7 @@ export async function uploadFileToStorage({
 > & { file: Buffer }) {
   const path = `${userId}/${handle}/${uploadType}/${fileName}`
 
+  const bucket = storage.bucket(FIREBASE_STORAGE_BUCKET)
   await bucket.file(path).save(file, { resumable: true })
 
   const uploadedFile = bucket.file(path)
