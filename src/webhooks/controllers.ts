@@ -65,7 +65,7 @@ export async function onAddressUpdated(req: Request, res: Response) {
               event: activity.category,
               fromAddress,
               toAddress,
-              value: activity.value,
+              value: activity.value || 0,
               isAcknowledged: false,
             },
           })
