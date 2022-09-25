@@ -88,11 +88,20 @@ enum Role {
   UPGRADER_ROLE
 }
 
+type UploadParams {
+  fileName: String!
+  handle: String!
+  uploadType: UploadType!
+  userId: String!
+}
+
 type UploadReturnType {
   imageGateWayURL: String!
   imageURI: String!
   metadataGateWayURL: String!
   metadataURI: String!
+  storagePath: String!
+  storageURL: String!
 }
 
 enum UploadType {

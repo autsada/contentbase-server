@@ -85,11 +85,19 @@ export interface NexusGenObjects {
     uid: string; // String!
   }
   Query: {};
+  UploadParams: { // root type
+    fileName: string; // String!
+    handle: string; // String!
+    uploadType: NexusGenEnums['UploadType']; // UploadType!
+    userId: string; // String!
+  }
   UploadReturnType: { // root type
     imageGateWayURL: string; // String!
     imageURI: string; // String!
     metadataGateWayURL: string; // String!
     metadataURI: string; // String!
+    storagePath: string; // String!
+    storageURL: string; // String!
   }
   Wallet: { // root type
     address: string; // String!
@@ -190,11 +198,19 @@ export interface NexusGenFieldTypes {
     getProfilesCount: number; // Int!
     isHandleUnique: boolean; // Boolean!
   }
+  UploadParams: { // field return type
+    fileName: string; // String!
+    handle: string; // String!
+    uploadType: NexusGenEnums['UploadType']; // UploadType!
+    userId: string; // String!
+  }
   UploadReturnType: { // field return type
     imageGateWayURL: string; // String!
     imageURI: string; // String!
     metadataGateWayURL: string; // String!
     metadataURI: string; // String!
+    storagePath: string; // String!
+    storageURL: string; // String!
   }
   Wallet: { // field return type
     address: string; // String!
@@ -285,11 +301,19 @@ export interface NexusGenFieldTypeNames {
     getProfilesCount: 'Int'
     isHandleUnique: 'Boolean'
   }
+  UploadParams: { // field return type name
+    fileName: 'String'
+    handle: 'String'
+    uploadType: 'UploadType'
+    userId: 'String'
+  }
   UploadReturnType: { // field return type name
     imageGateWayURL: 'String'
     imageURI: 'String'
     metadataGateWayURL: 'String'
     metadataURI: 'String'
+    storagePath: 'String'
+    storageURL: 'String'
   }
   Wallet: { // field return type name
     address: 'String'

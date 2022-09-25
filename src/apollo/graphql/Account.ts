@@ -1,11 +1,4 @@
-import {
-  objectType,
-  extendType,
-  nonNull,
-  inputObjectType,
-  list,
-  enumType,
-} from 'nexus'
+import { objectType, extendType, nonNull, list, enumType } from 'nexus'
 import { AuthenticationError, UserInputError } from 'apollo-server-express'
 
 const authErrMessage = '*** You must be logged in ***'
@@ -172,6 +165,16 @@ export const Metadata = objectType({
   },
 })
 
+export const UploadParams = objectType({
+  name: 'UploadParams',
+  definition(t) {
+    t.nonNull.string('userId')
+    t.nonNull.string('handle')
+    t.nonNull.field('uploadType', { type: 'UploadType' })
+    t.nonNull.string('fileName')
+  },
+})
+
 /**
  * Metadata of the file uploaded to ipfs
  */
@@ -182,6 +185,8 @@ export const UploadReturnType = objectType({
     t.nonNull.string('metadataURI')
     t.nonNull.string('imageGateWayURL')
     t.nonNull.string('imageURI')
+    t.nonNull.string('storagePath')
+    t.nonNull.string('storageURL')
   },
 })
 

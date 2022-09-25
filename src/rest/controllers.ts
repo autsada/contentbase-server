@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express'
+import convert from 'heic-convert'
 
 import {
   upload,
@@ -7,6 +8,7 @@ import {
   metadataFileName,
   createGateWayURL,
   createURI,
+  uploadFileToStorage,
 } from '../lib'
 import type { NexusGenObjects } from '../apollo/typegen'
 
@@ -19,20 +21,32 @@ import type { NexusGenObjects } from '../apollo/typegen'
  */
 export async function uploadProfileImage(req: Request, res: Response) {
   try {
-    const { userId, fileName, handle } = req.body as {
-      userId: string
-      fileName: string
-      handle: string
-    }
+    const { userId, fileName, handle } = req.body as Pick<
+      NexusGenObjects['UploadParams'],
+      'userId' | 'fileName' | 'handle'
+    >
 
     const file = req.file
     if (!file) throw new Error('Bad request')
 
-    // Construct file names
-    const imageName = fileName
+    let imageName = fileName
 
     // Construct image file
-    const buffer = file.buffer
+    let buffer = file.buffer
+
+    // Convert .HEIC to .jpeg
+    if (imageName.toLowerCase().endsWith('heic')) {
+      // Change buffer format
+      buffer = (await convert({
+        buffer,
+        format: 'JPEG',
+        quality: 1,
+      })) as Buffer
+
+      // Change file extension
+      imageName = imageName.split('.')[0] + '.JPEG'
+    }
+
     const imageFile = createUploadFile([buffer], imageName)
 
     // Construct metadata file
@@ -55,9 +69,22 @@ export async function uploadProfileImage(req: Request, res: Response) {
     const imageGateWayURL = createGateWayURL(cid, imageName)
     const imageURI = createURI(cid, imageName)
 
-    res
-      .status(200)
-      .json({ metadataGateWayURL, metadataURI, imageGateWayURL, imageURI })
+    const { storagePath, storageURL } = await uploadFileToStorage({
+      userId,
+      handle,
+      uploadType: 'avatar',
+      file: buffer,
+      fileName: imageName,
+    })
+
+    res.status(200).json({
+      metadataGateWayURL,
+      metadataURI,
+      imageGateWayURL,
+      imageURI,
+      storagePath,
+      storageURL,
+    })
   } catch (error) {
     res.status(500).send((error as any).message)
   }
