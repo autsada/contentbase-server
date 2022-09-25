@@ -162,10 +162,10 @@ export async function uploadFileToStorage({
   await bucket.file(path).save(file, { resumable: true })
 
   const uploadedFile = bucket.file(path)
-  const url = await uploadedFile.getSignedUrl({
+  const urls = await uploadedFile.getSignedUrl({
     action: 'read',
     expires: Date.now() + 1000 * 60 * 60 * 24 * 365 * 1000,
   })
 
-  return { storagePath: path, storageURL: url }
+  return { storagePath: path, storageURL: urls[0] }
 }
