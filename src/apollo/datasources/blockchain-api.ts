@@ -11,10 +11,10 @@ export interface CreateProfileNftArgs {
   key: string
   data: {
     uid: string
-    handle: string
-    imageURI1?: string
-    imageURI2?: string
     isDefault: boolean
+    handle: string
+    tokenURI: string
+    imageURI: string
   }
 }
 

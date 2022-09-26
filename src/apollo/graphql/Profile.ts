@@ -26,13 +26,13 @@ export const Role = enumType({
 /**
  * @notice
  *
- * @dev "profileId" the id of the profile
- * @dev "owner" the blockchain address that owns the profile
- * @dev "uid" the id of the user doc in Firestore
- * @dev "handle" handle of the profile
- * @dev "imageURI1" ipfs uri of the profile image
- * @dev "imageURI2" cloud storage uri of the profile image
- * @dev "isDefault" whether the profile is default profile of the user or not
+ * @param profileId the id of the profile
+ * @param owner the blockchain address that owns the profile
+ * @param uid the id of the user doc in Firestore
+ * @param handle handle of the profile
+ * @param tokenURI ipfs uri of the profile image
+ * @param imageURI cloud storage uri of the profile image
+ * @param isDefault whether the profile is default profile of the user or not
  */
 export const Profile = objectType({
   name: 'Profile',
@@ -41,8 +41,8 @@ export const Profile = objectType({
     t.nonNull.string('owner')
     t.nonNull.string('uid')
     t.nonNull.string('handle')
-    t.string('imageURI1')
-    t.string('imageURI2')
+    t.string('tokenURI')
+    t.string('imageURI')
     t.nonNull.boolean('isDefault')
   },
 })
@@ -51,8 +51,8 @@ export const CreateProfileInput = inputObjectType({
   name: 'CreateProfileInput',
   definition(t) {
     t.nonNull.string('handle')
-    t.string('imageURI1')
-    t.string('imageURI2')
+    t.string('tokenURI')
+    t.string('imageURI')
   },
 })
 
@@ -179,8 +179,9 @@ export const ProfileMutation = extendType({
 
     /**
      * @dev The process to create profile nft for users who signed in with traditional providers (phone | email | google).
-     * @params "handle" (required) a handle of the user.
-     * @params "imageUrl" (optional) a profile image url.
+     * @param handle a handle of the user.
+     * @param tokenURI a url point the image on ipfs, can be empty string
+     * @param imageURI a url point to an image saved on cloud storage, can be empty string
      */
     t.field('createProfileNft', {
       type: nonNull('CreateProfileResult'),
@@ -194,7 +195,7 @@ export const ProfileMutation = extendType({
           // Check if handle is given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, imageURI1, imageURI2 } = input
+          const { handle, tokenURI, imageURI } = input
 
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
@@ -232,10 +233,10 @@ export const ProfileMutation = extendType({
           // Construct raw profile object
           const rawProfile = {
             uid,
-            handle,
-            imageURI1: imageURI1 || '',
-            imageURI2: imageURI2 || '',
             isDefault,
+            handle,
+            tokenURI: tokenURI || '',
+            imageURI: imageURI || '',
           }
           const createProfileResult =
             await dataSources.blockchainAPI.createProfileNft({
@@ -288,9 +289,10 @@ export const ProfileMutation = extendType({
           // Check if handle is given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, imageURI1, imageURI2 } = input
+          const { handle, tokenURI, imageURI } = input
 
           if (!handle) throw new UserInputError(badRequestErrMessage)
+
           // Check if handle has correct length and unique
           const isHandleUnique = await dataSources.blockchainAPI.verifyHandle(
             handle
@@ -310,10 +312,10 @@ export const ProfileMutation = extendType({
               key: wallet.key,
               data: {
                 uid,
-                handle,
-                imageURI1: imageURI1 || '',
-                imageURI2: imageURI2 || '',
                 isDefault: true, // Assume its's true
+                handle,
+                tokenURI: tokenURI || '',
+                imageURI: imageURI || '',
               },
             })
 

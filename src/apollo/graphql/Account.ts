@@ -155,6 +155,9 @@ export const UploadType = enumType({
 
 /**
  * Metadata of the file uploaded to ipfs
+ * @param handle {string} a handle name
+ * @param fileName {string} a file name of the image
+ * @param type {enum} type of the file
  */
 export const Metadata = objectType({
   name: 'Metadata',
