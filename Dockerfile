@@ -12,8 +12,8 @@ FROM node:16.17-bullseye-slim
 
 ENV NODE_ENV=production
 COPY --from=build /usr/bin/dumb-init /usr/bin/dumb-init
-RUN chown -R node:node /usr/src/app/
 WORKDIR /usr/src/app
+RUN chown -R node:node /usr/src/app/
 USER node
 COPY --chown=node:node --from=build /usr/src/app/package*.json ./
 COPY --chown=node:node --from=build /usr/src/app/dist ./
