@@ -16,6 +16,6 @@ USER node
 WORKDIR /usr/src/app
 COPY --chown=node:node --from=build /usr/src/app/package*.json ./
 COPY --chown=node:node --from=build /usr/src/app/dist ./
-RUN --chown=node:node npm ci --omit=dev
+RUN chown -R node.node npm ci --omit=dev
 EXPOSE 4000
 CMD ["dumb-init", "node", "app.js"]
