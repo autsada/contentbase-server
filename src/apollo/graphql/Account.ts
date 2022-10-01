@@ -13,11 +13,8 @@ export const AccountType = enumType({
  * @notice
  *
  * @dev "profiles" is an array of profile NFTs created on the blockchain
- * @dev "walletId" is an encrypted private key of the blockchain address
  * @dev "address" is a blockchain address
- * @dev "authUid" the uid of the Firsbase Auth user who owns the account
  * @dev "loggedInProfile" the user's profile id that is currently used to log in
- * @dev "testnet" set to true if the app runs on testnet blockchain
  * @dev "type" if user signs in with phone,email,google set to "traditional", if wallet set to "wallet"
  */
 export const Account = objectType({
@@ -29,8 +26,6 @@ export const Account = objectType({
     })
     t.nonNull.string('address')
     t.nonNull.int('loggedInProfile')
-    t.nonNull.boolean('testnet')
-    t.nonNull.string('authUid')
     t.nonNull.field('type', { type: 'AccountType' })
   },
 })
@@ -142,54 +137,6 @@ export const WebHookRequestBody = objectType({
     t.nonNull.field('event', {
       type: nonNull('WebHookEvent'),
     })
-  },
-})
-
-/**
- * Type of  the file uploaded to ipfs
- */
-export const UploadType = enumType({
-  name: 'UploadType',
-  members: ['avatar', 'post'],
-})
-
-/**
- * Metadata of the file uploaded to ipfs
- * @param handle {string} a handle name
- * @param fileName {string} a file name of the image
- * @param type {enum} type of the file
- */
-export const Metadata = objectType({
-  name: 'Metadata',
-  definition(t) {
-    t.nonNull.string('handle')
-    t.nonNull.string('fileName')
-    t.nonNull.field('type', { type: 'UploadType' })
-  },
-})
-
-export const UploadParams = objectType({
-  name: 'UploadParams',
-  definition(t) {
-    t.nonNull.string('userId')
-    t.nonNull.string('handle')
-    t.nonNull.field('uploadType', { type: 'UploadType' })
-    t.nonNull.string('fileName')
-  },
-})
-
-/**
- * Metadata of the file uploaded to ipfs
- */
-export const UploadReturnType = objectType({
-  name: 'UploadReturnType',
-  definition(t) {
-    t.nonNull.string('metadataGateWayURL')
-    t.nonNull.string('metadataURI')
-    t.nonNull.string('imageGateWayURL')
-    t.nonNull.string('imageURI')
-    t.nonNull.string('storagePath')
-    t.nonNull.string('storageURL')
   },
 })
 

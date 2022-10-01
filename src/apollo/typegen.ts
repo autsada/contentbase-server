@@ -17,10 +17,15 @@ export interface NexusGenInputs {
   CreateProfileInput: { // input type
     handle: string; // String!
     imageURI?: string | null; // String
-    tokenURI?: string | null; // String
+    tokenURI: string; // String!
   }
   HasRoleInput: { // input type
     role: NexusGenEnums['Role']; // Role!
+  }
+  UpdateProfileImageInput: { // input type
+    imageURI: string; // String!
+    profileId: number; // Int!
+    tokenURI: string; // String!
   }
 }
 
@@ -42,11 +47,9 @@ export interface NexusGenScalars {
 export interface NexusGenObjects {
   Account: { // root type
     address: string; // String!
-    authUid: string; // String!
     id: string; // ID!
     loggedInProfile: number; // Int!
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
-    testnet: boolean; // Boolean!
     type: NexusGenEnums['AccountType']; // AccountType!
   }
   AddressActivity: { // root type
@@ -69,9 +72,12 @@ export interface NexusGenObjects {
   GetAccount: { // root type
     account?: NexusGenRootTypes['Account'] | null; // Account
   }
-  Metadata: { // root type
-    fileName: string; // String!
+  MetadataCustomProps: { // root type
+    contentURI?: string | null; // String
     handle: string; // String!
+    owner: string; // String!
+    storagePath?: string | null; // String
+    storageURL: string; // String!
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: {};
@@ -81,23 +87,21 @@ export interface NexusGenObjects {
     isDefault: boolean; // Boolean!
     owner: string; // String!
     profileId: number; // Int!
-    tokenURI?: string | null; // String
-    uid: string; // String!
   }
   Query: {};
   UploadParams: { // root type
+    address: string; // String!
     fileName: string; // String!
     handle: string; // String!
+    mime: string; // String!
     uploadType: NexusGenEnums['UploadType']; // UploadType!
     userId: string; // String!
   }
   UploadReturnType: { // root type
-    imageGateWayURL: string; // String!
-    imageURI: string; // String!
-    metadataGateWayURL: string; // String!
-    metadataURI: string; // String!
+    cid: string; // String!
     storagePath: string; // String!
     storageURL: string; // String!
+    tokenURI: string; // String!
   }
   Wallet: { // root type
     address: string; // String!
@@ -145,11 +149,9 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 export interface NexusGenFieldTypes {
   Account: { // field return type
     address: string; // String!
-    authUid: string; // String!
     id: string; // ID!
     loggedInProfile: number; // Int!
     profiles: NexusGenRootTypes['Profile'][]; // [Profile!]!
-    testnet: boolean; // Boolean!
     type: NexusGenEnums['AccountType']; // AccountType!
   }
   AddressActivity: { // field return type
@@ -172,16 +174,22 @@ export interface NexusGenFieldTypes {
   GetAccount: { // field return type
     account: NexusGenRootTypes['Account'] | null; // Account
   }
-  Metadata: { // field return type
-    fileName: string; // String!
+  MetadataCustomProps: { // field return type
+    contentURI: string | null; // String
     handle: string; // String!
+    owner: string; // String!
+    storagePath: string | null; // String
+    storageURL: string; // String!
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: { // field return type
+    burnToken: string; // String!
     createProfileNft: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
     estimateCreateProfileGas: NexusGenRootTypes['EstimateCreateProfileGasResult']; // EstimateCreateProfileGasResult!
     hasRole: boolean; // Boolean!
+    setDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    updateProfileImage: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
   }
   Profile: { // field return type
     handle: string; // String!
@@ -189,28 +197,28 @@ export interface NexusGenFieldTypes {
     isDefault: boolean; // Boolean!
     owner: string; // String!
     profileId: number; // Int!
-    tokenURI: string | null; // String
-    uid: string; // String!
   }
   Query: { // field return type
     getMyBalance: string; // String!
+    getMyProfile: NexusGenRootTypes['Profile']; // Profile!
     getMyProfiles: Array<NexusGenRootTypes['Profile'] | null>; // [Profile]!
-    getProfilesCount: number; // Int!
+    getTokensCount: number; // Int!
     isHandleUnique: boolean; // Boolean!
+    tokenURI: string; // String!
   }
   UploadParams: { // field return type
+    address: string; // String!
     fileName: string; // String!
     handle: string; // String!
+    mime: string; // String!
     uploadType: NexusGenEnums['UploadType']; // UploadType!
     userId: string; // String!
   }
   UploadReturnType: { // field return type
-    imageGateWayURL: string; // String!
-    imageURI: string; // String!
-    metadataGateWayURL: string; // String!
-    metadataURI: string; // String!
+    cid: string; // String!
     storagePath: string; // String!
     storageURL: string; // String!
+    tokenURI: string; // String!
   }
   Wallet: { // field return type
     address: string; // String!
@@ -248,11 +256,9 @@ export interface NexusGenFieldTypes {
 export interface NexusGenFieldTypeNames {
   Account: { // field return type name
     address: 'String'
-    authUid: 'String'
     id: 'ID'
     loggedInProfile: 'Int'
     profiles: 'Profile'
-    testnet: 'Boolean'
     type: 'AccountType'
   }
   AddressActivity: { // field return type name
@@ -275,16 +281,22 @@ export interface NexusGenFieldTypeNames {
   GetAccount: { // field return type name
     account: 'Account'
   }
-  Metadata: { // field return type name
-    fileName: 'String'
+  MetadataCustomProps: { // field return type name
+    contentURI: 'String'
     handle: 'String'
+    owner: 'String'
+    storagePath: 'String'
+    storageURL: 'String'
     type: 'UploadType'
   }
   Mutation: { // field return type name
+    burnToken: 'String'
     createProfileNft: 'CreateProfileResult'
     createWallet: 'CreateWalletResult'
     estimateCreateProfileGas: 'EstimateCreateProfileGasResult'
     hasRole: 'Boolean'
+    setDefaultProfile: 'CreateProfileResult'
+    updateProfileImage: 'CreateProfileResult'
   }
   Profile: { // field return type name
     handle: 'String'
@@ -292,28 +304,28 @@ export interface NexusGenFieldTypeNames {
     isDefault: 'Boolean'
     owner: 'String'
     profileId: 'Int'
-    tokenURI: 'String'
-    uid: 'String'
   }
   Query: { // field return type name
     getMyBalance: 'String'
+    getMyProfile: 'Profile'
     getMyProfiles: 'Profile'
-    getProfilesCount: 'Int'
+    getTokensCount: 'Int'
     isHandleUnique: 'Boolean'
+    tokenURI: 'String'
   }
   UploadParams: { // field return type name
+    address: 'String'
     fileName: 'String'
     handle: 'String'
+    mime: 'String'
     uploadType: 'UploadType'
     userId: 'String'
   }
   UploadReturnType: { // field return type name
-    imageGateWayURL: 'String'
-    imageURI: 'String'
-    metadataGateWayURL: 'String'
-    metadataURI: 'String'
+    cid: 'String'
     storagePath: 'String'
     storageURL: 'String'
+    tokenURI: 'String'
   }
   Wallet: { // field return type name
     address: 'String'
@@ -350,6 +362,9 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
+    burnToken: { // args
+      tokenId: number; // Int!
+    }
     createProfileNft: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
@@ -359,13 +374,25 @@ export interface NexusGenArgTypes {
     hasRole: { // args
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
     }
+    setDefaultProfile: { // args
+      tokenId: number; // Int!
+    }
+    updateProfileImage: { // args
+      input: NexusGenInputs['UpdateProfileImageInput']; // UpdateProfileImageInput!
+    }
   }
   Query: {
     getMyBalance: { // args
       address: string; // String!
     }
+    getMyProfile: { // args
+      profileId: number; // Int!
+    }
     isHandleUnique: { // args
       handle: string; // String!
+    }
+    tokenURI: { // args
+      tokenId: number; // Int!
     }
   }
 }

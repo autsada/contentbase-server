@@ -13,8 +13,6 @@ import {
   ForbiddenError,
 } from 'apollo-server-express'
 
-import { NexusGenObjects } from '../typegen'
-
 const authErrMessage = '*** You must be logged in ***'
 const badRequestErrMessage = 'Bad Request'
 
@@ -24,35 +22,54 @@ export const Role = enumType({
 })
 
 /**
- * @notice
- *
- * @param profileId the id of the profile
- * @param owner the blockchain address that owns the profile
- * @param uid the id of the user doc in Firestore
- * @param handle handle of the profile
- * @param tokenURI ipfs uri of the profile image
- * @param imageURI cloud storage uri of the profile image
+ * A profile object
+ * @param profileId {number} - the id of the profile
+ * @param owner {string} - the blockchain address that owns the profile
+ * @param handle {string} - the handle of the profile
+ * @param imageURI {string} - the uri of the profile image
  * @param isDefault whether the profile is default profile of the user or not
+ *
  */
 export const Profile = objectType({
   name: 'Profile',
   definition(t) {
     t.nonNull.int('profileId')
     t.nonNull.string('owner')
-    t.nonNull.string('uid')
     t.nonNull.string('handle')
-    t.string('tokenURI')
     t.string('imageURI')
     t.nonNull.boolean('isDefault')
   },
 })
 
+/**
+ * An object containing required data to create a profile.
+ * @param handle {string} - a handle
+ * @param imageURI {string} - a uri of the image to be used as a profile image
+ * @param tokenURI {string} - a uri of the metadata file to be used as a token metadata
+ *
+ */
 export const CreateProfileInput = inputObjectType({
   name: 'CreateProfileInput',
   definition(t) {
     t.nonNull.string('handle')
-    t.string('tokenURI')
     t.string('imageURI')
+    t.nonNull.string('tokenURI')
+  },
+})
+
+/**
+ * An object containing required data to update profile image
+ * @param handle {string} - a handle
+ * @param imageURI {string} - a uri of the image to be used as a profile image
+ * @param tokenURI {string} - a uri of the metadata file to be used as a token metadata
+ *
+ */
+export const UpdateProfileImageInput = inputObjectType({
+  name: 'UpdateProfileImageInput',
+  definition(t) {
+    t.nonNull.int('profileId')
+    t.nonNull.string('imageURI')
+    t.nonNull.string('tokenURI')
   },
 })
 
@@ -60,13 +77,6 @@ export const CreateProfileResult = objectType({
   name: 'CreateProfileResult',
   definition(t) {
     t.int('profileId')
-  },
-})
-
-export const HasRoleInput = inputObjectType({
-  name: 'HasRoleInput',
-  definition(t) {
-    t.nonNull.field('role', { type: 'Role' })
   },
 })
 
@@ -93,38 +103,24 @@ export const ProfileQuery = extendType({
     })
 
     /**
-     * @dev Get total profiles count of the contract
-     */
-    t.field('getProfilesCount', {
-      type: nonNull('Int'),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          const { profilesCount } =
-            await dataSources.blockchainAPI.getTotalProfiles()
-
-          return profilesCount
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
      * @dev Get profiles of a specific address
      */
     t.field('getMyProfiles', {
       type: nonNull(list('Profile')),
       async resolve(_root, _args, { dataSources, user }) {
         try {
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
 
-          // Get user's wallet
-          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-          if (!wallet || !wallet.address || !wallet.key)
-            throw new ForbiddenError('Forbidden')
+          // // Get user's wallet
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new ForbiddenError('Forbidden')
 
-          const { address, key } = wallet
+          // const { address, key } = wallet
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
 
           const { profiles } = await dataSources.blockchainAPI.getMyProfiles(
             address,
@@ -137,6 +133,42 @@ export const ProfileQuery = extendType({
         }
       },
     })
+
+    /**
+     * @dev Get a profile by id
+     */
+    t.field('getMyProfile', {
+      type: nonNull('Profile'),
+      args: { profileId: nonNull('Int') },
+      async resolve(_root, { profileId }, { dataSources, user }) {
+        try {
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
+
+          // // Get user's wallet
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new ForbiddenError('Forbidden')
+
+          // const { key } = wallet
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
+
+          const { profile } = await dataSources.blockchainAPI.getProfile(
+            profileId,
+            key
+          )
+
+          console.log('profile -->', profile)
+
+          return profile
+        } catch (error) {
+          console.log('error -->', error)
+          throw error
+        }
+      },
+    })
   },
 })
 
@@ -144,44 +176,10 @@ export const ProfileMutation = extendType({
   type: 'Mutation',
   definition(t) {
     /**
-     * @dev Check if an address has a specific role
-     */
-    t.field('hasRole', {
-      type: nonNull('Boolean'),
-      args: { data: nonNull('HasRoleInput') },
-      async resolve(_roote, { data }, { dataSources, user }) {
-        try {
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-
-          if (!data) throw new UserInputError(badRequestErrMessage)
-          const { role } = data
-
-          // Get user's wallet
-          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-          if (!wallet) throw new ForbiddenError('Forbidden')
-
-          const { address, key } = wallet
-          if (!address || !key) throw new ForbiddenError('Forbidden')
-
-          const { hasRole } = await dataSources.blockchainAPI.hasRole({
-            key,
-            address,
-            role,
-          })
-
-          return hasRole
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
      * @dev The process to create profile nft for users who signed in with traditional providers (phone | email | google).
      * @param handle a handle of the user.
-     * @param tokenURI a url point the image on ipfs, can be empty string
-     * @param imageURI a url point to an image saved on cloud storage, can be empty string
+     * @param imageURI a uri of the image to be used as a profile image, can be empty
+     * @param tokenURI  a uri of the metadata file to be used as a token metadata
      */
     t.field('createProfileNft', {
       type: nonNull('CreateProfileResult'),
@@ -189,15 +187,16 @@ export const ProfileMutation = extendType({
       async resolve(_root, { input }, { dataSources, user }) {
         try {
           // User must be already logged in
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
 
-          // Check if handle is given
+          // Check if handle and tokenURI are given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, tokenURI, imageURI } = input
+          const { handle, imageURI, tokenURI } = input
 
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle || !tokenURI)
+            throw new UserInputError(badRequestErrMessage)
 
           // Check if handle has correct length and unique
           const isHandleUnique = await dataSources.blockchainAPI.verifyHandle(
@@ -206,42 +205,36 @@ export const ProfileMutation = extendType({
 
           if (!isHandleUnique) throw new UserInputError('This handle is taken')
 
-          // Get user's wallet from Firestore
-          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+          // // Get user's wallet from Firestore
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
 
-          // Throw error if user doesn't have wallet yet
-          if (!wallet || !wallet.address || !wallet.key)
-            throw new Error('No Wallet Found')
+          // // Throw error if user doesn't have wallet yet
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new Error('No Wallet Found')
 
-          // Get user's account from Firestore
-          const { account } = await dataSources.firestoreAPI.getAccount(uid)
-          if (!account) throw new Error('No Account Found')
+          // // Get user's account from Firestore
+          // const { account } = await dataSources.firestoreAPI.getAccount(uid)
+          // if (!account) throw new Error('No Account Found')
 
-          // Verify the address is correct
-          if (wallet.address !== account.address)
-            throw new ForbiddenError('Forbidden')
+          // // Verify the address is correct
+          // if (wallet.address !== account.address)
+          //   throw new ForbiddenError('Forbidden')
 
-          const { address, loggedInProfile } = account
+          // const { address, loggedInProfile, profiles } = account
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
 
-          // Get user's profiles from blockchain
-          const { profiles } = await dataSources.blockchainAPI.getMyProfiles(
-            address,
-            wallet.key
-          )
-          const isDefault = !profiles || profiles.length === 0
-
-          // Construct raw profile object
-          const rawProfile = {
-            uid,
-            isDefault,
-            handle,
-            tokenURI: tokenURI || '',
-            imageURI: imageURI || '',
-          }
+          // Create a profile
           const createProfileResult =
             await dataSources.blockchainAPI.createProfileNft({
-              key: wallet.key,
-              data: rawProfile,
+              // key: wallet.key,
+              key,
+              data: {
+                handle,
+                imageURI: imageURI || '',
+                tokenURI,
+              },
             })
 
           if (!createProfileResult)
@@ -249,23 +242,184 @@ export const ProfileMutation = extendType({
               'Error occured while attempting to create a profile nft.'
             )
 
-          const profileId = createProfileResult.profileId
+          const { profileId, isDefault } = createProfileResult
 
-          // Update user's account in Firestore
-          const newProfile: NexusGenObjects['Profile'] = {
-            profileId,
-            owner: address,
-            ...rawProfile,
-          }
+          // // Update user's account in Firestore
+          // const newProfile: NexusGenObjects['Profile'] = {
+          //   profileId,
+          //   owner: address,
+          //   handle,
+          //   imageURI: imageURI || '',
+          //   isDefault,
+          // }
 
-          await dataSources.firestoreAPI.updateAccount({
-            docId: account.id,
-            data: {
-              profiles: !profiles ? [newProfile] : [...profiles, newProfile],
-              // Set logged in profile
-              loggedInProfile: !loggedInProfile ? profileId : loggedInProfile,
-            },
-          })
+          // await dataSources.firestoreAPI.updateAccount({
+          //   docId: account.id,
+          //   data: {
+          //     profiles: !profiles ? [newProfile] : [...profiles, newProfile],
+          //     // Set logged in profile
+          //     loggedInProfile: !loggedInProfile ? profileId : loggedInProfile,
+          //   },
+          // })
+
+          return { profileId }
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev The process to update profile for users who signed in with traditional providers (phone | email | google).
+     * @param profileId an id of the profile to be updated.
+     * @param imageURI a uri of the image to be used as a new profile image
+     * @param tokenURI  a uri of the metadata file to be used as a token metadata
+     */
+    t.field('updateProfileImage', {
+      type: nonNull('CreateProfileResult'),
+      args: { input: nonNull('UpdateProfileImageInput') },
+      async resolve(_root, { input }, { dataSources, user }) {
+        try {
+          // User must be already logged in
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
+
+          // Check if handle and tokenURI are given
+          if (!input) throw new UserInputError(badRequestErrMessage)
+
+          const { profileId: tokenId, imageURI, tokenURI } = input
+
+          if (!tokenId || !imageURI || !tokenURI)
+            throw new UserInputError(badRequestErrMessage)
+
+          // // Get user's wallet from Firestore
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+
+          // // Throw error if user doesn't have wallet yet
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new Error('No Wallet Found')
+
+          // // Get user's account from Firestore
+          // const { account } = await dataSources.firestoreAPI.getAccount(uid)
+          // if (!account) throw new Error('No Account Found')
+
+          // // Verify the address is correct
+          // if (wallet.address !== account.address)
+          //   throw new ForbiddenError('Forbidden')
+
+          // const { address, loggedInProfile, profiles } = account
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
+
+          // Create a profile
+          const updateProfileResult =
+            await dataSources.blockchainAPI.updateProfileImage({
+              // key: wallet.key,
+              key,
+              profileId: tokenId,
+              data: {
+                imageURI,
+                tokenURI,
+              },
+            })
+
+          if (!updateProfileResult)
+            throw new Error(
+              'Error occured while attempting to update profile image.'
+            )
+
+          const { profileId } = updateProfileResult
+
+          // // Update user's account in Firestore
+          // const updatedProfiles = profiles.map(profile => {
+          //  if (profile.profileId !== tokenId) return profile
+          //  return ({
+          //    ...profile,
+          //    imageURI
+          // })
+          // })
+
+          // await dataSources.firestoreAPI.updateAccount({
+          //   docId: account.id,
+          //   data: {
+          //     profiles: updatedProfiles
+          //   },
+          // })
+
+          return { profileId }
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev The process to set profile as default for users who signed in with traditional providers (phone | email | google).
+     * @param profileId an id of the profile to be updated.
+     */
+    t.field('setDefaultProfile', {
+      type: nonNull('CreateProfileResult'),
+      args: { tokenId: nonNull('Int') },
+      async resolve(_root, { tokenId }, { dataSources, user }) {
+        try {
+          // User must be already logged in
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
+
+          // Check if handle and tokenURI are given
+          if (!tokenId) throw new UserInputError(badRequestErrMessage)
+
+          // // Get user's wallet from Firestore
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+
+          // // Throw error if user doesn't have wallet yet
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new Error('No Wallet Found')
+
+          // // Get user's account from Firestore
+          // const { account } = await dataSources.firestoreAPI.getAccount(uid)
+          // if (!account) throw new Error('No Account Found')
+
+          // // Verify the address is correct
+          // if (wallet.address !== account.address)
+          //   throw new ForbiddenError('Forbidden')
+
+          // const { address, loggedInProfile, profiles } = account
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
+
+          // Create a profile
+          const updateProfileResult =
+            await dataSources.blockchainAPI.setProfileAsDefault({
+              // key: wallet.key,
+              key,
+              profileId: tokenId,
+            })
+
+          if (!updateProfileResult)
+            throw new Error(
+              'Error occured while attempting to update profile image.'
+            )
+
+          const { profileId } = updateProfileResult
+
+          // // Update user's account in Firestore
+          // const updatedProfiles = profiles.map(profile => {
+          //  if (profile.profileId !== tokenId) return ({...profile, isDefault: false})
+          //  return ({
+          //    ...profile,
+          //    isDefault: true
+          // })
+          // })
+
+          // await dataSources.firestoreAPI.updateAccount({
+          //   docId: account.id,
+          //   data: {
+          //     profiles: updatedProfiles
+          //   },
+          // })
 
           return { profileId }
         } catch (error) {
@@ -282,16 +436,17 @@ export const ProfileMutation = extendType({
       args: { input: nonNull('CreateProfileInput') },
       async resolve(_roote, { input }, { dataSources, user }) {
         try {
-          // User must be already logged in
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user?.uid
+          // // User must be already logged in
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user?.uid
 
           // Check if handle is given
           if (!input) throw new UserInputError(badRequestErrMessage)
 
-          const { handle, tokenURI, imageURI } = input
+          const { handle, imageURI, tokenURI } = input
 
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle || !tokenURI)
+            throw new UserInputError(badRequestErrMessage)
 
           // Check if handle has correct length and unique
           const isHandleUnique = await dataSources.blockchainAPI.verifyHandle(
@@ -300,22 +455,24 @@ export const ProfileMutation = extendType({
 
           if (!isHandleUnique) throw new UserInputError('The handle is taken')
 
-          // Get user's wallet from Firestore
-          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+          // // Get user's wallet from Firestore
+          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
 
-          // Throw error if user doesn't have wallet yet
-          if (!wallet || !wallet.address || !wallet.key)
-            throw new Error('No Wallet Found')
+          // // Throw error if user doesn't have wallet yet
+          // if (!wallet || !wallet.address || !wallet.key)
+          //   throw new Error('No Wallet Found')
+          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
+          const key =
+            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
 
           const estimateGasResult =
             await dataSources.blockchainAPI.estimateCreateProfileGas({
-              key: wallet.key,
+              // key: wallet.key,
+              key,
               data: {
-                uid,
-                isDefault: true, // Assume its's true
                 handle,
-                tokenURI: tokenURI || '',
                 imageURI: imageURI || '',
+                tokenURI,
               },
             })
 

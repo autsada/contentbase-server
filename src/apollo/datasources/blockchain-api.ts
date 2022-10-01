@@ -10,11 +10,18 @@ const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
 export interface CreateProfileNftArgs {
   key: string
   data: {
-    uid: string
-    isDefault: boolean
     handle: string
-    tokenURI: string
     imageURI: string
+    tokenURI: string
+  }
+}
+
+export interface UpdateProfileImageArgs {
+  key: string
+  profileId: number
+  data: {
+    imageURI: string
+    tokenURI: string
   }
 }
 
@@ -22,10 +29,10 @@ export class BlockchainAPI extends RESTDataSource {
   constructor() {
     super()
     this.baseURL =
-      (NODE_ENV as Environment) === 'production' ||
-      (NODE_ENV as Environment) === 'staging'
-        ? KMS_PROD_BASE_URL
-        : KMS_DEV_BASE_URL!
+      (NODE_ENV as Environment) === 'development'
+        ? KMS_DEV_BASE_URL!
+        : KMS_PROD_BASE_URL!
+
     this.willSendRequest = async (req: RequestOptions) => {
       const token = await authClient.getIdToken()
       req.headers.set('x-access-key', KMS_ACCESS_KEY!)
@@ -43,6 +50,21 @@ export class BlockchainAPI extends RESTDataSource {
   }
 
   /**
+   * @dev Check if an address has specified role
+   */
+  async hasRole({
+    role,
+    address,
+    key,
+  }: {
+    role: NexusGenEnums['Role']
+    address: string
+    key: string
+  }): Promise<{ hasRole: boolean }> {
+    return this.post(`/tokens/check-role`, { role, address, key })
+  }
+
+  /**
    * @dev Get balance of a specific address
    */
   async getMyBalance(address: string): Promise<{ balance: string }> {
@@ -50,17 +72,25 @@ export class BlockchainAPI extends RESTDataSource {
   }
 
   /**
+   * @dev Get all NFTs count of the contract
+   */
+  async getTokensCount(): Promise<{ tokensCount: number }> {
+    return this.get('/tokens/total')
+  }
+
+  /**
+   * @dev Get tokenURI of a token
+   * @param tokenId {number}
+   */
+  async getTokenURI(tokenId: number): Promise<{ tokenURI: string }> {
+    return this.get(`/tokens/${encodeURIComponent(tokenId)}`)
+  }
+
+  /**
    * @dev Call validate handle on the contract which will validate length and uniqueness
    */
   async verifyHandle(handle: string): Promise<{ isHandleUnique: boolean }> {
     return this.post('/profiles/verifyHandle', { handle })
-  }
-
-  /**
-   * @dev Get all profiles count of the contract
-   */
-  async getTotalProfiles(): Promise<{ profilesCount: number }> {
-    return this.get('/profiles/total')
   }
 
   /**
@@ -78,37 +108,73 @@ export class BlockchainAPI extends RESTDataSource {
   }
 
   /**
+   * @dev Get one profile by id
+   */
+  async getProfile(
+    profileId: number,
+    key: string
+  ): Promise<{ profile: NexusGenObjects['Profile'] }> {
+    return this.get(
+      `/profiles/profileId/${encodeURIComponent(
+        profileId
+      )}/key/${encodeURIComponent(key)}`
+    )
+  }
+
+  /**
    * @dev Create profile nft
+   * {key} - encrypted private key
+   * {data} - {handle, imageURI, tokenURI}
    */
   async createProfileNft({
     key,
     data,
-  }: CreateProfileNftArgs): Promise<{ profileId: number }> {
-    try {
-      const result = await this.post('/profiles/create', {
-        key,
-        data,
-      })
-
-      return result
-    } catch (error) {
-      throw error
-    }
+  }: CreateProfileNftArgs): Promise<{ profileId: number; isDefault: boolean }> {
+    return this.post('/profiles/create', {
+      key,
+      data,
+    })
   }
 
   /**
-   * @dev Check if an address has specified role
+   * @dev Update profile image
+   * {key} - encrypted private key
+   * {profileId} - id of the profile
+   * {data} - {imageURI, tokenURI}
    */
-  async hasRole({
-    role,
-    address,
+  async updateProfileImage({
     key,
+    profileId,
+    data: { imageURI, tokenURI },
+  }: UpdateProfileImageArgs): Promise<{ profileId: number }> {
+    return this.post(
+      `/profiles/update/profileId/${encodeURIComponent(
+        profileId
+      )}/key/${encodeURIComponent(key)}`,
+      {
+        imageURI,
+        tokenURI,
+      }
+    )
+  }
+
+  /**
+   * @dev Set a profile as default
+   * {key} - encrypted private key
+   * {profileId} - id of the profile
+   */
+  async setProfileAsDefault({
+    key,
+    profileId,
   }: {
-    role: NexusGenEnums['Role']
-    address: string
     key: string
-  }): Promise<{ hasRole: boolean }> {
-    return this.post(`/profiles/check-role`, { role, address, key })
+    profileId: number
+  }): Promise<{ profileId: number }> {
+    return this.post(
+      `/profiles/set-default/profileId/${encodeURIComponent(
+        profileId
+      )}/key/${encodeURIComponent(key)}`
+    )
   }
 
   // async createCryptoKey(): Promise<{ keyName: string }> {
@@ -124,5 +190,24 @@ export class BlockchainAPI extends RESTDataSource {
       key,
       data,
     })
+  }
+
+  /**
+   * @dev A function to burn token
+   * {key} - encrypted private key
+   * {tokenId} - id of the token
+   */
+  async burnToken({
+    key,
+    tokenId,
+  }: {
+    key: string
+    tokenId: number
+  }): Promise<{ status: 'Ok' }> {
+    return this.delete(
+      `/tokens/burn/tokenId/${encodeURIComponent(
+        tokenId
+      )}/key/${encodeURIComponent(key)}`
+    )
   }
 }

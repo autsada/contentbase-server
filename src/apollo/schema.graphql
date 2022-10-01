@@ -4,11 +4,9 @@
 
 type Account {
   address: String!
-  authUid: String!
   id: ID!
   loggedInProfile: Int!
   profiles: [Profile!]!
-  testnet: Boolean!
   type: AccountType!
 }
 
@@ -29,7 +27,7 @@ type AddressActivity {
 input CreateProfileInput {
   handle: String!
   imageURI: String
-  tokenURI: String
+  tokenURI: String!
 }
 
 type CreateProfileResult {
@@ -52,17 +50,23 @@ input HasRoleInput {
   role: Role!
 }
 
-type Metadata {
-  fileName: String!
+type MetadataCustomProps {
+  contentURI: String
   handle: String!
+  owner: String!
+  storagePath: String
+  storageURL: String!
   type: UploadType!
 }
 
 type Mutation {
+  burnToken(tokenId: Int!): String!
   createProfileNft(input: CreateProfileInput!): CreateProfileResult!
   createWallet: CreateWalletResult!
   estimateCreateProfileGas(input: CreateProfileInput!): EstimateCreateProfileGasResult!
   hasRole(data: HasRoleInput!): Boolean!
+  setDefaultProfile(tokenId: Int!): CreateProfileResult!
+  updateProfileImage(input: UpdateProfileImageInput!): CreateProfileResult!
 }
 
 type Profile {
@@ -71,15 +75,15 @@ type Profile {
   isDefault: Boolean!
   owner: String!
   profileId: Int!
-  tokenURI: String
-  uid: String!
 }
 
 type Query {
   getMyBalance(address: String!): String!
+  getMyProfile(profileId: Int!): Profile!
   getMyProfiles: [Profile]!
-  getProfilesCount: Int!
+  getTokensCount: Int!
   isHandleUnique(handle: String!): Boolean!
+  tokenURI(tokenId: Int!): String!
 }
 
 enum Role {
@@ -88,20 +92,26 @@ enum Role {
   UPGRADER_ROLE
 }
 
+input UpdateProfileImageInput {
+  imageURI: String!
+  profileId: Int!
+  tokenURI: String!
+}
+
 type UploadParams {
+  address: String!
   fileName: String!
   handle: String!
+  mime: String!
   uploadType: UploadType!
   userId: String!
 }
 
 type UploadReturnType {
-  imageGateWayURL: String!
-  imageURI: String!
-  metadataGateWayURL: String!
-  metadataURI: String!
+  cid: String!
   storagePath: String!
   storageURL: String!
+  tokenURI: String!
 }
 
 enum UploadType {

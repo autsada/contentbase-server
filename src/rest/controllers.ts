@@ -1,15 +1,8 @@
 import type { Request, Response } from 'express'
 import convert from 'heic-convert'
+import type { TokenInput } from 'nft.storage/dist/src/token'
 
-import {
-  upload,
-  createMetadataFile,
-  createUploadFile,
-  metadataFileName,
-  createGateWayURL,
-  createURI,
-  uploadFileToStorage,
-} from '../lib'
+import { createUploadFile, uploadToIpfs, uploadFileToStorage } from '../lib'
 import type { NexusGenObjects } from '../apollo/typegen'
 
 /**
@@ -21,15 +14,16 @@ import type { NexusGenObjects } from '../apollo/typegen'
  */
 export async function uploadProfileImage(req: Request, res: Response) {
   try {
-    const { userId, fileName, handle } = req.body as Pick<
+    const { userId, address, fileName, handle, mime } = req.body as Pick<
       NexusGenObjects['UploadParams'],
-      'userId' | 'fileName' | 'handle'
+      'userId' | 'address' | 'fileName' | 'handle' | 'mime'
     >
 
     const file = req.file
     if (!file) throw new Error('Bad request')
 
     let imageName = fileName
+    let mimeType = mime
 
     // Construct image file
     let buffer = file.buffer
@@ -45,30 +39,10 @@ export async function uploadProfileImage(req: Request, res: Response) {
 
       // Change file extension
       imageName = imageName.split('.')[0] + '.JPEG'
+      mimeType = 'image/jpeg'
     }
 
-    const imageFile = createUploadFile([buffer], imageName)
-
-    // Construct metadata file
-    const metadata: NexusGenObjects['Metadata'] = {
-      handle,
-      fileName,
-      type: 'avatar',
-    }
-    const metadataFile = createMetadataFile(metadata)
-
-    // Construct upload name
-    const timeStamp = new Date().toISOString()
-    const uploadName = `${userId}/${handle}/avatar/${timeStamp}`
-
-    const cid = await upload({ files: [imageFile, metadataFile], uploadName })
-
-    // Returns image and metadata urls
-    const metadataGateWayURL = createGateWayURL(cid, metadataFileName)
-    const metadataURI = createURI(cid, metadataFileName)
-    const imageGateWayURL = createGateWayURL(cid, imageName)
-    const imageURI = createURI(cid, imageName)
-
+    // 1. Upload to cloud storage
     const { storagePath, storageURL } = await uploadFileToStorage({
       userId,
       handle,
@@ -77,11 +51,34 @@ export async function uploadProfileImage(req: Request, res: Response) {
       fileName: imageName,
     })
 
+    // 2. Upload to ipfs (nft.storage)
+    // 2.1 Create an image file
+    const image = createUploadFile([buffer], imageName, mimeType)
+
+    // 2.2 Create additional properties
+    const properties: NexusGenObjects['MetadataCustomProps'] = {
+      handle,
+      owner: address,
+      type: 'avatar',
+      contentURI: '',
+      storageURL,
+      storagePath,
+    }
+
+    // 2.3 Construct metadata object
+    const token: TokenInput = {
+      image,
+      name: 'Profile Image',
+      description: `A profile image of @${handle}.`,
+      properties,
+    }
+
+    // Upload image and metadata to nft.storage
+    const { ipnft, url } = await uploadToIpfs(token)
+
     res.status(200).json({
-      metadataGateWayURL,
-      metadataURI,
-      imageGateWayURL,
-      imageURI,
+      cid: ipnft,
+      tokenURI: url,
       storagePath,
       storageURL,
     })
