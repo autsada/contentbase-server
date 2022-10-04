@@ -43,3 +43,7 @@ export const bucket = getStorage(firebaseApp).bucket(FIREBASE_STORAGE_BUCKET)
 export const accountsCollection = 'accounts'
 export const walletsCollection = 'wallets'
 export const activitiesCollection = 'activities'
+export const profilesCollection = 'profiles'
+export const publishesCollection = 'publishes'
+export const followsCollection = 'follows'
+export const likesCollection = 'likes'

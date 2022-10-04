@@ -5,8 +5,10 @@ import { NexusGenObjects } from '../typegen'
 import {
   accountsCollection,
   walletsCollection,
+  profilesCollection,
   getDocById,
   createDocRef,
+  createDoc,
   createDocWithId,
   updateDocById,
 } from '../../lib'
@@ -105,18 +107,18 @@ export class FirestoreAPI extends DataSource {
    */
   async createAccount(
     id: string,
-    data: Pick<NexusGenObjects['Account'], 'address' | 'profiles' | 'type'>
+    data: Pick<NexusGenObjects['Account'], 'address' | 'type'>
   ) {
-    const { address, profiles, type } = data
+    const { address, type } = data
+
     return createDocWithId<
-      Pick<NexusGenObjects['Account'], 'address' | 'profiles' | 'type'>
+      Pick<NexusGenObjects['Account'], 'address' | 'type'>
     >({
       db: this.db,
       collectionName: accountsCollection,
       docId: id || '',
       data: {
         address,
-        profiles,
         type,
       },
     })
@@ -132,6 +134,29 @@ export class FirestoreAPI extends DataSource {
     return updateDocById<Partial<NexusGenObjects['Account']>>({
       db: this.db,
       collectionName: accountsCollection,
+      docId,
+      data,
+    })
+  }
+
+  async createProfileDoc(data: NexusGenObjects['Token']) {
+    return createDoc<NexusGenObjects['Token']>({
+      db: this.db,
+      collectionName: profilesCollection,
+      data,
+    })
+  }
+
+  async updateProfileDoc({
+    docId,
+    data,
+  }: {
+    docId: string
+    data: Partial<NexusGenObjects['Token']>
+  }) {
+    return updateDocById<Partial<NexusGenObjects['Token']>>({
+      db: this.db,
+      collectionName: profilesCollection,
       docId,
       data,
     })

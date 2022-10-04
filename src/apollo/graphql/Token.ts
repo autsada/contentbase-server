@@ -14,6 +14,55 @@ import {
 const authErrMessage = '*** You must be logged in ***'
 const badRequestErrMessage = 'Bad Request'
 
+export const Role = enumType({
+  name: 'Role',
+  members: ['DEFAULT_ADMIN_ROLE', 'ADMIN_ROLE', 'UPGRADER_ROLE'],
+})
+
+/**
+ * Type of token
+ */
+export const TokenType = enumType({
+  name: 'TokenType',
+  members: ['Profile', 'Publish', 'Follow', 'Like'],
+})
+
+/**
+ * Token's visibility
+ * @dev UNSET - for Profile, Follow, Like tokens
+ * @dev ON/OFF - for Publish tokens
+ */
+export const TokenVisibility = enumType({
+  name: 'TokenVisibility',
+  members: ['UNSET', 'ON', 'OFF'],
+})
+
+/**
+ * A Token object
+ * @param tokenId {number} - an id of the token
+ * @param associatedId {number} - an id of the associated token of the token
+ * @param owner {string} - a blockchain address that owns the token
+ * @param tokenType {enum} - a type of the token
+ * @param visibility {enum} - a token's visibility
+ * @param handle {string} - a handle that owns the token
+ * @param imageURI {string} - an image uri of the token, for Profile it's a profile image uri, for Publish it's a preview image uri, empty string for Follow and Like
+ * @param contentURI {string} - a content uri of the token, it's a uri of the content for Publish and empty for other tokens
+ *
+ */
+export const Token = objectType({
+  name: 'Token',
+  definition(t) {
+    t.nonNull.int('tokenId')
+    t.nonNull.int('associatedId')
+    t.nonNull.string('owner')
+    t.nonNull.field('tokenType', { type: 'TokenType' })
+    t.nonNull.field('visibility', { type: 'TokenVisibility' })
+    t.nonNull.string('handle')
+    t.nonNull.string('imageURI')
+    t.nonNull.string('contentURI')
+  },
+})
+
 export const HasRoleInput = inputObjectType({
   name: 'HasRoleInput',
   definition(t) {
@@ -84,7 +133,7 @@ export const TokenQuery = extendType({
      */
     t.field('getTokensCount', {
       type: nonNull('Int'),
-      async resolve(_root, _args, { dataSources }) {
+      async resolve(_root, _args, { dataSources, user }) {
         try {
           const { tokensCount } =
             await dataSources.blockchainAPI.getTokensCount()
@@ -158,7 +207,8 @@ export const TokenMutation = extendType({
     })
 
     /**
-     * @dev Burn token
+     * A function to burn token
+     * @param tokenId {number} - a token id to be burned
      */
     t.field('burnToken', {
       type: nonNull('String'),

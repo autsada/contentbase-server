@@ -21,11 +21,7 @@ export const Account = objectType({
   name: 'Account',
   definition(t) {
     t.nonNull.id('id')
-    t.nonNull.field('profiles', {
-      type: nonNull(list(nonNull('Profile'))),
-    })
     t.nonNull.string('address')
-    t.nonNull.int('loggedInProfile')
     t.nonNull.field('type', { type: 'AccountType' })
   },
 })
@@ -155,7 +151,7 @@ export const AccountQuery = extendType({
 
           if (!address) throw new UserInputError(badRequestErrMessage)
 
-          const { balance } = await dataSources.blockchainAPI.getMyBalance(
+          const { balance } = await dataSources.blockchainAPI.getBalance(
             address
           )
 
@@ -204,7 +200,6 @@ export const AccountMutation = extendType({
           // Save wallet to user's account
           await dataSources.firestoreAPI.createAccount(uid, {
             address: address.toLowerCase(),
-            profiles: [], // Important to set profiles field to an empty array at the first time account is created
             type: 'traditional',
           })
 

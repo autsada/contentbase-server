@@ -5,8 +5,6 @@
 type Account {
   address: String!
   id: ID!
-  loggedInProfile: Int!
-  profiles: [Profile!]!
   type: AccountType!
 }
 
@@ -28,10 +26,6 @@ input CreateProfileInput {
   handle: String!
   imageURI: String
   tokenURI: String!
-}
-
-type CreateProfileResult {
-  profileId: Int
 }
 
 type CreateWalletResult {
@@ -61,26 +55,19 @@ type MetadataCustomProps {
 
 type Mutation {
   burnToken(tokenId: Int!): String!
-  createProfileNft(input: CreateProfileInput!): CreateProfileResult!
+  createProfileNft(input: CreateProfileInput!): Token!
   createWallet: CreateWalletResult!
   estimateCreateProfileGas(input: CreateProfileInput!): EstimateCreateProfileGasResult!
   hasRole(data: HasRoleInput!): Boolean!
-  setDefaultProfile(tokenId: Int!): CreateProfileResult!
-  updateProfileImage(input: UpdateProfileImageInput!): CreateProfileResult!
-}
-
-type Profile {
-  handle: String!
-  imageURI: String
-  isDefault: Boolean!
-  owner: String!
-  profileId: Int!
+  setDefaultProfile(input: SetDefaultProfileInput!): Int!
+  updateProfileImage(input: UpdateProfileImageInput!): Token!
 }
 
 type Query {
+  getDefaultProfile: Token!
   getMyBalance(address: String!): String!
-  getMyProfile(profileId: Int!): Profile!
-  getMyProfiles: [Profile]!
+  getMyProfiles: [Token]!
+  getProfile(profileId: Int!): Token!
   getTokensCount: Int!
   isHandleUnique(handle: String!): Boolean!
   tokenURI(tokenId: Int!): String!
@@ -92,7 +79,37 @@ enum Role {
   UPGRADER_ROLE
 }
 
+input SetDefaultProfileInput {
+  docId: String!
+  profileId: Int!
+}
+
+type Token {
+  associatedId: Int!
+  contentURI: String!
+  handle: String!
+  imageURI: String!
+  owner: String!
+  tokenId: Int!
+  tokenType: TokenType!
+  visibility: TokenVisibility!
+}
+
+enum TokenType {
+  Follow
+  Like
+  Profile
+  Publish
+}
+
+enum TokenVisibility {
+  OFF
+  ON
+  UNSET
+}
+
 input UpdateProfileImageInput {
+  docId: String!
   imageURI: String!
   profileId: Int!
   tokenURI: String!
