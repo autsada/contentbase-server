@@ -1,18 +1,11 @@
-import {
-  objectType,
-  enumType,
-  extendType,
-  nonNull,
-  stringArg,
-  list,
-  inputObjectType,
-} from 'nexus'
+import { extendType, nonNull, stringArg, list, inputObjectType } from 'nexus'
 import {
   AuthenticationError,
   UserInputError,
   ForbiddenError,
 } from 'apollo-server-express'
 
+import { profilesCollection } from '../../lib'
 import type { NexusGenObjects } from '../typegen'
 
 const authErrMessage = '*** You must be logged in ***'
@@ -38,8 +31,8 @@ export const CreateProfileInput = inputObjectType({
  * An object containing required data to update profile image
  * @param docId {string} - a document id of the profiles collection in Firestore
  * @param profileId {number} - a token id of the profile token
- * @param imageURI {string} - a uri of the image to be used as a profile image
  * @param tokenURI {string} - a uri of the token's metadata
+ * @param imageURI {string} - a uri of the image to be used as a profile image
  *
  */
 export const UpdateProfileImageInput = inputObjectType({
@@ -47,22 +40,8 @@ export const UpdateProfileImageInput = inputObjectType({
   definition(t) {
     t.nonNull.string('docId')
     t.nonNull.int('profileId')
-    t.nonNull.string('imageURI')
     t.nonNull.string('tokenURI')
-  },
-})
-
-/**
- * An object containing required data to update profile image
- * @param docId {string} - a document id of the profiles collection in Firestore
- * @param profileId {number} - a token id of the profile token
- *
- */
-export const SetDefaultProfileInput = inputObjectType({
-  name: 'SetDefaultProfileInput',
-  definition(t) {
-    t.nonNull.string('docId')
-    t.nonNull.int('profileId')
+    t.string('imageURI')
   },
 })
 
@@ -71,6 +50,7 @@ export const ProfileQuery = extendType({
   definition(t) {
     /**
      * @dev If true the handle is unique and valid
+     * @param handle
      */
     t.field('isHandleUnique', {
       type: nonNull('Boolean'),
@@ -79,8 +59,9 @@ export const ProfileQuery = extendType({
         try {
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
+          // Has to lowercase the handle before sending to the blockchain
           const { isHandleUnique } =
-            await dataSources.blockchainAPI.verifyHandle(handle)
+            await dataSources.blockchainAPI.verifyHandle(handle.toLowerCase())
           return isHandleUnique
         } catch (error) {
           throw error
@@ -89,7 +70,7 @@ export const ProfileQuery = extendType({
     })
 
     /**
-     * @dev Get profiles of a specific address
+     * @dev Get profiles of a user
      */
     t.field('getMyProfiles', {
       type: nonNull(list('Token')),
@@ -123,27 +104,14 @@ export const ProfileQuery = extendType({
 
     /**
      * @dev Get a profile by id
+     * @param profileId - a token id
      */
     t.field('getProfile', {
       type: nonNull('Token'),
       args: { profileId: nonNull('Int') },
-      async resolve(_root, { profileId }, { dataSources, user }) {
+      async resolve(_root, { profileId }, { dataSources }) {
         try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
-
-          // // Get user's wallet
-          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-          // if (!wallet || !wallet.address || !wallet.key)
-          //   throw new ForbiddenError('Forbidden')
-
-          // const { key } = wallet
-          const address = '0x70997970C51812dc3A010C7d01b50e0d17dc79C8'
-          const key =
-            '0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d'
-
           const { token } = await dataSources.blockchainAPI.getProfile(
-            key,
             profileId
           )
 
@@ -192,9 +160,7 @@ export const ProfileMutation = extendType({
   definition(t) {
     /**
      * @dev The process to create profile nft for users who signed in with traditional providers (phone | email | google).
-     * @param handle a handle of the user.
-     * @param imageURI a uri of the image to be used as a profile image, can be empty
-     * @param tokenURI  a uri of the token's metadata
+     * @param input - refer to CreateProfileInput type
      */
     t.field('createProfileNft', {
       type: nonNull('Token'),
@@ -257,8 +223,16 @@ export const ProfileMutation = extendType({
 
           if (!token) throw new Error('Create profile nft failed.')
 
-          // Save new token in Firestore
-          // await dataSources.firestoreAPI.createProfileDoc(token)
+          // Save new token in Firestore (profiles collection), must include original handle (the handle before lowercase prefixed with "@") for displaying on the UI
+          // await dataSources.firestoreAPI.createTokenDoc<
+          //   NexusGenObjects['Token'] & { displayedHandle: string }
+          // >({
+          //   collectionName: profilesCollection,
+          //   data: {
+          //     ...token,
+          //     displayedHandle: `@${handle}`,
+          //   },
+          // })
 
           return token
         } catch (error) {
@@ -269,9 +243,7 @@ export const ProfileMutation = extendType({
 
     /**
      * @dev The process to update profile for users who signed in with traditional providers (phone | email | google).
-     * @param profileId an id of the profile to be updated.
-     * @param imageURI a uri of the image to be used as a new profile image
-     * @param tokenURI  a uri of the metadata file to be used as a token metadata
+     * @param input - refer to UpdateProfileImageInput type
      */
     t.field('updateProfileImage', {
       type: nonNull('Token'),
@@ -324,7 +296,10 @@ export const ProfileMutation = extendType({
           if (!token) throw new Error('Update profile image failed.')
 
           // // Update the profile doc in Firestore
-          // await dataSources.firestoreAPI.updateProfileDoc({
+          // await dataSources.firestoreAPI.updateTokenDoc<
+          //   NexusGenObjects['Token']
+          // >({
+          //   collectionName: profilesCollection,
           //   docId,
           //   data: token,
           // })
@@ -338,21 +313,18 @@ export const ProfileMutation = extendType({
 
     /**
      * @dev The process to set profile as default for users who signed in with traditional providers (phone | email | google).
-     * @param profileId an id of the profile to be updated.
+     * @param input - refer to SetDefaultProfileInput type
      */
     t.field('setDefaultProfile', {
       type: nonNull('Int'),
-      args: { input: nonNull('SetDefaultProfileInput') },
-      async resolve(_root, { input }, { dataSources, user }) {
+      args: { profileId: nonNull('Int') },
+      async resolve(_root, { profileId }, { dataSources, user }) {
         try {
           // User must be already logged in
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
 
-          // Check if handle and tokenURI are given
-          if (!input) throw new UserInputError(badRequestErrMessage)
-
-          const { docId, profileId } = input
+          if (!profileId) throw new UserInputError('Bad request')
 
           // // Get user's wallet from Firestore
           // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
@@ -386,12 +358,6 @@ export const ProfileMutation = extendType({
               'Error occured while attempting to update profile image.'
             )
 
-          // Update the profile doc in Firestore
-          // await dataSources.firestoreAPI.updateProfileDoc({
-          //   docId,
-          //   data: token,
-          // })
-
           return token.tokenId
         } catch (error) {
           throw error
@@ -401,6 +367,7 @@ export const ProfileMutation = extendType({
 
     /**
      * @dev Estimate gas used for creating a profile
+     * @param input - refer to CreateProfileInput type
      */
     t.field('estimateCreateProfileGas', {
       type: nonNull('EstimateCreateProfileGasResult'),

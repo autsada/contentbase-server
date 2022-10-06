@@ -20,8 +20,28 @@ export interface UpdateProfileImageArgs {
   key: string
   profileId: number
   data: {
-    imageURI: string
     tokenURI: string
+    imageURI?: string | null
+  }
+}
+
+export interface CreatePublishNftArgs {
+  key: string
+  data: {
+    tokenURI: string
+    profileId: number
+    imageURI: string
+    contentURI: string
+  }
+}
+
+export interface UpdatePublishNftArgs {
+  key: string
+  publishId: number
+  data: {
+    tokenURI: string
+    imageURI?: string | null
+    contentURI?: string | null
   }
 }
 
@@ -108,6 +128,10 @@ export class BlockchainAPI extends RESTDataSource {
     )
   }
 
+  /// ***********************
+  /// ***** Profile Token *****
+  /// ***********************
+
   /**
    * @dev Create profile nft
    * {key} - encrypted private key
@@ -159,7 +183,7 @@ export class BlockchainAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Get profile token of the user
+   * @dev Get profile tokens of the user
    * @dev Must provide token ids array
    */
   async getMyProfiles(
@@ -175,14 +199,9 @@ export class BlockchainAPI extends RESTDataSource {
    * @dev Get one profile by id
    */
   async getProfile(
-    key: string,
     profileId: number
   ): Promise<{ token: NexusGenObjects['Token'] }> {
-    return this.get(
-      `/profiles/profileId/${encodeURIComponent(
-        profileId
-      )}/key/${encodeURIComponent(key)}`
-    )
+    return this.get(`/profiles/profileId/${encodeURIComponent(profileId)}`)
   }
 
   /**
@@ -215,5 +234,75 @@ export class BlockchainAPI extends RESTDataSource {
       `/profiles/estimateGas/key/${encodeURIComponent(key)}`,
       data
     )
+  }
+
+  // ======================= //
+
+  /// ***********************
+  /// ***** Publish Token *****
+  /// ***********************
+
+  /**
+   * @dev Create publish nft
+   * {key} - encrypted private key
+   * {data} - {tokenURI, profileId, imageURI, contentURI}
+   */
+  async createPublishNft({
+    key,
+    data,
+  }: CreatePublishNftArgs): Promise<{ token: NexusGenObjects['Token'] }> {
+    return this.post(`/publishes/create/key/${encodeURIComponent(key)}`, data)
+  }
+
+  /**
+   * @dev Update publish nft
+   * {key} - encrypted private key
+   * {publishId} - a token id of the publish to be updated
+   * {data} - {tokenURI, imageURI, contentURI}
+   */
+  async updatePublishNft({
+    key,
+    publishId,
+    data,
+  }: UpdatePublishNftArgs): Promise<{ token: NexusGenObjects['Token'] }> {
+    return this.post(
+      `/publishes/update/publishId/${publishId}/key/${encodeURIComponent(key)}`,
+      data
+    )
+  }
+
+  /**
+   * @dev Get publish tokens of the user
+   * @dev Must provide token ids array
+   */
+  async getMyPublishes(
+    key: string,
+    tokenIds: number[]
+  ): Promise<{ tokens: NexusGenObjects['Token'][] }> {
+    return this.post(`/publishes/my-publishes/key/${encodeURIComponent(key)}`, {
+      tokenIds,
+    })
+  }
+
+  /**
+   * @dev Get publishes
+   * @dev Must provide token ids array
+   */
+  async getPublishes(
+    tokenIds: number[]
+  ): Promise<{ tokens: NexusGenObjects['Token'][] }> {
+    return this.post(`/publishes/get`, {
+      tokenIds,
+    })
+  }
+
+  /**
+   * @dev Get one publish
+   * @dev Must provide token id
+   */
+  async getPublish(
+    tokenId: number
+  ): Promise<{ token: NexusGenObjects['Token'] }> {
+    return this.get(`/publishes/publishId/${tokenId}`)
   }
 }

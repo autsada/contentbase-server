@@ -6,6 +6,9 @@ import {
   accountsCollection,
   walletsCollection,
   profilesCollection,
+  publishesCollection,
+  followsCollection,
+  likesCollection,
   getDocById,
   createDocRef,
   createDoc,
@@ -139,24 +142,32 @@ export class FirestoreAPI extends DataSource {
     })
   }
 
-  async createProfileDoc(data: NexusGenObjects['Token']) {
-    return createDoc<NexusGenObjects['Token']>({
+  async createTokenDoc<T extends Record<string, any>>({
+    collectionName,
+    data,
+  }: {
+    collectionName: string
+    data: T
+  }) {
+    return createDoc<T>({
       db: this.db,
-      collectionName: profilesCollection,
+      collectionName,
       data,
     })
   }
 
-  async updateProfileDoc({
+  async updateTokenDoc<T extends Record<string, any>>({
+    collectionName,
     docId,
     data,
   }: {
+    collectionName: string
     docId: string
-    data: Partial<NexusGenObjects['Token']>
+    data: Partial<T>
   }) {
-    return updateDocById<Partial<NexusGenObjects['Token']>>({
+    return updateDocById<Partial<T>>({
       db: this.db,
-      collectionName: profilesCollection,
+      collectionName,
       docId,
       data,
     })

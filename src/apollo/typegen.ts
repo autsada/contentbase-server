@@ -19,17 +19,26 @@ export interface NexusGenInputs {
     imageURI?: string | null; // String
     tokenURI: string; // String!
   }
+  CreatePublishInput: { // input type
+    contentURI: string; // String!
+    imageURI: string; // String!
+    profileId: number; // Int!
+    tokenURI: string; // String!
+  }
   HasRoleInput: { // input type
     role: NexusGenEnums['Role']; // Role!
   }
-  SetDefaultProfileInput: { // input type
-    docId: string; // String!
-    profileId: number; // Int!
-  }
   UpdateProfileImageInput: { // input type
     docId: string; // String!
-    imageURI: string; // String!
+    imageURI?: string | null; // String
     profileId: number; // Int!
+    tokenURI: string; // String!
+  }
+  UpdatePublishInput: { // input type
+    contentURI?: string | null; // String
+    docId: string; // String!
+    imageURI?: string | null; // String
+    publishId: number; // Int!
     tokenURI: string; // String!
   }
 }
@@ -38,7 +47,6 @@ export interface NexusGenEnums {
   AccountType: "traditional" | "wallet"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
   TokenType: "Follow" | "Like" | "Profile" | "Publish"
-  TokenVisibility: "OFF" | "ON" | "UNSET"
   UploadType: "avatar" | "post"
   WebHookEventCategory: "external" | "internal" | "token"
 }
@@ -92,7 +100,6 @@ export interface NexusGenObjects {
     owner: string; // String!
     tokenId: number; // Int!
     tokenType: NexusGenEnums['TokenType']; // TokenType!
-    visibility: NexusGenEnums['TokenVisibility']; // TokenVisibility!
   }
   UploadParams: { // root type
     address: string; // String!
@@ -185,17 +192,22 @@ export interface NexusGenFieldTypes {
   Mutation: { // field return type
     burnToken: string; // String!
     createProfileNft: NexusGenRootTypes['Token']; // Token!
+    createPublishNft: NexusGenRootTypes['Token']; // Token!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
     estimateCreateProfileGas: NexusGenRootTypes['EstimateCreateProfileGasResult']; // EstimateCreateProfileGasResult!
     hasRole: boolean; // Boolean!
     setDefaultProfile: number; // Int!
     updateProfileImage: NexusGenRootTypes['Token']; // Token!
+    updatePublishNft: NexusGenRootTypes['Token']; // Token!
   }
   Query: { // field return type
     getDefaultProfile: NexusGenRootTypes['Token']; // Token!
     getMyBalance: string; // String!
     getMyProfiles: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
+    getMyPublishes: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
     getProfile: NexusGenRootTypes['Token']; // Token!
+    getPublish: NexusGenRootTypes['Token']; // Token!
+    getPublishes: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
     getTokensCount: number; // Int!
     isHandleUnique: boolean; // Boolean!
     tokenURI: string; // String!
@@ -208,7 +220,6 @@ export interface NexusGenFieldTypes {
     owner: string; // String!
     tokenId: number; // Int!
     tokenType: NexusGenEnums['TokenType']; // TokenType!
-    visibility: NexusGenEnums['TokenVisibility']; // TokenVisibility!
   }
   UploadParams: { // field return type
     address: string; // String!
@@ -291,17 +302,22 @@ export interface NexusGenFieldTypeNames {
   Mutation: { // field return type name
     burnToken: 'String'
     createProfileNft: 'Token'
+    createPublishNft: 'Token'
     createWallet: 'CreateWalletResult'
     estimateCreateProfileGas: 'EstimateCreateProfileGasResult'
     hasRole: 'Boolean'
     setDefaultProfile: 'Int'
     updateProfileImage: 'Token'
+    updatePublishNft: 'Token'
   }
   Query: { // field return type name
     getDefaultProfile: 'Token'
     getMyBalance: 'String'
     getMyProfiles: 'Token'
+    getMyPublishes: 'Token'
     getProfile: 'Token'
+    getPublish: 'Token'
+    getPublishes: 'Token'
     getTokensCount: 'Int'
     isHandleUnique: 'Boolean'
     tokenURI: 'String'
@@ -314,7 +330,6 @@ export interface NexusGenFieldTypeNames {
     owner: 'String'
     tokenId: 'Int'
     tokenType: 'TokenType'
-    visibility: 'TokenVisibility'
   }
   UploadParams: { // field return type name
     address: 'String'
@@ -371,6 +386,9 @@ export interface NexusGenArgTypes {
     createProfileNft: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
+    createPublishNft: { // args
+      input: NexusGenInputs['CreatePublishInput']; // CreatePublishInput!
+    }
     estimateCreateProfileGas: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
@@ -378,10 +396,13 @@ export interface NexusGenArgTypes {
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
     }
     setDefaultProfile: { // args
-      input: NexusGenInputs['SetDefaultProfileInput']; // SetDefaultProfileInput!
+      profileId: number; // Int!
     }
     updateProfileImage: { // args
       input: NexusGenInputs['UpdateProfileImageInput']; // UpdateProfileImageInput!
+    }
+    updatePublishNft: { // args
+      input: NexusGenInputs['UpdatePublishInput']; // UpdatePublishInput!
     }
   }
   Query: {
@@ -390,6 +411,9 @@ export interface NexusGenArgTypes {
     }
     getProfile: { // args
       profileId: number; // Int!
+    }
+    getPublish: { // args
+      publishId: number; // Int!
     }
     isHandleUnique: { // args
       handle: string; // String!
