@@ -1,7 +1,7 @@
-import { DataSource, DataSourceConfig } from 'apollo-datasource'
-import { Firestore } from 'firebase-admin/firestore'
+import { DataSource, DataSourceConfig } from "apollo-datasource"
+import { Firestore } from "firebase-admin/firestore"
 
-import { NexusGenObjects } from '../typegen'
+import { NexusGenObjects } from "../typegen"
 import {
   accountsCollection,
   walletsCollection,
@@ -14,7 +14,7 @@ import {
   createDoc,
   createDocWithId,
   updateDocById,
-} from '../../lib'
+} from "../../lib"
 
 export class FirestoreAPI extends DataSource {
   db: Firestore
@@ -36,14 +36,14 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   *
-   * @param accountId a Firestore document id of accounts collection
+   * The function to get account doc.
+   * @param accountId a Firestore document id of the accounts collection which is an auth uid.
    * @returns {account}
    */
   async getAccount(
     accountId: string
-  ): Promise<{ account: NexusGenObjects['Account'] | null }> {
-    const account = await getDocById<NexusGenObjects['Account']>({
+  ): Promise<{ account: NexusGenObjects["Account"] | null }> {
+    const account = await getDocById<NexusGenObjects["Account"]>({
       db: this.db,
       collectionName: accountsCollection,
       docId: accountId,
@@ -53,14 +53,14 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   *
-   * @param walletId a Firestore document id of wallets collection
+   * The function to get wallet doc.
+   * @param walletId a Firestore document id of wallets collection which is an auth uid.
    * @returns {wallet}
    */
   async getWallet(
     walletId: string
-  ): Promise<{ wallet: NexusGenObjects['Wallet'] | null }> {
-    const wallet = await getDocById<NexusGenObjects['Wallet']>({
+  ): Promise<{ wallet: NexusGenObjects["Wallet"] | null }> {
+    const wallet = await getDocById<NexusGenObjects["Wallet"]>({
       db: this.db,
       collectionName: walletsCollection,
       docId: walletId,
@@ -69,57 +69,19 @@ export class FirestoreAPI extends DataSource {
     return { wallet }
   }
 
-  async createAccountsBatch(accounts: NexusGenObjects['Account'][]) {
-    const batch = this.db.batch()
-
-    accounts.forEach((ac) => {
-      const ref = createDocRef({
-        db: this.db,
-        collectionName: accountsCollection,
-      })
-      batch.set(ref, ac)
-    })
-
-    return batch.commit()
-  }
-
   /**
-   *
-   * @param id - user's uid
-   * @param data - {address, key} of the blockchain wallet
+   * The function to create Firestore account.
+   * @param id {string} - user's auth uid.
+   * @param data - {address, type}
    * @returns
    */
-  async createWallet(id: string, data: Omit<NexusGenObjects['Wallet'], 'id'>) {
-    const { address, key } = data
-    return createDocWithId<Partial<Omit<NexusGenObjects['Wallet'], 'id'>>>({
-      db: this.db,
-      collectionName: walletsCollection,
-      docId: id || '',
-      data: {
-        address,
-        key,
-      },
-    })
-  }
-
-  /**
-   *
-   * @param id - user's uid
-   * @param data - {address, profiles, type} blockchain address and profiles empty array
-   * @returns
-   */
-  async createAccount(
-    id: string,
-    data: Pick<NexusGenObjects['Account'], 'address' | 'type'>
-  ) {
+  async createAccount(id: string, data: Partial<NexusGenObjects["Account"]>) {
     const { address, type } = data
 
-    return createDocWithId<
-      Pick<NexusGenObjects['Account'], 'address' | 'type'>
-    >({
+    return createDocWithId<Partial<NexusGenObjects["Account"]>>({
       db: this.db,
       collectionName: accountsCollection,
-      docId: id || '',
+      docId: id || "",
       data: {
         address,
         type,
@@ -127,14 +89,20 @@ export class FirestoreAPI extends DataSource {
     })
   }
 
+  /**
+   * The function to update Firestore account.
+   * @param input.docId {string} - user's auth uid.
+   * @param input.data - {address, type}
+   * @returns
+   */
   async updateAccount({
     docId,
     data,
   }: {
     docId: string
-    data: Partial<NexusGenObjects['Account']>
+    data: Partial<NexusGenObjects["Account"]>
   }) {
-    return updateDocById<Partial<NexusGenObjects['Account']>>({
+    return updateDocById<Partial<NexusGenObjects["Account"]>>({
       db: this.db,
       collectionName: accountsCollection,
       docId,

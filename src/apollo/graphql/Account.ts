@@ -161,9 +161,7 @@ export const AccountQuery = extendType({
 
           if (!address) throw new UserInputError(badRequestErrMessage)
 
-          const { balance } = await dataSources.blockchainAPI.getBalance(
-            address
-          )
+          const { balance } = await dataSources.kmsAPI.getBalance(address)
 
           return balance
         } catch (error) {
@@ -188,29 +186,46 @@ export const AccountMutation = extendType({
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
 
-          // Check if user already has a wallet
-          // We save wallet info in wallets collection and wallet's address in accounts collection, so if user has account and the account has "address" field we assume that user already as wallet (without having to query wallets collection)
+          // If user doesn't already have an account, create one for them.
           const { account } = await dataSources.firestoreAPI.getAccount(uid)
 
-          // Create new wallet only for users that don't have it yet
-          if (account && account.address)
-            throw new Error("You already have a wallet")
+          if (!account) {
+            // Create a new account.
+            await dataSources.firestoreAPI.createAccount(uid, {
+              type: "traditional",
+            })
+          }
 
-          const walletResult = await dataSources.blockchainAPI.createWallet()
+          // Check if user already has a wallet, wallet id is the auth uid.
+          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
+
+          if (wallet) {
+            // User already has a wallet, throw an error to let them know.
+            // Before throwing, just need to make sure the account document as an "address" field.
+            const { account: newFetchedAccount } =
+              await dataSources.firestoreAPI.getAccount(uid)
+            if (newFetchedAccount && !newFetchedAccount.address) {
+              // This case should not exists, but we have to make sure that if it happens to exist, we have a logic to handle it.
+              await dataSources.firestoreAPI.updateAccount({
+                docId: uid,
+                data: { address: wallet.address },
+              })
+            }
+
+            throw new Error("You already have a wallet")
+          }
+
+          // Create a new wallet.
+          // Kms server will create a wallet doc from there, so we don't have to do it here.
+          const walletResult = await dataSources.kmsAPI.createWallet()
 
           if (!walletResult) throw new Error("Create wallet failed")
-          const { address, key } = walletResult
+          const { address } = walletResult
 
-          // Create a new doc in wallets collection
-          await dataSources.firestoreAPI.createWallet(uid, {
-            address: address.toLowerCase(),
-            key,
-          })
-
-          // Save wallet to user's account
-          await dataSources.firestoreAPI.createAccount(uid, {
-            address: address.toLowerCase(),
-            type: "traditional",
+          // Update account doc.
+          await dataSources.firestoreAPI.updateAccount({
+            docId: uid,
+            data: { address },
           })
 
           // Add the address to Alchemy notify list

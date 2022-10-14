@@ -4,8 +4,10 @@
 
 type Account {
   address: String!
+  createdAt: String!
   id: ID!
   type: AccountType!
+  updatedAt: String
 }
 
 enum AccountType {
@@ -146,8 +148,10 @@ enum UploadType {
 
 type Wallet {
   address: String!
+  createdAt: String!
   id: ID!
   key: String!
+  updatedAt: String
 }
 
 type WebHookAddressActivity {

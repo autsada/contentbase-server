@@ -62,8 +62,10 @@ export interface NexusGenScalars {
 export interface NexusGenObjects {
   Account: { // root type
     address: string; // String!
+    createdAt: string; // String!
     id: string; // ID!
     type: NexusGenEnums['AccountType']; // AccountType!
+    updatedAt?: string | null; // String
   }
   AddressActivity: { // root type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
@@ -117,8 +119,10 @@ export interface NexusGenObjects {
   }
   Wallet: { // root type
     address: string; // String!
+    createdAt: string; // String!
     id: string; // ID!
     key: string; // String!
+    updatedAt?: string | null; // String
   }
   WebHookAddressActivity: { // root type
     asset: string; // String!
@@ -161,8 +165,10 @@ export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnu
 export interface NexusGenFieldTypes {
   Account: { // field return type
     address: string; // String!
+    createdAt: string; // String!
     id: string; // ID!
     type: NexusGenEnums['AccountType']; // AccountType!
+    updatedAt: string | null; // String
   }
   AddressActivity: { // field return type
     event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
@@ -237,8 +243,10 @@ export interface NexusGenFieldTypes {
   }
   Wallet: { // field return type
     address: string; // String!
+    createdAt: string; // String!
     id: string; // ID!
     key: string; // String!
+    updatedAt: string | null; // String
   }
   WebHookAddressActivity: { // field return type
     asset: string; // String!
@@ -271,8 +279,10 @@ export interface NexusGenFieldTypes {
 export interface NexusGenFieldTypeNames {
   Account: { // field return type name
     address: 'String'
+    createdAt: 'String'
     id: 'ID'
     type: 'AccountType'
+    updatedAt: 'String'
   }
   AddressActivity: { // field return type name
     event: 'WebHookEventCategory'
@@ -347,8 +357,10 @@ export interface NexusGenFieldTypeNames {
   }
   Wallet: { // field return type name
     address: 'String'
+    createdAt: 'String'
     id: 'ID'
     key: 'String'
+    updatedAt: 'String'
   }
   WebHookAddressActivity: { // field return type name
     asset: 'String'
