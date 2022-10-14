@@ -1,150 +1,160 @@
-import { objectType, extendType, nonNull, list, enumType } from 'nexus'
-import { AuthenticationError, UserInputError } from 'apollo-server-express'
+import { objectType, extendType, nonNull, list, enumType } from "nexus"
+import { AuthenticationError, UserInputError } from "apollo-server-express"
 
-const authErrMessage = '*** You must be logged in ***'
-const badRequestErrMessage = 'Bad Request'
+const authErrMessage = "*** You must be logged in ***"
+const badRequestErrMessage = "Bad Request"
 
 export const AccountType = enumType({
-  name: 'AccountType',
-  members: ['traditional', 'wallet'],
+  name: "AccountType",
+  members: ["traditional", "wallet"],
 })
 
 /**
- * @notice
- *
- * @dev "profiles" is an array of profile NFTs created on the blockchain
- * @dev "address" is a blockchain address
- * @dev "loggedInProfile" the user's profile id that is currently used to log in
- * @dev "type" if user signs in with phone,email,google set to "traditional", if wallet set to "wallet"
+ * Account type.
+ * @param id {string} - Firestore document id, use Firebase Auth uid as a document id so it will be easier to query and link to user and wallet.
+ * @param address {string} - a blockchain address.
+ * @param type {enum} an account type, if user signs in with phone,email,google set it to "traditional", if wallet set to it "wallet".
+ * @param createdAt {string}
+ * @param updatedAt {string}
  */
 export const Account = objectType({
-  name: 'Account',
+  name: "Account",
   definition(t) {
-    t.nonNull.id('id')
-    t.nonNull.string('address')
-    t.nonNull.field('type', { type: 'AccountType' })
+    t.nonNull.id("id")
+    t.nonNull.string("address")
+    t.nonNull.field("type", { type: "AccountType" })
+    t.nonNull.string("createdAt")
+    t.string("updatedAt")
   },
 })
 
 /**
- * @dev "address" a blockchain address
- * @dev "key" an encrypted key
+ * Wallet type.
+ * @param id {string} - Firestore document id, use Firebase Auth uid as a document id so it will be easier to query and link to user and account.
+ * @param address {string} - a blockchain address.
+ * @param key {string} - a blockchain private key.
+ * @param createdAt {string}
+ * @param updatedAt {string}
  */
 export const Wallet = objectType({
-  name: 'Wallet',
+  name: "Wallet",
   definition(t) {
-    t.nonNull.id('id')
-    t.nonNull.string('address')
-    t.nonNull.string('key')
+    t.nonNull.id("id")
+    t.nonNull.string("address")
+    t.nonNull.string("key")
+    t.nonNull.string("createdAt")
+    t.string("updatedAt")
   },
 })
 
 /**
- * @dev "event" - enum:an event category
- * @dev "fromAddress" - string:a blockchain address
- * @dev "toAddress" - string:a blockchain address
- * @dev "value" - number:the value if the activity
- * @dev "isAcknowledged" - boolean:whether the frontend acknowledged already or not, set to false by default
+ * Webhook Address Activity type.
+ * @param id {string} - Firestore document id.
+ * @param event {enun} - an event category
+ * @param fromAddress {string} - a blockchain address
+ * @param toAddress {string} - a blockchain address
+ * @param value {number} - the value if the activity
+ * @param isAcknowledged {boolean} - whether the frontend acknowledged already or not, set to false by default
  */
 export const AddressActivity = objectType({
-  name: 'AddressActivity',
+  name: "AddressActivity",
   definition(t) {
-    t.nonNull.id('id')
-    t.nonNull.field('event', {
-      type: 'WebHookEventCategory',
+    t.nonNull.id("id")
+    t.nonNull.field("event", {
+      type: "WebHookEventCategory",
     })
-    t.nonNull.string('fromAddress')
-    t.nonNull.string('toAddress')
-    t.float('value')
-    t.nonNull.boolean('isAcknowledged')
+    t.nonNull.string("fromAddress")
+    t.nonNull.string("toAddress")
+    t.float("value")
+    t.nonNull.boolean("isAcknowledged")
   },
 })
 
 export const GetAccountResult = objectType({
-  name: 'GetAccount',
+  name: "GetAccount",
   definition(t) {
-    t.field('account', {
-      type: 'Account',
+    t.field("account", {
+      type: "Account",
     })
   },
 })
 
 export const CreateWalletResult = objectType({
-  name: 'CreateWalletResult',
+  name: "CreateWalletResult",
   definition(t) {
-    t.nonNull.string('address')
+    t.nonNull.string("address")
   },
 })
 
 export const EstimateCreateProfileGasResult = objectType({
-  name: 'EstimateCreateProfileGasResult',
+  name: "EstimateCreateProfileGasResult",
   definition(t) {
-    t.nonNull.string('gas')
+    t.nonNull.string("gas")
   },
 })
 
 export const WebHookEventCategory = enumType({
-  name: 'WebHookEventCategory',
-  members: ['token', 'internal', 'external'],
+  name: "WebHookEventCategory",
+  members: ["token", "internal", "external"],
 })
 
 export const WebHookRawContract = objectType({
-  name: 'WebHookRawContract',
+  name: "WebHookRawContract",
   definition(t) {
-    t.string('rawValue')
-    t.string('address')
-    t.int('decimal')
+    t.string("rawValue")
+    t.string("address")
+    t.int("decimal")
   },
 })
 
 export const WebHookAddressActivity = objectType({
-  name: 'WebHookAddressActivity',
+  name: "WebHookAddressActivity",
   definition(t) {
-    t.nonNull.field('category', { type: 'WebHookEventCategory' })
-    t.nonNull.string('fromAddress')
-    t.nonNull.string('toAddress')
-    t.string('erc721TokenId')
-    t.float('value')
-    t.nonNull.string('asset')
-    t.nonNull.field('rawContract', {
-      type: nonNull('WebHookRawContract'),
+    t.nonNull.field("category", { type: "WebHookEventCategory" })
+    t.nonNull.string("fromAddress")
+    t.nonNull.string("toAddress")
+    t.string("erc721TokenId")
+    t.float("value")
+    t.nonNull.string("asset")
+    t.nonNull.field("rawContract", {
+      type: nonNull("WebHookRawContract"),
     })
-    t.nonNull.string('hash')
+    t.nonNull.string("hash")
   },
 })
 
 export const WebHookEvent = objectType({
-  name: 'WebHookEvent',
+  name: "WebHookEvent",
   definition(t) {
-    t.nonNull.string('network')
-    t.nonNull.field('activity', {
-      type: nonNull(list(nonNull('WebHookAddressActivity'))),
+    t.nonNull.string("network")
+    t.nonNull.field("activity", {
+      type: nonNull(list(nonNull("WebHookAddressActivity"))),
     })
   },
 })
 
 export const WebHookRequestBody = objectType({
-  name: 'WebHookRequestBody',
+  name: "WebHookRequestBody",
   definition(t) {
-    t.nonNull.string('webhookId')
-    t.nonNull.string('id')
-    t.nonNull.string('createdAt')
-    t.nonNull.string('type')
-    t.nonNull.field('event', {
-      type: nonNull('WebHookEvent'),
+    t.nonNull.string("webhookId")
+    t.nonNull.string("id")
+    t.nonNull.string("createdAt")
+    t.nonNull.string("type")
+    t.nonNull.field("event", {
+      type: nonNull("WebHookEvent"),
     })
   },
 })
 
 export const AccountQuery = extendType({
-  type: 'Query',
+  type: "Query",
   definition(t) {
     /**
      * @dev Get balance of a specific user
      */
-    t.field('getMyBalance', {
-      type: nonNull('String'),
-      args: { address: nonNull('String') },
+    t.field("getMyBalance", {
+      type: nonNull("String"),
+      args: { address: nonNull("String") },
       async resolve(_root, { address }, { dataSources, user }) {
         try {
           // if (!user) throw new AuthenticationError(authErrMessage)
@@ -165,14 +175,14 @@ export const AccountQuery = extendType({
 })
 
 export const AccountMutation = extendType({
-  type: 'Mutation',
+  type: "Mutation",
 
   definition(t) {
     /**
      * @dev Create Ethereum account for users sign in with traditional providers (phone | email | google).
      */
-    t.field('createWallet', {
-      type: nonNull('CreateWalletResult'),
+    t.field("createWallet", {
+      type: nonNull("CreateWalletResult"),
       async resolve(_root, _args, { dataSources, user }) {
         try {
           if (!user) throw new AuthenticationError(authErrMessage)
@@ -184,11 +194,11 @@ export const AccountMutation = extendType({
 
           // Create new wallet only for users that don't have it yet
           if (account && account.address)
-            throw new Error('You already have a wallet')
+            throw new Error("You already have a wallet")
 
           const walletResult = await dataSources.blockchainAPI.createWallet()
 
-          if (!walletResult) throw new Error('Create wallet failed')
+          if (!walletResult) throw new Error("Create wallet failed")
           const { address, key } = walletResult
 
           // Create a new doc in wallets collection
@@ -200,7 +210,7 @@ export const AccountMutation = extendType({
           // Save wallet to user's account
           await dataSources.firestoreAPI.createAccount(uid, {
             address: address.toLowerCase(),
-            type: 'traditional',
+            type: "traditional",
           })
 
           // Add the address to Alchemy notify list
