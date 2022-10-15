@@ -14,6 +14,7 @@ import {
   createDoc,
   createDocWithId,
   updateDocById,
+  searchDocByField,
 } from "../../lib"
 
 export class FirestoreAPI extends DataSource {
@@ -36,8 +37,8 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   * The function to get account doc.
-   * @param accountId a Firestore document id of the accounts collection which is an auth uid.
+   * The function to get an account doc.
+   * @param accountId {string} - a Firestore document id of the accounts collection which is an auth uid.
    * @returns {account}
    */
   async getAccount(
@@ -53,8 +54,8 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   * The function to get wallet doc.
-   * @param walletId a Firestore document id of wallets collection which is an auth uid.
+   * The function to get a wallet doc.
+   * @param walletId {string} - a Firestore document id of wallets collection which is an auth uid.
    * @returns {wallet}
    */
   async getWallet(
@@ -70,7 +71,7 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   * The function to create Firestore account.
+   * The function to create an account doc in Firestore.
    * @param id {string} - user's auth uid.
    * @param data - {address, type}
    * @returns
@@ -90,7 +91,7 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   * The function to update Firestore account.
+   * The function to update an account doc in Firestore.
    * @param input.docId {string} - user's auth uid.
    * @param input.data - {address, type}
    * @returns
@@ -108,6 +109,53 @@ export class FirestoreAPI extends DataSource {
       docId,
       data,
     })
+  }
+
+  /**
+   * The function to create a profile doc in Firestore.
+   * @param data see ProfileToken type
+   */
+  async createProfileDoc(data: Partial<NexusGenObjects["ProfileToken"]>) {
+    return createDoc<Partial<NexusGenObjects["ProfileToken"]>>({
+      db: this.db,
+      collectionName: profilesCollection,
+      data,
+    })
+  }
+
+  /**
+   * The function to update a profile doc in Firestore.
+   * @param docId {string} - a profile document id.
+   * @param data see ProfileToken type.
+   */
+  async updateProfileDoc(
+    docId: string,
+    data: Partial<NexusGenObjects["ProfileToken"]>
+  ) {
+    return updateDocById<Partial<NexusGenObjects["ProfileToken"]>>({
+      db: this.db,
+      collectionName: profilesCollection,
+      docId,
+      data,
+    })
+  }
+
+  /**
+   * The function to search a profile doc by provied Profile token id.
+   * @param profileId {number} - a Profile token id.
+   * @returns {profile} - profile token
+   */
+  async searchProfileByTokenId(
+    profileId: number
+  ): Promise<{ profile: NexusGenObjects["ProfileToken"] | null }> {
+    const profiles = await searchDocByField<NexusGenObjects["ProfileToken"]>({
+      db: this.db,
+      collectionName: profilesCollection,
+      fieldName: "tokenId",
+      fieldValue: profileId,
+    })
+
+    return { profile: profiles[0] }
   }
 
   async createTokenDoc<T extends Record<string, any>>({

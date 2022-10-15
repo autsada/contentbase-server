@@ -14,7 +14,6 @@ import "./lib/config/firebase" // import firebase config to initialize firebase 
 import { schema } from "./apollo/schema"
 import { FirestoreAPI } from "./apollo/datasources/firestore-api"
 import { KmsAPI } from "./apollo/datasources/kms-api"
-import { BlockchainAPI } from "./apollo/datasources/blockchain-api"
 import { WebhooksAPI } from "./apollo/datasources/webhooks-api"
 import { db, getUserFromAuthorizationHeader } from "./lib"
 import { router } from "./webhooks/router"
@@ -58,7 +57,6 @@ async function startServer() {
     dataSources: () => ({
       firestoreAPI: new FirestoreAPI({ db }),
       kmsAPI: new KmsAPI(),
-      blockchainAPI: new BlockchainAPI(),
       webhooksApi: new WebhooksAPI(),
     }),
     context: async ({ req }) => {

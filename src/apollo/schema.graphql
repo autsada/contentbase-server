@@ -30,6 +30,13 @@ input CreateProfileInput {
   tokenURI: String!
 }
 
+type CreateProfileResult {
+  handle: String!
+  imageURI: String!
+  owner: String!
+  tokenId: Int!
+}
+
 input CreatePublishInput {
   contentURI: String!
   imageURI: String!
@@ -63,28 +70,47 @@ type MetadataCustomProps {
 }
 
 type Mutation {
-  burnToken(tokenId: Int!): String!
-  createProfileNft(input: CreateProfileInput!): Token!
-  createPublishNft(input: CreatePublishInput!): Token!
+  createProfileNft(input: CreateProfileInput!): CreateProfileResult!
+  createPublishNft(input: CreatePublishInput!): PublishToken!
   createWallet: CreateWalletResult!
   estimateCreateProfileGas(input: CreateProfileInput!): EstimateCreateProfileGasResult!
-  hasRole(data: HasRoleInput!): Boolean!
-  setDefaultProfile(profileId: Int!): Int!
-  updateProfileImage(input: UpdateProfileImageInput!): Token!
-  updatePublishNft(input: UpdatePublishInput!): Token!
+  hasRoleProfile(data: HasRoleInput!): Boolean!
+  setDefaultProfile(profileId: Int!): CreateProfileResult!
+  updateProfileImage(input: UpdateProfileImageInput!): CreateProfileResult!
+  updatePublishNft(input: UpdatePublishInput!): PublishToken!
+  validateHandle(handle: String!): Boolean!
+}
+
+type ProfileToken {
+  createdAt: String!
+  displayedHandle: String!
+  handle: String!
+  id: String!
+  imageURI: String!
+  owner: String!
+  tokenId: Int!
+  updatedAt: String
+}
+
+type PublishToken {
+  contentURI: String!
+  creatorId: Int!
+  imageURI: String!
+  likes: Int!
+  owner: String!
+  tokenId: Int!
 }
 
 type Query {
-  getDefaultProfile: Token!
+  getDefaultProfile: CreateProfileResult!
   getMyBalance(address: String!): String!
-  getMyProfiles: [Token]!
-  getMyPublishes: [Token]!
-  getProfile(profileId: Int!): Token!
-  getPublish(publishId: Int!): Token!
-  getPublishes: [Token]!
-  getTokensCount: Int!
-  isHandleUnique(handle: String!): Boolean!
-  tokenURI(tokenId: Int!): String!
+  getMyProfiles: [ProfileToken]!
+  getMyPublishes: [PublishToken]!
+  getProfile(profileId: Int!): CreateProfileResult!
+  getProfileTokenURI(profileId: Int!): String!
+  getProfilesCount: Int!
+  getPublish(publishId: Int!): PublishToken!
+  getPublishes: [PublishToken]!
 }
 
 enum Role {
@@ -93,26 +119,8 @@ enum Role {
   UPGRADER_ROLE
 }
 
-type Token {
-  associatedId: Int!
-  contentURI: String!
-  handle: String!
-  imageURI: String!
-  owner: String!
-  tokenId: Int!
-  tokenType: TokenType!
-}
-
-enum TokenType {
-  Follow
-  Like
-  Profile
-  Publish
-}
-
 input UpdateProfileImageInput {
-  docId: String!
-  imageURI: String
+  imageURI: String!
   profileId: Int!
   tokenURI: String!
 }

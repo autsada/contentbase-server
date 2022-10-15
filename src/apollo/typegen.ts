@@ -29,8 +29,7 @@ export interface NexusGenInputs {
     role: NexusGenEnums['Role']; // Role!
   }
   UpdateProfileImageInput: { // input type
-    docId: string; // String!
-    imageURI?: string | null; // String
+    imageURI: string; // String!
     profileId: number; // Int!
     tokenURI: string; // String!
   }
@@ -46,7 +45,6 @@ export interface NexusGenInputs {
 export interface NexusGenEnums {
   AccountType: "traditional" | "wallet"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
-  TokenType: "Follow" | "Like" | "Profile" | "Publish"
   UploadType: "avatar" | "post"
   WebHookEventCategory: "external" | "internal" | "token"
 }
@@ -75,6 +73,12 @@ export interface NexusGenObjects {
     toAddress: string; // String!
     value?: number | null; // Float
   }
+  CreateProfileResult: { // root type
+    handle: string; // String!
+    imageURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
   CreateWalletResult: { // root type
     address: string; // String!
   }
@@ -93,16 +97,25 @@ export interface NexusGenObjects {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: {};
-  Query: {};
-  Token: { // root type
-    associatedId: number; // Int!
-    contentURI: string; // String!
+  ProfileToken: { // root type
+    createdAt: string; // String!
+    displayedHandle: string; // String!
     handle: string; // String!
+    id: string; // String!
     imageURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
-    tokenType: NexusGenEnums['TokenType']; // TokenType!
+    updatedAt?: string | null; // String
   }
+  PublishToken: { // root type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    imageURI: string; // String!
+    likes: number; // Int!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
+  Query: {};
   UploadParams: { // root type
     address: string; // String!
     fileName: string; // String!
@@ -178,6 +191,12 @@ export interface NexusGenFieldTypes {
     toAddress: string; // String!
     value: number | null; // Float
   }
+  CreateProfileResult: { // field return type
+    handle: string; // String!
+    imageURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
   CreateWalletResult: { // field return type
     address: string; // String!
   }
@@ -196,36 +215,44 @@ export interface NexusGenFieldTypes {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: { // field return type
-    burnToken: string; // String!
-    createProfileNft: NexusGenRootTypes['Token']; // Token!
-    createPublishNft: NexusGenRootTypes['Token']; // Token!
+    createProfileNft: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    createPublishNft: NexusGenRootTypes['PublishToken']; // PublishToken!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
     estimateCreateProfileGas: NexusGenRootTypes['EstimateCreateProfileGasResult']; // EstimateCreateProfileGasResult!
-    hasRole: boolean; // Boolean!
-    setDefaultProfile: number; // Int!
-    updateProfileImage: NexusGenRootTypes['Token']; // Token!
-    updatePublishNft: NexusGenRootTypes['Token']; // Token!
+    hasRoleProfile: boolean; // Boolean!
+    setDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    updateProfileImage: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    updatePublishNft: NexusGenRootTypes['PublishToken']; // PublishToken!
+    validateHandle: boolean; // Boolean!
   }
-  Query: { // field return type
-    getDefaultProfile: NexusGenRootTypes['Token']; // Token!
-    getMyBalance: string; // String!
-    getMyProfiles: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
-    getMyPublishes: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
-    getProfile: NexusGenRootTypes['Token']; // Token!
-    getPublish: NexusGenRootTypes['Token']; // Token!
-    getPublishes: Array<NexusGenRootTypes['Token'] | null>; // [Token]!
-    getTokensCount: number; // Int!
-    isHandleUnique: boolean; // Boolean!
-    tokenURI: string; // String!
-  }
-  Token: { // field return type
-    associatedId: number; // Int!
-    contentURI: string; // String!
+  ProfileToken: { // field return type
+    createdAt: string; // String!
+    displayedHandle: string; // String!
     handle: string; // String!
+    id: string; // String!
     imageURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
-    tokenType: NexusGenEnums['TokenType']; // TokenType!
+    updatedAt: string | null; // String
+  }
+  PublishToken: { // field return type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    imageURI: string; // String!
+    likes: number; // Int!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
+  Query: { // field return type
+    getDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    getMyBalance: string; // String!
+    getMyProfiles: Array<NexusGenRootTypes['ProfileToken'] | null>; // [ProfileToken]!
+    getMyPublishes: Array<NexusGenRootTypes['PublishToken'] | null>; // [PublishToken]!
+    getProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    getProfileTokenURI: string; // String!
+    getProfilesCount: number; // Int!
+    getPublish: NexusGenRootTypes['PublishToken']; // PublishToken!
+    getPublishes: Array<NexusGenRootTypes['PublishToken'] | null>; // [PublishToken]!
   }
   UploadParams: { // field return type
     address: string; // String!
@@ -292,6 +319,12 @@ export interface NexusGenFieldTypeNames {
     toAddress: 'String'
     value: 'Float'
   }
+  CreateProfileResult: { // field return type name
+    handle: 'String'
+    imageURI: 'String'
+    owner: 'String'
+    tokenId: 'Int'
+  }
   CreateWalletResult: { // field return type name
     address: 'String'
   }
@@ -310,36 +343,44 @@ export interface NexusGenFieldTypeNames {
     type: 'UploadType'
   }
   Mutation: { // field return type name
-    burnToken: 'String'
-    createProfileNft: 'Token'
-    createPublishNft: 'Token'
+    createProfileNft: 'CreateProfileResult'
+    createPublishNft: 'PublishToken'
     createWallet: 'CreateWalletResult'
     estimateCreateProfileGas: 'EstimateCreateProfileGasResult'
-    hasRole: 'Boolean'
-    setDefaultProfile: 'Int'
-    updateProfileImage: 'Token'
-    updatePublishNft: 'Token'
+    hasRoleProfile: 'Boolean'
+    setDefaultProfile: 'CreateProfileResult'
+    updateProfileImage: 'CreateProfileResult'
+    updatePublishNft: 'PublishToken'
+    validateHandle: 'Boolean'
   }
-  Query: { // field return type name
-    getDefaultProfile: 'Token'
-    getMyBalance: 'String'
-    getMyProfiles: 'Token'
-    getMyPublishes: 'Token'
-    getProfile: 'Token'
-    getPublish: 'Token'
-    getPublishes: 'Token'
-    getTokensCount: 'Int'
-    isHandleUnique: 'Boolean'
-    tokenURI: 'String'
-  }
-  Token: { // field return type name
-    associatedId: 'Int'
-    contentURI: 'String'
+  ProfileToken: { // field return type name
+    createdAt: 'String'
+    displayedHandle: 'String'
     handle: 'String'
+    id: 'String'
     imageURI: 'String'
     owner: 'String'
     tokenId: 'Int'
-    tokenType: 'TokenType'
+    updatedAt: 'String'
+  }
+  PublishToken: { // field return type name
+    contentURI: 'String'
+    creatorId: 'Int'
+    imageURI: 'String'
+    likes: 'Int'
+    owner: 'String'
+    tokenId: 'Int'
+  }
+  Query: { // field return type name
+    getDefaultProfile: 'CreateProfileResult'
+    getMyBalance: 'String'
+    getMyProfiles: 'ProfileToken'
+    getMyPublishes: 'PublishToken'
+    getProfile: 'CreateProfileResult'
+    getProfileTokenURI: 'String'
+    getProfilesCount: 'Int'
+    getPublish: 'PublishToken'
+    getPublishes: 'PublishToken'
   }
   UploadParams: { // field return type name
     address: 'String'
@@ -392,9 +433,6 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
-    burnToken: { // args
-      tokenId: number; // Int!
-    }
     createProfileNft: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
@@ -404,7 +442,7 @@ export interface NexusGenArgTypes {
     estimateCreateProfileGas: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
-    hasRole: { // args
+    hasRoleProfile: { // args
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
     }
     setDefaultProfile: { // args
@@ -416,6 +454,9 @@ export interface NexusGenArgTypes {
     updatePublishNft: { // args
       input: NexusGenInputs['UpdatePublishInput']; // UpdatePublishInput!
     }
+    validateHandle: { // args
+      handle: string; // String!
+    }
   }
   Query: {
     getMyBalance: { // args
@@ -424,14 +465,11 @@ export interface NexusGenArgTypes {
     getProfile: { // args
       profileId: number; // Int!
     }
+    getProfileTokenURI: { // args
+      profileId: number; // Int!
+    }
     getPublish: { // args
       publishId: number; // Int!
-    }
-    isHandleUnique: { // args
-      handle: string; // String!
-    }
-    tokenURI: { // args
-      tokenId: number; // Int!
     }
   }
 }

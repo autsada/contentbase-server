@@ -1,28 +1,10 @@
 import { RESTDataSource, RequestOptions } from "apollo-datasource-rest"
 
-import { NexusGenObjects, NexusGenEnums } from "../typegen"
+import { NexusGenObjects, NexusGenEnums, NexusGenInputs } from "../typegen"
 import type { Environment } from "../../types"
 
 const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
   process.env
-
-export interface CreateProfileNftArgs {
-  key: string
-  data: {
-    handle: string
-    imageURI: string
-    tokenURI: string
-  }
-}
-
-export interface UpdateProfileImageArgs {
-  key: string
-  profileId: number
-  data: {
-    tokenURI: string
-    imageURI?: string | null
-  }
-}
 
 export interface CreatePublishNftArgs {
   key: string
@@ -59,179 +41,169 @@ export class KmsAPI extends RESTDataSource {
     }
   }
 
+  // async createCryptoKey(): Promise<{ keyName: string }> {
+  //   return this.post('/kms/createKey')
+  // }
+
   /**
    * @dev The route to create blockchain wallet.
    */
   async createWallet(
     uid: string
-  ): Promise<(NexusGenObjects["CreateWalletResult"] & { key: string }) | null> {
+  ): Promise<NexusGenObjects["CreateWalletResult"] | null> {
     return this.post("/wallet/create", { uid })
   }
 
   /**
-   * @dev Get balance of a specific address
+   * @dev The route to get balance of a specific address.
    */
   async getBalance(address: string): Promise<{ balance: string }> {
     return this.get(`/wallet/balance/${encodeURIComponent(address)}`)
   }
 
+  /// ***********************
+  /// ***** Profile Contract *****
+  /// ***********************
+
   /**
-   * @dev Check if an address has specified role
+   * @dev The route to check if an address has specified role.
+   * @param uid {string} - user auth uid
+   * @param role {Role} - see Role enum
    */
-  async hasRole({
-    role,
-    address,
-    key,
-  }: {
+  async hasRoleProfile(
+    uid: string,
     role: NexusGenEnums["Role"]
-    address: string
-    key: string
-  }): Promise<{ hasRole: boolean }> {
-    return this.post(`/tokens/check-role/key/${encodeURIComponent(key)}`, {
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/profiles/role/uid/${encodeURIComponent(uid)}`, {
       role,
-      address,
     })
   }
 
   /**
-   * @dev Get all NFTs count of the contract
+   * @dev Call validate handle on the contract which will validate length and uniqueness.
+   * @param handle {string}
    */
-  async getTokensCount(): Promise<{ tokensCount: number }> {
-    return this.get("/tokens/total")
+  async verifyHandle(handle: string): Promise<{ valid: boolean }> {
+    return this.post("/profiles/verifyHandle", { handle })
   }
 
   /**
-   * @dev Get tokenURI of a token
-   * @param tokenId {number}
+   * @dev Create profile nft.
+   * @param uid: string - user auth uid
+   * @param input see CreateProfileInput type
    */
-  async getTokenURI(tokenId: number): Promise<{ tokenURI: string }> {
-    return this.get(`/tokens/tokenId/${encodeURIComponent(tokenId)}`)
+  async createProfileNft(
+    uid: string,
+    input: NexusGenInputs["CreateProfileInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreateProfileResult"]
+  }> {
+    return this.post(`/profiles/create/uid/${encodeURIComponent(uid)}`, input)
   }
 
   /**
-   * @dev A function to burn token
-   * {key} - encrypted private key
-   * {tokenId} - id of the token
+   * @dev Update profile image.
+   * @param uid {string} - user auth uid
+   * @param input see UpdateProfileImageInput type
    */
-  async burnToken({
-    key,
-    tokenId,
-  }: {
-    key: string
-    tokenId: number
-  }): Promise<{ status: "Ok" }> {
-    return this.delete(
-      `/tokens/burn/tokenId/${encodeURIComponent(
-        tokenId
-      )}/key/${encodeURIComponent(key)}`
-    )
-  }
+  async updateProfileImage(
+    uid: string,
+    input: NexusGenInputs["UpdateProfileImageInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreateProfileResult"]
+  }> {
+    const { profileId, imageURI, tokenURI } = input
 
-  /// ***********************
-  /// ***** Profile Token *****
-  /// ***********************
-
-  /**
-   * @dev Create profile nft
-   * {key} - encrypted private key
-   * {data} - {handle, imageURI, tokenURI}
-   */
-  async createProfileNft({
-    key,
-    data,
-  }: CreateProfileNftArgs): Promise<{ token: NexusGenObjects["Token"] }> {
-    return this.post(`/profiles/create/key/${encodeURIComponent(key)}`, data)
-  }
-
-  /**
-   * @dev Update profile image
-   * {key} - encrypted private key
-   * {profileId} - id of the profile
-   * {data} - {imageURI, tokenURI}
-   */
-  async updateProfileImage({
-    key,
-    profileId,
-    data,
-  }: UpdateProfileImageArgs): Promise<{ token: NexusGenObjects["Token"] }> {
     return this.post(
       `/profiles/update/profileId/${encodeURIComponent(
         profileId
-      )}/key/${encodeURIComponent(key)}`,
-      data
+      )}/uid/${encodeURIComponent(uid)}`,
+      { imageURI, tokenURI }
     )
   }
 
   /**
-   * @dev Set a profile as default
-   * {key} - encrypted private key
-   * {profileId} - id of the profile
+   * @dev Set a profile as default.
+   * @param uid {string} - user auth uid
+   * @param profileId {number} - a profile token id
    */
-  async setDefaultProfile({
-    key,
-    profileId,
-  }: {
-    key: string
+  async setDefaultProfile(
+    uid: string,
     profileId: number
-  }): Promise<{ token: NexusGenObjects["Token"] }> {
+  ): Promise<{ token: NexusGenObjects["CreateProfileResult"] }> {
     return this.post(
       `/profiles/default/profileId/${encodeURIComponent(
         profileId
-      )}/key/${encodeURIComponent(key)}`
+      )}/uid/${encodeURIComponent(uid)}`
     )
   }
 
   /**
-   * @dev Get profile tokens of the user
-   * @dev Must provide token ids array
+   * @dev Estimate gas for create profile nft.
+   * @param uid: string - user auth uid
+   * @param input see CreateProfileInput type
+   */
+  async estimateCreateProfileGas(
+    uid: string,
+    input: NexusGenInputs["CreateProfileInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(
+      `/profiles/estimateGas/uid/${encodeURIComponent(uid)}`,
+      input
+    )
+  }
+
+  /**
+   * @dev Get profile tokens of the user.
+   * @dev Fetching profiles array is intended to use in development only, in production we will fetch user's profiles from Firestore directly from the UI as blockchain has limitation to do pagination.
+   * @param uid {string} - user auth uid
+   * @param tokenIds {number[]} - an array of profile token ids
    */
   async getMyProfiles(
-    key: string,
+    uid: string,
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["Token"][] }> {
-    return this.post(`/profiles/my-profiles/key/${encodeURIComponent(key)}`, {
+  ): Promise<{ tokens: NexusGenObjects["ProfileToken"][] }> {
+    return this.post(`/profiles/my-profiles/uid/${encodeURIComponent(uid)}`, {
       tokenIds,
     })
   }
 
   /**
-   * @dev Get one profile by id
+   * @dev Get user's default profile.
+   * @param uid {string} - user auth uid
+   */
+  async getDefaultProfile(
+    uid: string
+  ): Promise<{ token: NexusGenObjects["CreateProfileResult"] }> {
+    return this.get(`/profiles/default/uid/${encodeURIComponent(uid)}`)
+  }
+
+  /**
+   * @dev Get a profile by id.
+   * @param profileId {number} - profile token id
+   * @return {token} - profile token
    */
   async getProfile(
     profileId: number
-  ): Promise<{ token: NexusGenObjects["Token"] }> {
+  ): Promise<{ token: NexusGenObjects["CreateProfileResult"] }> {
     return this.get(`/profiles/profileId/${encodeURIComponent(profileId)}`)
   }
 
   /**
-   * @dev Get user's default profile
-   * @param key - wallet's key
+   * @dev Get number of total profiles.
+   * @return {total} - number of total profile tokens already minted.
    */
-  async getDefaultProfile(
-    key: string
-  ): Promise<{ token: NexusGenObjects["Token"] }> {
-    return this.get(`/profiles/default/key/${encodeURIComponent(key)}`)
+  async getTotalProfilesCount(): Promise<{ total: number }> {
+    return this.get(`/profiles/total`)
   }
 
   /**
-   * @dev Call validate handle on the contract which will validate length and uniqueness
+   * @dev Get tokenURI of a token
+   * @param profileId {number}
    */
-  async verifyHandle(handle: string): Promise<{ isHandleUnique: boolean }> {
-    return this.post("/profiles/verifyHandle", { handle })
-  }
-
-  // async createCryptoKey(): Promise<{ keyName: string }> {
-  //   return this.post('/kms/createKey')
-  // }
-
-  async estimateCreateProfileGas(
-    input: CreateProfileNftArgs
-  ): Promise<{ gas: string }> {
-    const { key, data } = input
-
-    return this.post(
-      `/profiles/estimateGas/key/${encodeURIComponent(key)}`,
-      data
+  async getProfileTokenURI(profileId: number): Promise<{ uri: string }> {
+    return this.get(
+      `/profiles/token-uri/profileId/${encodeURIComponent(profileId)}`
     )
   }
 
@@ -246,10 +218,9 @@ export class KmsAPI extends RESTDataSource {
    * {key} - encrypted private key
    * {data} - {tokenURI, profileId, imageURI, contentURI}
    */
-  async createPublishNft({
-    key,
-    data,
-  }: CreatePublishNftArgs): Promise<{ token: NexusGenObjects["Token"] }> {
+  async createPublishNft({ key, data }: CreatePublishNftArgs): Promise<{
+    token: NexusGenObjects["PublishToken"]
+  }> {
     return this.post(`/publishes/create/key/${encodeURIComponent(key)}`, data)
   }
 
@@ -263,7 +234,9 @@ export class KmsAPI extends RESTDataSource {
     key,
     publishId,
     data,
-  }: UpdatePublishNftArgs): Promise<{ token: NexusGenObjects["Token"] }> {
+  }: UpdatePublishNftArgs): Promise<{
+    token: NexusGenObjects["PublishToken"]
+  }> {
     return this.post(
       `/publishes/update/publishId/${publishId}/key/${encodeURIComponent(key)}`,
       data
@@ -277,7 +250,7 @@ export class KmsAPI extends RESTDataSource {
   async getMyPublishes(
     key: string,
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["Token"][] }> {
+  ): Promise<{ tokens: NexusGenObjects["PublishToken"][] }> {
     return this.post(`/publishes/my-publishes/key/${encodeURIComponent(key)}`, {
       tokenIds,
     })
@@ -289,7 +262,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublishes(
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["Token"][] }> {
+  ): Promise<{ tokens: NexusGenObjects["PublishToken"][] }> {
     return this.post(`/publishes/get`, {
       tokenIds,
     })
@@ -301,7 +274,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublish(
     tokenId: number
-  ): Promise<{ token: NexusGenObjects["Token"] }> {
+  ): Promise<{ token: NexusGenObjects["PublishToken"] }> {
     return this.get(`/publishes/publishId/${tokenId}`)
   }
 }
