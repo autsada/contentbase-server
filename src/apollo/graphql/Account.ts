@@ -217,7 +217,7 @@ export const AccountMutation = extendType({
 
           // Create a new wallet.
           // Kms server will create a wallet doc from there, so we don't have to do it here.
-          const walletResult = await dataSources.kmsAPI.createWallet()
+          const walletResult = await dataSources.kmsAPI.createWallet(uid)
 
           if (!walletResult) throw new Error("Create wallet failed")
           const { address } = walletResult

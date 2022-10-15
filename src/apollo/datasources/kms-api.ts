@@ -62,10 +62,10 @@ export class KmsAPI extends RESTDataSource {
   /**
    * @dev The route to create blockchain wallet.
    */
-  async createWallet(): Promise<
-    (NexusGenObjects["CreateWalletResult"] & { key: string }) | null
-  > {
-    return this.post("/wallet/create")
+  async createWallet(
+    uid: string
+  ): Promise<(NexusGenObjects["CreateWalletResult"] & { key: string }) | null> {
+    return this.post("/wallet/create", { uid })
   }
 
   /**
