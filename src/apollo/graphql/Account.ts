@@ -236,49 +236,29 @@ export const AccountMutation = extendType({
       type: nonNull("CreateWalletResult"),
       async resolve(_root, _args, { dataSources, user }) {
         try {
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          // if (!user) throw new AuthenticationError(authErrMessage)
+          // const uid = user.uid
+          const uid = "abc123"
 
           // If user doesn't already have an account, create one for them.
           const { account } = await dataSources.firestoreAPI.getAccount(uid)
 
-          if (!account) {
-            // Create a new account.
-            await dataSources.firestoreAPI.createAccount(uid, {
-              type: "traditional",
-            })
-          }
-
-          // Check if user already has a wallet, wallet id is the auth uid.
-          const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-
-          if (wallet) {
-            // User already has a wallet, throw an error to let them know.
-            // Before throwing, just need to make sure the account document as an "address" field.
-            const { account: newFetchedAccount } =
-              await dataSources.firestoreAPI.getAccount(uid)
-            if (newFetchedAccount && !newFetchedAccount.address) {
-              // This case should not exists, but we have to make sure that if it happens to exist, we have a logic to handle it.
-              await dataSources.firestoreAPI.updateAccount({
-                docId: uid,
-                data: { address: wallet.address },
-              })
-            }
-
+          // If user already has an account and a wallet.
+          if (account && account.address) {
+            // If an account has an address field it means that this account already has a wallet.
             throw new Error("You already have a wallet")
           }
 
-          // Create a new wallet.
-          // Kms server will create a wallet doc from there, so we don't have to do it here.
+          // Call kms api to create a new wallet.
           const walletResult = await dataSources.kmsAPI.createWallet(uid)
 
           if (!walletResult) throw new Error("Create wallet failed")
           const { address } = walletResult
 
-          // Update account doc.
-          await dataSources.firestoreAPI.updateAccount({
-            docId: uid,
-            data: { address },
+          // Create account doc.
+          await dataSources.firestoreAPI.createAccount(uid, {
+            address,
+            type: "traditional",
           })
 
           // Add the address to Alchemy notify list

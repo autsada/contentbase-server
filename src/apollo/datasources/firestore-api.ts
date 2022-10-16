@@ -54,23 +54,6 @@ export class FirestoreAPI extends DataSource {
   }
 
   /**
-   * The function to get a wallet doc.
-   * @param walletId {string} - a Firestore document id of wallets collection which is an auth uid.
-   * @returns {wallet}
-   */
-  async getWallet(
-    walletId: string
-  ): Promise<{ wallet: NexusGenObjects["Wallet"] | null }> {
-    const wallet = await getDocById<NexusGenObjects["Wallet"]>({
-      db: this.db,
-      collectionName: walletsCollection,
-      docId: walletId,
-    })
-
-    return { wallet }
-  }
-
-  /**
    * The function to create an account doc in Firestore.
    * @param id {string} - user's auth uid.
    * @param data - {address, type}
