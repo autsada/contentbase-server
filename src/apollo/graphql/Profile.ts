@@ -102,6 +102,7 @@ export const EstimateCreateProfileGasResult = objectType({
  * Profile Token Type
  * @dev this is the object type for data that will be stored in Firestore.
  * @param id {string} - Firestore document id
+ * @param uid {string} - a user auth uid
  * @param tokenId {number} - a Profile token id
  * @param owner {string} - a blockchain address that owns the token
  * @param handle {string} - a handle of the profile
@@ -114,6 +115,7 @@ export const ProfileToken = objectType({
   name: "ProfileToken",
   definition(t) {
     t.nonNull.string("id")
+    t.nonNull.string("uid")
     t.nonNull.int("tokenId")
     t.nonNull.string("owner")
     t.nonNull.string("handle")
@@ -128,32 +130,6 @@ export const ProfileQuery = extendType({
   type: "Query",
   definition(t) {
     /**
-     * @dev ONLY FOR DEVELOPMENT.
-     * @dev Get user's profiles.
-     * @dev for production the UI will fetch directly from Firestore.
-     */
-    t.field("getMyProfiles", {
-      type: nonNull(list("ProfileToken")),
-      async resolve(_root, _args, { dataSources, user }) {
-        try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
-          const uid = ""
-
-          // use kms-api in development.
-          const { tokens } = await dataSources.kmsAPI.getMyProfiles(
-            uid,
-            [1, 2, 3, 4, 5]
-          )
-
-          return tokens
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
      * @dev Get user's default profile
      */
     t.field("getDefaultProfile", {
@@ -162,66 +138,11 @@ export const ProfileQuery = extendType({
         try {
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
-          const uid = ""
+          const uid = "abc123"
 
           const { token } = await dataSources.kmsAPI.getDefaultProfile(uid)
 
           return token
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev ONLY FOR DEVELOPMENT.
-     * @dev Get a profile by id
-     * @param profileId - a token id
-     */
-    t.field("getProfile", {
-      type: nonNull("CreateProfileResult"),
-      args: { profileId: nonNull("Int") },
-      async resolve(_root, { profileId }, { dataSources }) {
-        try {
-          const { token } = await dataSources.kmsAPI.getProfile(profileId)
-
-          return token
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev ONLY FOR DEVELOPMENT.
-     * @dev Get total profiles count
-     */
-    t.field("getProfilesCount", {
-      type: nonNull("Int"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          const { total } = await dataSources.kmsAPI.getTotalProfilesCount()
-
-          return total
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev ONLY FOR DEVELOPMENT.
-     * @dev in staging and production the UI will fetch directly from the blockchain.
-     * @dev Get token uri
-     */
-    t.field("getProfileTokenURI", {
-      type: nonNull("String"),
-      args: { profileId: nonNull("Int") },
-      async resolve(_root, { profileId }, { dataSources }) {
-        try {
-          const { uri } = await dataSources.kmsAPI.getProfileTokenURI(profileId)
-
-          return uri
         } catch (error) {
           throw error
         }
@@ -243,7 +164,7 @@ export const ProfileMutation = extendType({
         try {
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
-          const uid = ""
+          const uid = "abc123"
 
           if (!data) throw new UserInputError(badRequestErrMessage)
           const { role } = data
@@ -269,7 +190,7 @@ export const ProfileMutation = extendType({
           // User must be already logged in
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
-          const uid = ""
+          const uid = "abc123"
 
           // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)
@@ -299,11 +220,12 @@ export const ProfileMutation = extendType({
 
           if (!token) throw new Error("Create profile nft failed.")
 
-          // // Save new token in Firestore (profiles collection), must include original handle (the handle before lowercase prefixed with "@") for displaying on the UI.
-          // await dataSources.firestoreAPI.createProfileDoc({
-          //   ...token,
-          //   displayedHandle: `@${handle}`,
-          // })
+          // Save new token in Firestore (profiles collection), must include original handle (the handle before lowercase prefixed with "@") for displaying on the UI.
+          await dataSources.firestoreAPI.createProfileDoc({
+            ...token,
+            uid,
+            displayedHandle: `@${handle}`,
+          })
 
           return token
         } catch (error) {
@@ -325,14 +247,14 @@ export const ProfileMutation = extendType({
           // User must be already logged in
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
-          const uid = ""
+          const uid = "abc123"
 
           // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)
 
           const { profileId, imageURI, tokenURI } = input
 
-          if (!profileId || !imageURI || !tokenURI)
+          if (typeof profileId !== "number" || !imageURI || !tokenURI)
             throw new UserInputError(badRequestErrMessage)
 
           // Update the profile
@@ -344,14 +266,14 @@ export const ProfileMutation = extendType({
 
           if (!token) throw new Error("Update profile image failed.")
 
-          // // Update the profile doc in Firestore.
-          // // Search the profile doc by token id to get the document id first.
-          // const { profile } =
-          //   await dataSources.firestoreAPI.searchProfileByTokenId(profileId)
+          // Update the profile doc in Firestore.
+          // Search the profile doc by token id to get the document id first.
+          const { profile } =
+            await dataSources.firestoreAPI.searchProfileByTokenId(profileId)
 
-          // if (profile) {
-          //   await dataSources.firestoreAPI.updateProfileDoc(profile.id, token)
-          // }
+          if (profile) {
+            await dataSources.firestoreAPI.updateProfileDoc(profile.id, token)
+          }
 
           return token
         } catch (error) {
@@ -372,7 +294,7 @@ export const ProfileMutation = extendType({
           // User must be already logged in
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user.uid
-          const uid = ""
+          const uid = "abc123"
 
           if (!profileId) throw new UserInputError("Bad request")
 
@@ -427,7 +349,7 @@ export const ProfileMutation = extendType({
           // // User must be already logged in
           // if (!user) throw new AuthenticationError(authErrMessage)
           // const uid = user?.uid
-          const uid = ""
+          const uid = "abc123"
 
           // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)

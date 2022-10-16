@@ -89,6 +89,7 @@ type ProfileToken {
   imageURI: String!
   owner: String!
   tokenId: Int!
+  uid: String!
   updatedAt: String
 }
 
@@ -104,11 +105,7 @@ type PublishToken {
 type Query {
   getDefaultProfile: CreateProfileResult!
   getMyBalance(address: String!): String!
-  getMyProfiles: [ProfileToken]!
   getMyPublishes: [PublishToken]!
-  getProfile(profileId: Int!): CreateProfileResult!
-  getProfileTokenURI(profileId: Int!): String!
-  getProfilesCount: Int!
   getPublish(publishId: Int!): PublishToken!
   getPublishes: [PublishToken]!
 }

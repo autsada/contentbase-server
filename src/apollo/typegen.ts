@@ -105,6 +105,7 @@ export interface NexusGenObjects {
     imageURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
+    uid: string; // String!
     updatedAt?: string | null; // String
   }
   PublishToken: { // root type
@@ -233,6 +234,7 @@ export interface NexusGenFieldTypes {
     imageURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
+    uid: string; // String!
     updatedAt: string | null; // String
   }
   PublishToken: { // field return type
@@ -246,11 +248,7 @@ export interface NexusGenFieldTypes {
   Query: { // field return type
     getDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
     getMyBalance: string; // String!
-    getMyProfiles: Array<NexusGenRootTypes['ProfileToken'] | null>; // [ProfileToken]!
     getMyPublishes: Array<NexusGenRootTypes['PublishToken'] | null>; // [PublishToken]!
-    getProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
-    getProfileTokenURI: string; // String!
-    getProfilesCount: number; // Int!
     getPublish: NexusGenRootTypes['PublishToken']; // PublishToken!
     getPublishes: Array<NexusGenRootTypes['PublishToken'] | null>; // [PublishToken]!
   }
@@ -361,6 +359,7 @@ export interface NexusGenFieldTypeNames {
     imageURI: 'String'
     owner: 'String'
     tokenId: 'Int'
+    uid: 'String'
     updatedAt: 'String'
   }
   PublishToken: { // field return type name
@@ -374,11 +373,7 @@ export interface NexusGenFieldTypeNames {
   Query: { // field return type name
     getDefaultProfile: 'CreateProfileResult'
     getMyBalance: 'String'
-    getMyProfiles: 'ProfileToken'
     getMyPublishes: 'PublishToken'
-    getProfile: 'CreateProfileResult'
-    getProfileTokenURI: 'String'
-    getProfilesCount: 'Int'
     getPublish: 'PublishToken'
     getPublishes: 'PublishToken'
   }
@@ -461,12 +456,6 @@ export interface NexusGenArgTypes {
   Query: {
     getMyBalance: { // args
       address: string; // String!
-    }
-    getProfile: { // args
-      profileId: number; // Int!
-    }
-    getProfileTokenURI: { // args
-      profileId: number; // Int!
     }
     getPublish: { // args
       publishId: number; // Int!

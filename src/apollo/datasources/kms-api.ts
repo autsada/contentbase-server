@@ -154,21 +154,6 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Get profile tokens of the user.
-   * @dev Fetching profiles array is intended to use in development only, in production we will fetch user's profiles from Firestore directly from the UI as blockchain has limitation to do pagination.
-   * @param uid {string} - user auth uid
-   * @param tokenIds {number[]} - an array of profile token ids
-   */
-  async getMyProfiles(
-    uid: string,
-    tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["ProfileToken"][] }> {
-    return this.post(`/profiles/my-profiles/uid/${encodeURIComponent(uid)}`, {
-      tokenIds,
-    })
-  }
-
-  /**
    * @dev Get user's default profile.
    * @param uid {string} - user auth uid
    */
@@ -176,35 +161,6 @@ export class KmsAPI extends RESTDataSource {
     uid: string
   ): Promise<{ token: NexusGenObjects["CreateProfileResult"] }> {
     return this.get(`/profiles/default/uid/${encodeURIComponent(uid)}`)
-  }
-
-  /**
-   * @dev Get a profile by id.
-   * @param profileId {number} - profile token id
-   * @return {token} - profile token
-   */
-  async getProfile(
-    profileId: number
-  ): Promise<{ token: NexusGenObjects["CreateProfileResult"] }> {
-    return this.get(`/profiles/profileId/${encodeURIComponent(profileId)}`)
-  }
-
-  /**
-   * @dev Get number of total profiles.
-   * @return {total} - number of total profile tokens already minted.
-   */
-  async getTotalProfilesCount(): Promise<{ total: number }> {
-    return this.get(`/profiles/total`)
-  }
-
-  /**
-   * @dev Get tokenURI of a token
-   * @param profileId {number}
-   */
-  async getProfileTokenURI(profileId: number): Promise<{ uri: string }> {
-    return this.get(
-      `/profiles/token-uri/profileId/${encodeURIComponent(profileId)}`
-    )
   }
 
   // ======================= //
