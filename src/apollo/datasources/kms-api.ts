@@ -5,27 +5,6 @@ import type { Environment } from "../../types"
 
 const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
   process.env
-
-export interface CreatePublishNftArgs {
-  key: string
-  data: {
-    tokenURI: string
-    profileId: number
-    imageURI: string
-    contentURI: string
-  }
-}
-
-export interface UpdatePublishNftArgs {
-  key: string
-  publishId: number
-  data: {
-    tokenURI: string
-    imageURI?: string | null
-    contentURI?: string | null
-  }
-}
-
 export class KmsAPI extends RESTDataSource {
   constructor() {
     super()
@@ -59,6 +38,64 @@ export class KmsAPI extends RESTDataSource {
    */
   async getBalance(address: string): Promise<{ balance: string }> {
     return this.get(`/wallet/balance/${encodeURIComponent(address)}`)
+  }
+
+  // =========================== //
+  // These below functions are for only admin role, and will be used in development only, in production admin will connect to the blockchain directly from the UI for more security.
+  async setProfileForPublish(
+    profileContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/publish-profile", { profileContractAddress })
+  }
+
+  async setLikeForPublish(
+    likeContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/publish-like", { likeContractAddress })
+  }
+
+  async setProfileForFollow(
+    profileContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/follow-profile", { profileContractAddress })
+  }
+
+  async setProfileForLike(
+    profileContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/like-profile", { profileContractAddress })
+  }
+
+  async setPublishForLike(
+    publishContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/like-publish", { publishContractAddress })
+  }
+
+  async setContractOwnerAddress(
+    ownerAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/owner-address", { ownerAddress })
+  }
+
+  async withdrawFunds(): Promise<{ status: "Ok" }> {
+    return this.post("/admin/withdraw")
+  }
+
+  async setLikeFee(fee: number): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/like-fee", { fee })
+  }
+
+  async setPlatformFee(fee: number): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/platform-fee", { fee })
+  }
+
+  async getOwnerAddress(): Promise<{ address: string }> {
+    return this.get("/admin/owner-address")
+  }
+
+  async getContactBalance(): Promise<{ balance: number }> {
+    return this.get("/admin/balance")
   }
 
   /// ***********************
@@ -112,13 +149,13 @@ export class KmsAPI extends RESTDataSource {
   ): Promise<{
     token: NexusGenObjects["CreateProfileResult"]
   }> {
-    const { profileId, imageURI, tokenURI } = input
+    const { profileId, imageURI } = input
 
     return this.post(
       `/profiles/update/profileId/${encodeURIComponent(
         profileId
       )}/uid/${encodeURIComponent(uid)}`,
-      { imageURI, tokenURI }
+      { imageURI }
     )
   }
 
@@ -139,7 +176,7 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Estimate gas for create profile nft.
+   * @dev Estimate gas for creating a profile nft.
    * @param uid: string - user auth uid
    * @param input see CreateProfileInput type
    */
@@ -170,32 +207,88 @@ export class KmsAPI extends RESTDataSource {
   /// ***********************
 
   /**
-   * @dev Create publish nft
-   * {key} - encrypted private key
-   * {data} - {tokenURI, profileId, imageURI, contentURI}
+   * @dev The route to check if an address has specified role.
+   * @param uid {string} - user auth uid
+   * @param role {Role} - see Role enum
    */
-  async createPublishNft({ key, data }: CreatePublishNftArgs): Promise<{
-    token: NexusGenObjects["PublishToken"]
+  async hasRolePublish(
+    uid: string,
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/publishes/role/uid/${encodeURIComponent(uid)}`, {
+      role,
+    })
+  }
+
+  /**
+   * @dev Create publish nft
+   * @param uid {string} - user auth uid
+   * @param input see CreatePublishInput type
+   */
+  async createPublishNft(
+    uid: string,
+    input: NexusGenInputs["CreatePublishInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreatePublishResult"]
   }> {
-    return this.post(`/publishes/create/key/${encodeURIComponent(key)}`, data)
+    return this.post(`/publishes/create/uid/${encodeURIComponent(uid)}`, input)
   }
 
   /**
    * @dev Update publish nft
-   * {key} - encrypted private key
-   * {publishId} - a token id of the publish to be updated
-   * {data} - {tokenURI, imageURI, contentURI}
+   * @param uid {string} - user auth uid
+   * @param input see UpdatePublishInput type
    */
-  async updatePublishNft({
-    key,
-    publishId,
-    data,
-  }: UpdatePublishNftArgs): Promise<{
-    token: NexusGenObjects["PublishToken"]
+  async updatePublishNft(
+    uid: string,
+    input: NexusGenInputs["UpdatePublishInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreatePublishResult"]
   }> {
+    const {
+      publishId,
+      creatorId,
+      imageURI,
+      contentURI,
+      metadataURI,
+      title,
+      description,
+      primaryCategory,
+      secondaryCategory,
+      tertiaryCategory,
+    } = input
+
     return this.post(
-      `/publishes/update/publishId/${publishId}/key/${encodeURIComponent(key)}`,
-      data
+      `/publishes/update/publishId/${encodeURIComponent(
+        publishId
+      )}/uid/${encodeURIComponent(uid)}`,
+      {
+        creatorId,
+        imageURI,
+        contentURI,
+        metadataURI,
+        title,
+        description,
+        primaryCategory,
+        secondaryCategory,
+        tertiaryCategory,
+      }
+    )
+  }
+
+  /**
+   * @dev Delete publish nft
+   * @param uid {string} - user auth uid
+   * @param publishId {number} - a publish token id
+   */
+  async burnPublishNft(
+    uid: string,
+    publishId: number
+  ): Promise<{ status: number }> {
+    return this.delete(
+      `/publishes/delete/publishId/${encodeURIComponent(
+        publishId
+      )}/uid/${encodeURIComponent(uid)}`
     )
   }
 
@@ -204,10 +297,10 @@ export class KmsAPI extends RESTDataSource {
    * @dev Must provide token ids array
    */
   async getMyPublishes(
-    key: string,
+    uid: string,
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["PublishToken"][] }> {
-    return this.post(`/publishes/my-publishes/key/${encodeURIComponent(key)}`, {
+  ): Promise<{ tokens: NexusGenObjects["FetchPublishResult"][] }> {
+    return this.post(`/publishes/my-publishes/uid/${encodeURIComponent(uid)}`, {
       tokenIds,
     })
   }
@@ -218,7 +311,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublishes(
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["PublishToken"][] }> {
+  ): Promise<{ tokens: NexusGenObjects["FetchPublishResult"][] }> {
     return this.post(`/publishes/get`, {
       tokenIds,
     })
@@ -230,7 +323,190 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublish(
     tokenId: number
-  ): Promise<{ token: NexusGenObjects["PublishToken"] }> {
+  ): Promise<{ token: NexusGenObjects["FetchPublishResult"] }> {
     return this.get(`/publishes/publishId/${tokenId}`)
+  }
+
+  /**
+   * @dev Get total publishes count
+   */
+  async totalPublishes(): Promise<{ total: number }> {
+    return this.get(`/publishes/total`)
+  }
+
+  /**
+   * @dev Estimate gas for creating a publish nft.
+   * @param uid: string - user auth uid
+   * @param input see CreateProfileInput type
+   */
+  async estimateCreatePublishGas(
+    uid: string,
+    input: NexusGenInputs["CreatePublishInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(
+      `/publishes/estimateGas/uid/${encodeURIComponent(uid)}`,
+      input
+    )
+  }
+
+  /// ***********************
+  /// ***** Follow Contract *****
+  /// ***********************
+
+  /**
+   * @dev The route to check if an address has specified role.
+   * @param uid {string} - user auth uid
+   * @param role {Role} - see Role enum
+   */
+  async hasRoleFollow(
+    uid: string,
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/follows/role/uid/${encodeURIComponent(uid)}`, {
+      role,
+    })
+  }
+
+  /**
+   * @dev follow other profile (create follow nft)
+   * @param uid {string} - user auth uid
+   * @param input see CreateFollowInput type
+   */
+  async createFollowNft(
+    uid: string,
+    input: NexusGenInputs["CreateFollowInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreateFollowResult"]
+  }> {
+    return this.post(`/follows/create/uid/${encodeURIComponent(uid)}`, input)
+  }
+
+  /**
+   * @dev unFollow (delete follow nft)
+   * @param uid {string} - user auth uid
+   * @param tokenId {number} - a follow token id
+   */
+  async burnFollowNft(
+    uid: string,
+    tokenId: number
+  ): Promise<{ status: number }> {
+    return this.delete(
+      `/follows/delete/tokenId/${encodeURIComponent(
+        tokenId
+      )}/uid/${encodeURIComponent(uid)}`
+    )
+  }
+
+  /**
+   * @dev get following count of a specific profile
+   */
+  async getFollowingCount(profileId: number): Promise<{ count: number }> {
+    return this.get(
+      `/follows/following/profileId/${encodeURIComponent(profileId)}`
+    )
+  }
+
+  /**
+   * @dev get followers count of a specific profile
+   */
+  async getFollowersCount(profileId: number): Promise<{ count: number }> {
+    return this.get(
+      `/follows/followers/profileId/${encodeURIComponent(profileId)}`
+    )
+  }
+
+  /**
+   * @dev fetch followers nft by provided token ids
+   */
+  async fetchFollowers(
+    tokenIds: number[]
+  ): Promise<{ tokens: NexusGenObjects["CreateFollowResult"][] }> {
+    return this.post(`/follows`, { tokenIds })
+  }
+
+  /**
+   * @dev Estimate gas for creating a follow nft.
+   * @param uid: string - user auth uid
+   * @param input see CreateFollowInput type
+   */
+  async estimateCreateFollowGas(
+    uid: string,
+    input: NexusGenInputs["CreateFollowInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(
+      `/follows/estimateGas/uid/${encodeURIComponent(uid)}`,
+      input
+    )
+  }
+
+  /// ***********************
+  /// ***** Like Contract *****
+  /// ***********************
+
+  /**
+   * @dev The route to check if an address has specified role.
+   * @param uid {string} - user auth uid
+   * @param role {Role} - see Role enum
+   */
+  async hasRoleLike(
+    uid: string,
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/likes/role/uid/${encodeURIComponent(uid)}`, {
+      role,
+    })
+  }
+
+  /**
+   * @dev like a publish (create like nft)
+   * @param uid {string} - user auth uid
+   * @param input see CreateLikeInput type
+   */
+  async createLikeNft(
+    uid: string,
+    input: NexusGenInputs["CreateLikeInput"]
+  ): Promise<{
+    token: NexusGenObjects["CreateLikeResult"]
+  }> {
+    return this.post(`/likes/create/uid/${encodeURIComponent(uid)}`, input)
+  }
+
+  /**
+   * @dev unLike (delete like nft)
+   * @param uid {string} - user auth uid
+   * @param tokenId {number} - a like token id
+   */
+  async burnLikeNft(uid: string, tokenId: number): Promise<{ status: number }> {
+    return this.delete(
+      `/likes/delete/tokenId/${encodeURIComponent(
+        tokenId
+      )}/uid/${encodeURIComponent(uid)}`
+    )
+  }
+
+  /**
+   * @dev get like fee
+   */
+  async getLikeFee(): Promise<{ fee: number }> {
+    return this.get(`/likes/fee/like-fee`)
+  }
+
+  /**
+   * @dev get platform fee
+   */
+  async getPlatformFee(): Promise<{ fee: number }> {
+    return this.get(`/likes/fee/platform-fee`)
+  }
+
+  /**
+   * @dev Estimate gas for creating a like nft.
+   * @param uid: string - user auth uid
+   * @param input see CreateLikeInput type
+   */
+  async estimateCreateLikeGas(
+    uid: string,
+    input: NexusGenInputs["CreateLikeInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(`/likes/estimateGas/uid/${encodeURIComponent(uid)}`, input)
   }
 }

@@ -60,12 +60,13 @@ async function startServer() {
       webhooksApi: new WebhooksAPI(),
     }),
     context: async ({ req }) => {
-      // Get the user token from the headers.
-      const authorizationHeaders = req.headers["authorization"]
-      const result = await getUserFromAuthorizationHeader(authorizationHeaders)
-      return result
+      // // Get the user token from the headers.
+      // const authorizationHeaders = req.headers["authorization"]
+      // const result = await getUserFromAuthorizationHeader(authorizationHeaders)
+      // return result
+      return { user: { uid: "abc123" } }
     },
-    introspection: env === "development" || env === "staging", // Only for development mode
+    introspection: env !== "production", // Only in development and staging env.
   })
 
   await server.start()

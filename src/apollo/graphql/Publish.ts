@@ -12,59 +12,181 @@ import {
   ForbiddenError,
 } from "apollo-server-express"
 
-import { publishesCollection } from "../../lib"
-import type { NexusGenEnums, NexusGenObjects } from "../typegen"
-
 const authErrMessage = "*** You must be logged in ***"
 const badRequestErrMessage = "Bad Request"
+const forbiddenErrMessage = "Forbidden"
 
-/**
- * An object containing required data to create a publish.
- * @param tokenURI {string} - a uri of the token's metadata
- * @param profileId {number} - a token id of the creator's profile
+export const Category = enumType({
+  name: "Category",
+  members: [
+    "Empty",
+    "Music",
+    "Movies",
+    "Entertainment",
+    "Sports",
+    "Food",
+    "Travel",
+    "Gaming",
+    "News",
+    "Animals",
+    "Education",
+    "Science",
+    "Technology",
+    "Programming",
+    "LifeStyle",
+    "Vehicles",
+    "Children",
+    "Women",
+    "Men",
+    "Other",
+    "NotExist",
+  ],
+})
+
+/**",
+ * The object containing required data to create a publish.
+ * @param creatorId {number} - a token id of the creator's profile
  * @param imageURI {string} - a publish's thumbnail image uri
  * @param contentURI {string} - a publish's content uri
- *
+ * @param metadataURI {string} - a publish's metadata file uri
+ * @param title {string} - a publish's title
+ * @param description {string} - a publish's description
+ * @param primaryCategory {enum} - a primary category of a publish
+ * @param secondaryCategory {enum} - a secondary category of a publish
+ * @param tertiaryCategory {enum} - a tertiary category of a publish
  */
 export const CreatePublishInput = inputObjectType({
   name: "CreatePublishInput",
   definition(t) {
-    t.nonNull.string("tokenURI")
-    t.nonNull.int("profileId")
+    t.nonNull.int("creatorId")
     t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
+    t.nonNull.string("metadataURI")
+    t.nonNull.string("title")
+    t.nonNull.string("description")
+    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
   },
 })
 
 /**
- * An object containing required data to update a publish.
- * @param docId {string} - a publish document id in Firestore
+ * Returned type of CreatePublishNft mutation.
+ * @dev see PublishToken.
+ * @dev use this type for the returned type of other mutations that return Publish token as well.
+ */
+export const CreatePublishResult = objectType({
+  name: "CreatePublishResult",
+  definition(t) {
+    t.nonNull.int("tokenId")
+    t.nonNull.string("owner")
+    t.nonNull.int("creatorId")
+    t.nonNull.int("likes")
+    t.nonNull.string("imageURI")
+    t.nonNull.string("contentURI")
+    t.nonNull.string("metadataURI")
+    t.nonNull.string("title")
+    t.nonNull.string("description")
+    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
+  },
+})
+
+/**
+ * The object containing required data to update a publish.
  * @param publishId {number} - a token id of the publish to be updated
- * @param tokenURI {string} - a uri of the token's metadata
+ * @param creatorId {number} - a profile token id that owns the publish
  * @param imageURI {string} - a publish's thumbnail image uri
  * @param contentURI {string} - a publish's content uri
- *
+ * @param metadataURI {string} - a publish's metadata file uri
+ * @param primaryCategory {enum} - a primary category of a publish
+ * @param secondaryCategory {enum} - a secondary category of a publish
+ * @param tertiaryCategory {enum} - a tertiary category of a publish
  */
 export const UpdatePublishInput = inputObjectType({
   name: "UpdatePublishInput",
   definition(t) {
-    t.nonNull.string("docId")
     t.nonNull.int("publishId")
-    t.nonNull.string("tokenURI")
-    t.string("imageURI")
-    t.string("contentURI")
+    t.nonNull.int("creatorId")
+    t.nonNull.string("imageURI")
+    t.nonNull.string("contentURI")
+    t.nonNull.string("metadataURI")
+    t.nonNull.string("title")
+    t.nonNull.string("description")
+    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
   },
 })
 
+/**
+ * Return type for delete NFT
+ */
+export const BurnNFTResult = objectType({
+  name: "BurnNFTResult",
+  definition(t) {
+    t.nonNull.int("status")
+  },
+})
+
+/**
+ * Returned type of publish queries.
+ * @dev see PublishToken.
+ * @dev use this type for the returned type for all publish quiries.
+ */
+export const FetchPublishResult = objectType({
+  name: "FetchPublishResult",
+  definition(t) {
+    t.nonNull.int("tokenId")
+    t.nonNull.string("owner")
+    t.nonNull.int("creatorId")
+    t.nonNull.int("likes")
+    t.nonNull.string("imageURI")
+    t.nonNull.string("contentURI")
+    t.nonNull.string("metadataURI")
+  },
+})
+
+/**
+ * Publish Token Type
+ * @dev this is the object type for data that will be stored in Firestore.
+ * @param id {string} - Firestore document id
+ * @param uid {string} - a user auth uid
+ * @param tokenId {number} - a Publish token id
+ * @param owner {string} - a blockchain address that owns the token
+ * @param creatorId {number} - a Profile token id that owns the token
+ * @param likes {number} - number of likes
+ * @param imageURI {string} - a publish's thumbnail image uri
+ * @param contentURI {string} - a publish's content uri
+ * @param metadataURI {string} - a publish's metadata file uri
+ * @param title {string} - a publish's title
+ * @param description {string} - a publish's description
+ * @param primaryCategory {enum} - a primary category of a publish
+ * @param secondaryCategory {enum} - a secondary category of a publish
+ * @param tertiaryCategory {enum} - a tertiary category of a publish
+ * @param createdAt {string}
+ * @param updatedAt {string}
+ */
 export const PublishToken = objectType({
   name: "PublishToken",
   definition(t) {
+    t.nonNull.string("id")
+    t.nonNull.string("uid")
     t.nonNull.int("tokenId")
-    t.nonNull.int("creatorId")
     t.nonNull.string("owner")
+    t.nonNull.int("creatorId")
+    t.nonNull.int("likes")
     t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
-    t.nonNull.int("likes")
+    t.nonNull.string("metadataURI")
+    t.nonNull.string("title")
+    t.nonNull.string("description")
+    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
+    t.nonNull.string("createdAt")
+    t.string("updatedAt")
   },
 })
 
@@ -72,28 +194,22 @@ export const PublishQuery = extendType({
   type: "Query",
   definition(t) {
     /**
-     * @dev Get publishes of a user
+     * @dev Get user's publishes by provided ids.
+     * @dev This query is for testing in development only.
      */
     t.field("getMyPublishes", {
-      type: nonNull(list("PublishToken")),
+      type: nonNull(list("FetchPublishResult")),
       async resolve(_root, _args, { dataSources, user }) {
         try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
 
-          // // Get user's wallet
-          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-          // if (!wallet || !wallet.address || !wallet.key)
-          //   throw new ForbiddenError('Forbidden')
-
-          // const { address, key } = wallet
-          const address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-          const key =
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
+          // Validate input
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
 
           // TODO: Get user's profile ids from Firestore
           const { tokens } = await dataSources.kmsAPI.getMyPublishes(
-            key,
+            uid,
             [1, 2, 3, 4, 5, 6, 7]
           )
 
@@ -108,23 +224,9 @@ export const PublishQuery = extendType({
      * @dev Get publishes
      */
     t.field("getPublishes", {
-      type: nonNull(list("PublishToken")),
+      type: nonNull(list("FetchPublishResult")),
       async resolve(_root, _args, { dataSources, user }) {
         try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
-
-          // // Get user's wallet
-          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-          // if (!wallet || !wallet.address || !wallet.key)
-          //   throw new ForbiddenError('Forbidden')
-
-          // const { address, key } = wallet
-          const address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-          const key =
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-
-          // TODO: Get user's profile ids from Firestore
           const { tokens } = await dataSources.kmsAPI.getPublishes([
             1, 2, 3, 4, 5, 6, 7,
           ])
@@ -140,13 +242,32 @@ export const PublishQuery = extendType({
      * @dev Get one publish
      */
     t.field("getPublish", {
-      type: nonNull("PublishToken"),
+      type: nonNull("FetchPublishResult"),
       args: { publishId: nonNull("Int") },
       async resolve(_root, { publishId }, { dataSources }) {
         try {
+          if (typeof publishId !== "number")
+            throw new UserInputError(badRequestErrMessage)
+
           const { token } = await dataSources.kmsAPI.getPublish(publishId)
 
           return token
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev Get total publishes
+     */
+    t.field("totalPublishes", {
+      type: nonNull("Int"),
+      async resolve(_root, _args, { dataSources }) {
+        try {
+          const { total } = await dataSources.kmsAPI.totalPublishes()
+
+          return total
         } catch (error) {
           throw error
         }
@@ -159,69 +280,96 @@ export const PublishMutation = extendType({
   type: "Mutation",
   definition(t) {
     /**
+     * @dev Check if an address has a specific role.
+     */
+    t.field("hasRolePublish", {
+      type: nonNull("Boolean"),
+      args: { data: nonNull("HasRoleInput") },
+      async resolve(_roote, { data }, { dataSources, user }) {
+        try {
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
+
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+
+          // Validate input.
+          if (!data) throw new UserInputError(badRequestErrMessage)
+          const { role } = data
+
+          if (!role) throw new UserInputError(badRequestErrMessage)
+
+          const { hasRole } = await dataSources.kmsAPI.hasRolePublish(uid, role)
+
+          return hasRole
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
      * @dev The process to create publish nft
-     * @param input - refer to CreatePublishInput
-     * @dev if visibility is "UNSET" it will be converted to "ON" as "UNSET" is not allowed for Publish token
+     * @param input see CreatePublishInput
      */
     t.field("createPublishNft", {
-      type: nonNull("PublishToken"),
+      type: nonNull("CreatePublishResult"),
       args: { input: nonNull("CreatePublishInput") },
       async resolve(_root, { input }, { dataSources, user }) {
         try {
           // User must be already logged in
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
 
-          // Validate input
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+
+          // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)
+          const {
+            creatorId,
+            imageURI,
+            contentURI,
+            metadataURI,
+            title,
+            description,
+            primaryCategory,
+            secondaryCategory,
+            tertiaryCategory,
+          } = input
 
-          const { tokenURI, profileId, imageURI, contentURI } = input
-
-          if (!tokenURI || !profileId || !imageURI || !contentURI)
+          // description can be empty string.
+          if (
+            typeof creatorId !== "number" ||
+            !creatorId ||
+            !imageURI ||
+            !contentURI ||
+            !metadataURI ||
+            !title ||
+            !primaryCategory ||
+            !secondaryCategory ||
+            !tertiaryCategory
+          )
             throw new UserInputError(badRequestErrMessage)
 
-          // // Get user's wallet from Firestore
-          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-
-          // User must have both wallet and account before creating profile
-          // // Throw error if user doesn't have wallet yet
-          // if (!wallet || !wallet.address || !wallet.key)
-          //   throw new Error('You do not have wallet')
-
-          // // Get user's account from Firestore
-          // const { account } = await dataSources.firestoreAPI.getAccount(uid)
-          // if (!account) throw new Error('You do not have wallet')
-
-          // // Verify the address is correct
-          // if (wallet.address !== account.address)
-          //   throw new ForbiddenError('Forbidden')
-
-          // const { address, loggedInProfile, profiles } = account
-          const address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-          const key =
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-
           // Create a profile
-          const { token } = await dataSources.kmsAPI.createPublishNft({
-            // key: wallet.key,
-            key,
-            data: {
-              tokenURI,
-              profileId,
-              imageURI,
-              contentURI,
-            },
+          const { token } = await dataSources.kmsAPI.createPublishNft(uid, {
+            creatorId,
+            imageURI,
+            contentURI,
+            metadataURI,
+            title,
+            description,
+            primaryCategory,
+            secondaryCategory,
+            tertiaryCategory,
           })
 
-          if (!token) throw new Error("Create profile nft failed.")
+          if (!token) throw new Error("Create publish nft failed.")
 
           // Save new token in Firestore (publishes collection)
-          // await dataSources.firestoreAPI.createTokenDoc<
-          //   NexusGenObjects['Token']
-          // >({
-          //   collectionName: publishesCollection,
-          //   data: token,
-          // })
+          await dataSources.firestoreAPI.createPublishDoc({
+            ...token,
+            uid,
+          })
 
           return token
         } catch (error) {
@@ -232,73 +380,208 @@ export const PublishMutation = extendType({
 
     /**
      * @dev The process to update publish nft
-     * @param input - refer to CreatePublishInput
-     * @dev if visibility is "UNSET" it will be converted to "ON" as "UNSET" is not allowed for Publish token
+     * @param input - see UpdatePublishInput
      */
     t.field("updatePublishNft", {
-      type: nonNull("PublishToken"),
+      type: nonNull("CreatePublishResult"),
       args: { input: nonNull("UpdatePublishInput") },
       async resolve(_root, { input }, { dataSources, user }) {
         try {
           // User must be already logged in
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
 
-          // Validate input
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+
+          // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)
+          const {
+            publishId,
+            creatorId,
+            imageURI,
+            contentURI,
+            metadataURI,
+            title,
+            description,
+            primaryCategory,
+            secondaryCategory,
+            tertiaryCategory,
+          } = input
 
-          const { docId, publishId, tokenURI, imageURI, contentURI } = input
-
-          if (!docId || !publishId || !tokenURI)
+          // description can be empty string.
+          if (
+            typeof publishId !== "number" ||
+            !publishId ||
+            typeof creatorId !== "number" ||
+            !creatorId ||
+            !imageURI ||
+            !contentURI ||
+            !metadataURI ||
+            !title ||
+            !primaryCategory ||
+            !secondaryCategory ||
+            !tertiaryCategory
+          )
             throw new UserInputError(badRequestErrMessage)
 
-          // // Get user's wallet from Firestore
-          // const { wallet } = await dataSources.firestoreAPI.getWallet(uid)
-
-          // User must have both wallet and account before creating profile
-          // // Throw error if user doesn't have wallet yet
-          // if (!wallet || !wallet.address || !wallet.key)
-          //   throw new Error('You do not have wallet')
-
-          // // Get user's account from Firestore
-          // const { account } = await dataSources.firestoreAPI.getAccount(uid)
-          // if (!account) throw new Error('You do not have wallet')
-
-          // // Verify the address is correct
-          // if (wallet.address !== account.address)
-          //   throw new ForbiddenError('Forbidden')
-
-          // const { address, loggedInProfile, profiles } = account
-          const address = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-          const key =
-            "0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"
-
-          // Create a profile
-          const { token } = await dataSources.kmsAPI.updatePublishNft({
-            // key: wallet.key,
-            key,
+          // Update
+          const { token } = await dataSources.kmsAPI.updatePublishNft(uid, {
             publishId,
-            data: {
-              tokenURI,
-              imageURI,
-              contentURI,
-            },
+            creatorId,
+            imageURI,
+            contentURI,
+            metadataURI,
+            title,
+            description,
+            primaryCategory,
+            secondaryCategory,
+            tertiaryCategory,
           })
 
-          if (!token) throw new Error("Create profile nft failed.")
+          if (!token) throw new Error("Update publish nft failed.")
 
-          // // Save updated token in Firestore (publishes collection)
-          // await dataSources.firestoreAPI.updateTokenDoc<
-          //   NexusGenObjects['Token']
-          // >({
-          //   collectionName: publishesCollection,
-          //   docId,
-          //   data: token,
-          // })
+          // Update the publish doc in Firestore.
+          // Search the publish doc by token id to get the document id first.
+          const { publish } =
+            await dataSources.firestoreAPI.searchPublishByTokenId(publishId)
+
+          if (publish) {
+            // Only update if there is any change.
+            if (
+              token.imageURI !== publish.imageURI ||
+              token.contentURI !== publish.contentURI ||
+              token.metadataURI !== publish.metadataURI ||
+              token.title !== publish.title ||
+              token.description !== publish.description ||
+              token.primaryCategory !== publish.primaryCategory ||
+              token.secondaryCategory !== publish.secondaryCategory ||
+              token.tertiaryCategory !== publish.tertiaryCategory
+            ) {
+              await dataSources.firestoreAPI.updatePublishDoc(publish.id, {
+                ...token,
+                primaryCategory: token.primaryCategory,
+                // If secondary is "Empty" and tertiary is not, then use the tertiary as secondary and make tertiary "Empty".
+                secondaryCategory:
+                  token.secondaryCategory === "Empty" &&
+                  token.tertiaryCategory !== "Empty"
+                    ? token.tertiaryCategory
+                    : token.secondaryCategory,
+                tertiaryCategory:
+                  token.secondaryCategory === "Empty" &&
+                  token.tertiaryCategory !== "Empty"
+                    ? "Empty"
+                    : token.tertiaryCategory,
+              })
+            }
+          }
 
           return token
         } catch (error) {
-          console.log("error -->", error)
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev The process to delete publish nft
+     */
+    t.field("burnPublishNft", {
+      type: nonNull("BurnNFTResult"),
+      args: { publishId: nonNull("Int") },
+      async resolve(_root, { publishId }, { dataSources, user }) {
+        try {
+          // User must be already logged in
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
+
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+
+          // Validate input
+          if (typeof publishId !== "number" || !publishId)
+            throw new UserInputError(badRequestErrMessage)
+
+          const { status } = await dataSources.kmsAPI.burnPublishNft(
+            uid,
+            publishId
+          )
+
+          // Delete the publish doc in Firestore.
+          // Search the publish doc by token id to get the document id first.
+          const { publish } =
+            await dataSources.firestoreAPI.searchPublishByTokenId(publishId)
+
+          if (publish) {
+            await dataSources.firestoreAPI.deletePublishDoc(publish.id)
+          }
+
+          return { status }
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev Estimate gas used for creating a publish nft.
+     * @param input - refer to CreatePublishInput type
+     */
+    t.field("estimateCreatePublishGas", {
+      type: nonNull("EstimateCreateNFTGasResult"),
+      args: { input: nonNull("CreatePublishInput") },
+      async resolve(_roote, { input }, { dataSources, user }) {
+        try {
+          // User must be already logged in
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user?.uid
+
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+
+          // Validate input.
+          if (!input) throw new UserInputError(badRequestErrMessage)
+          const {
+            creatorId,
+            imageURI,
+            contentURI,
+            metadataURI,
+            title,
+            description,
+            primaryCategory,
+            secondaryCategory,
+            tertiaryCategory,
+          } = input
+
+          // description can be empty string.
+          if (
+            typeof creatorId !== "number" ||
+            !creatorId ||
+            !imageURI ||
+            !contentURI ||
+            !metadataURI ||
+            !title ||
+            !primaryCategory ||
+            !secondaryCategory ||
+            !tertiaryCategory
+          )
+            throw new UserInputError(badRequestErrMessage)
+
+          // Create a profile
+          const { gas } = await dataSources.kmsAPI.estimateCreatePublishGas(
+            uid,
+            {
+              creatorId,
+              imageURI,
+              contentURI,
+              metadataURI,
+              title,
+              description,
+              primaryCategory,
+              secondaryCategory,
+              tertiaryCategory,
+            }
+          )
+
+          return { gas }
+        } catch (error) {
           throw error
         }
       },

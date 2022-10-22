@@ -4,17 +4,16 @@ import { Firestore } from "firebase-admin/firestore"
 import { NexusGenObjects } from "../typegen"
 import {
   accountsCollection,
-  walletsCollection,
   profilesCollection,
   publishesCollection,
   followsCollection,
   likesCollection,
   getDocById,
-  createDocRef,
   createDoc,
   createDocWithId,
   updateDocById,
   searchDocByField,
+  deleteDocById,
 } from "../../lib"
 
 export class FirestoreAPI extends DataSource {
@@ -35,6 +34,8 @@ export class FirestoreAPI extends DataSource {
   initialize(config: DataSourceConfig<any>) {
     this.context = config.context
   }
+
+  // ===== "accounts" collection related functions ===== //
 
   /**
    * The function to get an account doc.
@@ -94,6 +95,8 @@ export class FirestoreAPI extends DataSource {
     })
   }
 
+  // ===== "profiles" collection related functions ===== //
+
   /**
    * The function to create a profile doc in Firestore.
    * @param data see ProfileToken type
@@ -141,34 +144,152 @@ export class FirestoreAPI extends DataSource {
     return { profile: profiles[0] }
   }
 
-  async createTokenDoc<T extends Record<string, any>>({
-    collectionName,
-    data,
-  }: {
-    collectionName: string
-    data: T
-  }) {
-    return createDoc<T>({
+  // ===== "publishes" collection related functions ===== //
+
+  /**
+   * The function to create a publish doc in Firestore.
+   * @param data see PublishToken type
+   */
+  async createPublishDoc(data: Partial<NexusGenObjects["PublishToken"]>) {
+    return createDoc<Partial<NexusGenObjects["PublishToken"]>>({
       db: this.db,
-      collectionName,
+      collectionName: publishesCollection,
       data,
     })
   }
 
-  async updateTokenDoc<T extends Record<string, any>>({
-    collectionName,
-    docId,
-    data,
-  }: {
-    collectionName: string
-    docId: string
-    data: Partial<T>
-  }) {
-    return updateDocById<Partial<T>>({
+  /**
+   * The function to update a publish doc in Firestore.
+   * @param docId {string} - a publish document id.
+   * @param data see PublishToken type.
+   */
+  async updatePublishDoc(
+    docId: string,
+    data: Partial<NexusGenObjects["PublishToken"]>
+  ) {
+    return updateDocById<Partial<NexusGenObjects["PublishToken"]>>({
       db: this.db,
-      collectionName,
+      collectionName: publishesCollection,
       docId,
       data,
     })
+  }
+
+  /**
+   * The function to delete a publish doc
+   * @param docId {string}
+   */
+  async deletePublishDoc(docId: string) {
+    return deleteDocById({
+      db: this.db,
+      collectionName: publishesCollection,
+      docId,
+    })
+  }
+
+  /**
+   * The function to search a publish doc by provied Publish token id.
+   * @param publishId {number} - a Publish token id.
+   * @returns {publish} - publish token
+   */
+  async searchPublishByTokenId(
+    publishId: number
+  ): Promise<{ publish: NexusGenObjects["PublishToken"] | null }> {
+    const publishes = await searchDocByField<NexusGenObjects["PublishToken"]>({
+      db: this.db,
+      collectionName: publishesCollection,
+      fieldName: "tokenId",
+      fieldValue: publishId,
+    })
+
+    return { publish: publishes[0] }
+  }
+
+  // ===== "follows" collection related functions ===== //
+
+  /**
+   * The function to create a follow doc in Firestore.
+   * @param data see FollowToken type
+   */
+  async createFollowDoc(data: Partial<NexusGenObjects["FollowToken"]>) {
+    return createDoc<Partial<NexusGenObjects["FollowToken"]>>({
+      db: this.db,
+      collectionName: followsCollection,
+      data,
+    })
+  }
+
+  /**
+   * The function to delete a follow doc
+   * @param docId {string}
+   */
+  async deleteFollowDoc(docId: string) {
+    return deleteDocById({
+      db: this.db,
+      collectionName: followsCollection,
+      docId,
+    })
+  }
+
+  /**
+   * The function to search a follow doc by provided Follow token id.
+   * @param tokenId {number} - a Follow token id.
+   * @returns {follow} - follow token
+   */
+  async searchFollowByTokenId(
+    tokenId: number
+  ): Promise<{ follow: NexusGenObjects["FollowToken"] | null }> {
+    const follows = await searchDocByField<NexusGenObjects["FollowToken"]>({
+      db: this.db,
+      collectionName: followsCollection,
+      fieldName: "tokenId",
+      fieldValue: tokenId,
+    })
+
+    return { follow: follows[0] }
+  }
+
+  // ===== "likes" collection related functions ===== //
+
+  /**
+   * The function to create a like doc in Firestore.
+   * @param data see LikeToken type
+   */
+  async createLikeDoc(data: Partial<NexusGenObjects["LikeToken"]>) {
+    return createDoc<Partial<NexusGenObjects["LikeToken"]>>({
+      db: this.db,
+      collectionName: likesCollection,
+      data,
+    })
+  }
+
+  /**
+   * The function to delete a like doc
+   * @param docId {string}
+   */
+  async deleteLikeDoc(docId: string) {
+    return deleteDocById({
+      db: this.db,
+      collectionName: likesCollection,
+      docId,
+    })
+  }
+
+  /**
+   * The function to search a like doc by provided Like token id.
+   * @param tokenId {number} - a Like token id.
+   * @returns {like} - like token
+   */
+  async searchLikeByTokenId(
+    tokenId: number
+  ): Promise<{ like: NexusGenObjects["LikeToken"] | null }> {
+    const likes = await searchDocByField<NexusGenObjects["LikeToken"]>({
+      db: this.db,
+      collectionName: likesCollection,
+      fieldName: "tokenId",
+      fieldValue: tokenId,
+    })
+
+    return { like: likes[0] }
   }
 }

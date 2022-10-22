@@ -236,9 +236,8 @@ export const AccountMutation = extendType({
       type: nonNull("CreateWalletResult"),
       async resolve(_root, _args, { dataSources, user }) {
         try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-          // const uid = user.uid
-          const uid = "abc123"
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
 
           // If user doesn't already have an account, create one for them.
           const { account } = await dataSources.firestoreAPI.getAccount(uid)

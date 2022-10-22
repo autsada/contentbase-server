@@ -24,10 +24,61 @@ type AddressActivity {
   value: Float
 }
 
+type BurnNFTResult {
+  status: Int!
+}
+
+enum Category {
+  Animals
+  Children
+  Education
+  Empty
+  Entertainment
+  Food
+  Gaming
+  LifeStyle
+  Men
+  Movies
+  Music
+  News
+  NotExist
+  Other
+  Programming
+  Science
+  Sports
+  Technology
+  Travel
+  Vehicles
+  Women
+}
+
+input CreateFollowInput {
+  followeeId: Int!
+  followerId: Int!
+}
+
+type CreateFollowResult {
+  followeeId: Int!
+  followerId: Int!
+  owner: String!
+  tokenId: Int!
+}
+
+input CreateLikeInput {
+  profileId: Int!
+  publishId: Int!
+}
+
+type CreateLikeResult {
+  owner: String!
+  profileId: Int!
+  pulbishId: Int!
+  tokenId: Int!
+}
+
 input CreateProfileInput {
   handle: String!
   imageURI: String
-  tokenURI: String!
 }
 
 type CreateProfileResult {
@@ -39,17 +90,58 @@ type CreateProfileResult {
 
 input CreatePublishInput {
   contentURI: String!
+  creatorId: Int!
+  description: String!
   imageURI: String!
-  profileId: Int!
-  tokenURI: String!
+  metadataURI: String!
+  primaryCategory: Category!
+  secondaryCategory: Category!
+  tertiaryCategory: Category!
+  title: String!
+}
+
+type CreatePublishResult {
+  contentURI: String!
+  creatorId: Int!
+  description: String!
+  imageURI: String!
+  likes: Int!
+  metadataURI: String!
+  owner: String!
+  primaryCategory: Category!
+  secondaryCategory: Category!
+  tertiaryCategory: Category!
+  title: String!
+  tokenId: Int!
 }
 
 type CreateWalletResult {
   address: String!
 }
 
-type EstimateCreateProfileGasResult {
+type EstimateCreateNFTGasResult {
   gas: String!
+}
+
+type FetchPublishResult {
+  contentURI: String!
+  creatorId: Int!
+  imageURI: String!
+  likes: Int!
+  metadataURI: String!
+  owner: String!
+  tokenId: Int!
+}
+
+type FollowToken {
+  createdAt: String!
+  followeeId: Int!
+  followerId: Int!
+  id: String!
+  owner: String!
+  tokenId: Int!
+  uid: String!
+  updatedAt: String
 }
 
 type GetAccount {
@@ -58,6 +150,17 @@ type GetAccount {
 
 input HasRoleInput {
   role: Role!
+}
+
+type LikeToken {
+  createdAt: String!
+  id: String!
+  owner: String!
+  profileId: Int!
+  publishId: Int!
+  tokenId: Int!
+  uid: String!
+  updatedAt: String
 }
 
 type MetadataCustomProps {
@@ -70,15 +173,35 @@ type MetadataCustomProps {
 }
 
 type Mutation {
+  burnPublishNft(publishId: Int!): BurnNFTResult!
   createProfileNft(input: CreateProfileInput!): CreateProfileResult!
-  createPublishNft(input: CreatePublishInput!): PublishToken!
+  createPublishNft(input: CreatePublishInput!): CreatePublishResult!
   createWallet: CreateWalletResult!
-  estimateCreateProfileGas(input: CreateProfileInput!): EstimateCreateProfileGasResult!
+  estimateCreateFollowGas(input: CreateFollowInput!): EstimateCreateNFTGasResult!
+  estimateCreateLikeGas(input: CreateLikeInput!): EstimateCreateNFTGasResult!
+  estimateCreateProfileGas(input: CreateProfileInput!): EstimateCreateNFTGasResult!
+  estimateCreatePublishGas(input: CreatePublishInput!): EstimateCreateNFTGasResult!
+  follow(input: CreateFollowInput!): CreateFollowResult!
+  hasRoleFollow(data: HasRoleInput!): Boolean!
+  hasRoleLike(data: HasRoleInput!): Boolean!
   hasRoleProfile(data: HasRoleInput!): Boolean!
+  hasRolePublish(data: HasRoleInput!): Boolean!
+  like(input: CreateLikeInput!): CreateLikeResult!
   setDefaultProfile(profileId: Int!): CreateProfileResult!
+  setLikeContractForPublish(likeContractAddress: String!): String!
+  setLikeFee(fee: Float!): String!
+  setOwnerAddress(ownerAddress: String!): String!
+  setPlatformFee(fee: Float!): String!
+  setProfileContractForFollow(profileContractAddress: String!): String!
+  setProfileContractForLike(profileContractAddress: String!): String!
+  setProfileContractForPublish(profileContractAddress: String!): String!
+  setPublishContractForLike(publishContractAddress: String!): String!
+  unFollow(tokenId: Int!): BurnNFTResult!
+  unLike(tokenId: Int!): BurnNFTResult!
   updateProfileImage(input: UpdateProfileImageInput!): CreateProfileResult!
-  updatePublishNft(input: UpdatePublishInput!): PublishToken!
+  updatePublishNft(input: UpdatePublishInput!): CreatePublishResult!
   validateHandle(handle: String!): Boolean!
+  withdrawFunds: String!
 }
 
 type ProfileToken {
@@ -95,19 +218,37 @@ type ProfileToken {
 
 type PublishToken {
   contentURI: String!
+  createdAt: String!
   creatorId: Int!
+  description: String!
+  id: String!
   imageURI: String!
   likes: Int!
+  metadataURI: String!
   owner: String!
+  primaryCategory: Category!
+  secondaryCategory: Category!
+  tertiaryCategory: Category!
+  title: String!
   tokenId: Int!
+  uid: String!
+  updatedAt: String
 }
 
 type Query {
-  getDefaultProfile: CreateProfileResult!
+  fetchFollowers: [CreateFollowResult]!
+  getContractAddress: String!
+  getContractBalance: Float!
+  getDefaultProfile: CreateProfileResult
+  getFollowersCount(profileId: Int!): Int!
+  getFollowingCount(profileId: Int!): Int!
+  getLikeFee: Int!
   getMyBalance(address: String!): String!
-  getMyPublishes: [PublishToken]!
-  getPublish(publishId: Int!): PublishToken!
-  getPublishes: [PublishToken]!
+  getMyPublishes: [FetchPublishResult]!
+  getPlatformFee: Int!
+  getPublish(publishId: Int!): FetchPublishResult!
+  getPublishes: [FetchPublishResult]!
+  totalPublishes: Int!
 }
 
 enum Role {
@@ -119,15 +260,19 @@ enum Role {
 input UpdateProfileImageInput {
   imageURI: String!
   profileId: Int!
-  tokenURI: String!
 }
 
 input UpdatePublishInput {
-  contentURI: String
-  docId: String!
-  imageURI: String
+  contentURI: String!
+  creatorId: Int!
+  description: String!
+  imageURI: String!
+  metadataURI: String!
+  primaryCategory: Category!
   publishId: Int!
-  tokenURI: String!
+  secondaryCategory: Category!
+  tertiaryCategory: Category!
+  title: String!
 }
 
 type UploadParams {
