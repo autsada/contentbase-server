@@ -2,28 +2,6 @@
 ### Do not make changes to this file directly
 
 
-type Account {
-  address: String!
-  createdAt: String!
-  id: ID!
-  type: AccountType!
-  updatedAt: String
-}
-
-enum AccountType {
-  traditional
-  wallet
-}
-
-type AddressActivity {
-  event: WebHookEventCategory!
-  fromAddress: String!
-  id: ID!
-  isAcknowledged: Boolean!
-  toAddress: String!
-  value: Float
-}
-
 type BurnNFTResult {
   status: Int!
 }
@@ -72,7 +50,7 @@ input CreateLikeInput {
 type CreateLikeResult {
   owner: String!
   profileId: Int!
-  pulbishId: Int!
+  publishId: Int!
   tokenId: Int!
 }
 
@@ -103,15 +81,10 @@ input CreatePublishInput {
 type CreatePublishResult {
   contentURI: String!
   creatorId: Int!
-  description: String!
   imageURI: String!
   likes: Int!
   metadataURI: String!
   owner: String!
-  primaryCategory: Category!
-  secondaryCategory: Category!
-  tertiaryCategory: Category!
-  title: String!
   tokenId: Int!
 }
 
@@ -123,44 +96,8 @@ type EstimateCreateNFTGasResult {
   gas: String!
 }
 
-type FetchPublishResult {
-  contentURI: String!
-  creatorId: Int!
-  imageURI: String!
-  likes: Int!
-  metadataURI: String!
-  owner: String!
-  tokenId: Int!
-}
-
-type FollowToken {
-  createdAt: String!
-  followeeId: Int!
-  followerId: Int!
-  id: String!
-  owner: String!
-  tokenId: Int!
-  uid: String!
-  updatedAt: String
-}
-
-type GetAccount {
-  account: Account
-}
-
 input HasRoleInput {
   role: Role!
-}
-
-type LikeToken {
-  createdAt: String!
-  id: String!
-  owner: String!
-  profileId: Int!
-  publishId: Int!
-  tokenId: Int!
-  uid: String!
-  updatedAt: String
 }
 
 type MetadataCustomProps {
@@ -188,6 +125,7 @@ type Mutation {
   hasRolePublish(data: HasRoleInput!): Boolean!
   like(input: CreateLikeInput!): CreateLikeResult!
   setDefaultProfile(profileId: Int!): CreateProfileResult!
+  setFollowContractForProfile(followContractAddress: String!): String!
   setLikeContractForPublish(likeContractAddress: String!): String!
   setLikeFee(fee: Float!): String!
   setOwnerAddress(ownerAddress: String!): String!
@@ -204,50 +142,17 @@ type Mutation {
   withdrawFunds: String!
 }
 
-type ProfileToken {
-  createdAt: String!
-  displayedHandle: String!
-  handle: String!
-  id: String!
-  imageURI: String!
-  owner: String!
-  tokenId: Int!
-  uid: String!
-  updatedAt: String
-}
-
-type PublishToken {
-  contentURI: String!
-  createdAt: String!
-  creatorId: Int!
-  description: String!
-  id: String!
-  imageURI: String!
-  likes: Int!
-  metadataURI: String!
-  owner: String!
-  primaryCategory: Category!
-  secondaryCategory: Category!
-  tertiaryCategory: Category!
-  title: String!
-  tokenId: Int!
-  uid: String!
-  updatedAt: String
-}
-
 type Query {
   fetchFollowers: [CreateFollowResult]!
-  getContractAddress: String!
   getContractBalance: Float!
+  getContractOwnerAddress: String!
   getDefaultProfile: CreateProfileResult
-  getFollowersCount(profileId: Int!): Int!
-  getFollowingCount(profileId: Int!): Int!
   getLikeFee: Int!
   getMyBalance(address: String!): String!
-  getMyPublishes: [FetchPublishResult]!
-  getPlatformFee: Int!
-  getPublish(publishId: Int!): FetchPublishResult!
-  getPublishes: [FetchPublishResult]!
+  getMyPublishes: [CreatePublishResult]!
+  getPlatformFee: Float!
+  getPublish(publishId: Int!): CreatePublishResult!
+  getPublishes: [CreatePublishResult]!
   totalPublishes: Int!
 }
 
@@ -263,16 +168,16 @@ input UpdateProfileImageInput {
 }
 
 input UpdatePublishInput {
-  contentURI: String!
+  contentURI: String
   creatorId: Int!
-  description: String!
-  imageURI: String!
-  metadataURI: String!
-  primaryCategory: Category!
+  description: String
+  imageURI: String
+  metadataURI: String
+  primaryCategory: Category
   publishId: Int!
-  secondaryCategory: Category!
-  tertiaryCategory: Category!
-  title: String!
+  secondaryCategory: Category
+  tertiaryCategory: Category
+  title: String
 }
 
 type UploadParams {
@@ -294,48 +199,4 @@ type UploadReturnType {
 enum UploadType {
   avatar
   post
-}
-
-type Wallet {
-  address: String!
-  createdAt: String!
-  id: ID!
-  key: String!
-  updatedAt: String
-}
-
-type WebHookAddressActivity {
-  asset: String!
-  category: WebHookEventCategory!
-  erc721TokenId: String
-  fromAddress: String!
-  hash: String!
-  rawContract: WebHookRawContract!
-  toAddress: String!
-  value: Float
-}
-
-type WebHookEvent {
-  activity: [WebHookAddressActivity!]!
-  network: String!
-}
-
-enum WebHookEventCategory {
-  external
-  internal
-  token
-}
-
-type WebHookRawContract {
-  address: String
-  decimal: Int
-  rawValue: String
-}
-
-type WebHookRequestBody {
-  createdAt: String!
-  event: WebHookEvent!
-  id: String!
-  type: String!
-  webhookId: String!
 }

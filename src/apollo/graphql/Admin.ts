@@ -1,25 +1,12 @@
-import {
-  extendType,
-  nonNull,
-  stringArg,
-  list,
-  inputObjectType,
-  enumType,
-  objectType,
-} from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
+import { extendType, nonNull } from "nexus"
+import { UserInputError } from "apollo-server-express"
 
-const authErrMessage = "*** You must be logged in ***"
 const badRequestErrMessage = "Bad Request"
 
 export const AdmidQuery = extendType({
   type: "Query",
   definition(t) {
-    t.field("getContractAddress", {
+    t.field("getContractOwnerAddress", {
       type: nonNull("String"),
       async resolve(_root, _args, { dataSources }) {
         try {
@@ -50,6 +37,25 @@ export const AdmidQuery = extendType({
 export const AdminMutation = extendType({
   type: "Mutation",
   definition(t) {
+    t.field("setFollowContractForProfile", {
+      type: nonNull("String"),
+      args: { followContractAddress: nonNull("String") },
+      async resolve(_roote, { followContractAddress }, { dataSources, user }) {
+        try {
+          if (!followContractAddress)
+            throw new UserInputError(badRequestErrMessage)
+
+          const { status } = await dataSources.kmsAPI.setFollowForProfile(
+            followContractAddress
+          )
+
+          return status
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
     t.field("setProfileContractForPublish", {
       type: nonNull("String"),
       args: { profileContractAddress: nonNull("String") },

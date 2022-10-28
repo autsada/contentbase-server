@@ -45,25 +45,23 @@ export interface NexusGenInputs {
     profileId: number; // Int!
   }
   UpdatePublishInput: { // input type
-    contentURI: string; // String!
+    contentURI?: string | null; // String
     creatorId: number; // Int!
-    description: string; // String!
-    imageURI: string; // String!
-    metadataURI: string; // String!
-    primaryCategory: NexusGenEnums['Category']; // Category!
+    description?: string | null; // String
+    imageURI?: string | null; // String
+    metadataURI?: string | null; // String
+    primaryCategory?: NexusGenEnums['Category'] | null; // Category
     publishId: number; // Int!
-    secondaryCategory: NexusGenEnums['Category']; // Category!
-    tertiaryCategory: NexusGenEnums['Category']; // Category!
-    title: string; // String!
+    secondaryCategory?: NexusGenEnums['Category'] | null; // Category
+    tertiaryCategory?: NexusGenEnums['Category'] | null; // Category
+    title?: string | null; // String
   }
 }
 
 export interface NexusGenEnums {
-  AccountType: "traditional" | "wallet"
   Category: "Animals" | "Children" | "Education" | "Empty" | "Entertainment" | "Food" | "Gaming" | "LifeStyle" | "Men" | "Movies" | "Music" | "News" | "NotExist" | "Other" | "Programming" | "Science" | "Sports" | "Technology" | "Travel" | "Vehicles" | "Women"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
   UploadType: "avatar" | "post"
-  WebHookEventCategory: "external" | "internal" | "token"
 }
 
 export interface NexusGenScalars {
@@ -75,21 +73,6 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
-  Account: { // root type
-    address: string; // String!
-    createdAt: string; // String!
-    id: string; // ID!
-    type: NexusGenEnums['AccountType']; // AccountType!
-    updatedAt?: string | null; // String
-  }
-  AddressActivity: { // root type
-    event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
-    fromAddress: string; // String!
-    id: string; // ID!
-    isAcknowledged: boolean; // Boolean!
-    toAddress: string; // String!
-    value?: number | null; // Float
-  }
   BurnNFTResult: { // root type
     status: number; // Int!
   }
@@ -102,7 +85,7 @@ export interface NexusGenObjects {
   CreateLikeResult: { // root type
     owner: string; // String!
     profileId: number; // Int!
-    pulbishId: number; // Int!
+    publishId: number; // Int!
     tokenId: number; // Int!
   }
   CreateProfileResult: { // root type
@@ -114,15 +97,10 @@ export interface NexusGenObjects {
   CreatePublishResult: { // root type
     contentURI: string; // String!
     creatorId: number; // Int!
-    description: string; // String!
     imageURI: string; // String!
     likes: number; // Int!
     metadataURI: string; // String!
     owner: string; // String!
-    primaryCategory: NexusGenEnums['Category']; // Category!
-    secondaryCategory: NexusGenEnums['Category']; // Category!
-    tertiaryCategory: NexusGenEnums['Category']; // Category!
-    title: string; // String!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // root type
@@ -130,38 +108,6 @@ export interface NexusGenObjects {
   }
   EstimateCreateNFTGasResult: { // root type
     gas: string; // String!
-  }
-  FetchPublishResult: { // root type
-    contentURI: string; // String!
-    creatorId: number; // Int!
-    imageURI: string; // String!
-    likes: number; // Int!
-    metadataURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  FollowToken: { // root type
-    createdAt: string; // String!
-    followeeId: number; // Int!
-    followerId: number; // Int!
-    id: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt?: string | null; // String
-  }
-  GetAccount: { // root type
-    account?: NexusGenRootTypes['Account'] | null; // Account
-  }
-  LikeToken: { // root type
-    createdAt: string; // String!
-    id: string; // String!
-    owner: string; // String!
-    profileId: number; // Int!
-    publishId: number; // Int!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt?: string | null; // String
   }
   MetadataCustomProps: { // root type
     contentURI?: string | null; // String
@@ -172,35 +118,6 @@ export interface NexusGenObjects {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: {};
-  ProfileToken: { // root type
-    createdAt: string; // String!
-    displayedHandle: string; // String!
-    handle: string; // String!
-    id: string; // String!
-    imageURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt?: string | null; // String
-  }
-  PublishToken: { // root type
-    contentURI: string; // String!
-    createdAt: string; // String!
-    creatorId: number; // Int!
-    description: string; // String!
-    id: string; // String!
-    imageURI: string; // String!
-    likes: number; // Int!
-    metadataURI: string; // String!
-    owner: string; // String!
-    primaryCategory: NexusGenEnums['Category']; // Category!
-    secondaryCategory: NexusGenEnums['Category']; // Category!
-    tertiaryCategory: NexusGenEnums['Category']; // Category!
-    title: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt?: string | null; // String
-  }
   Query: {};
   UploadParams: { // root type
     address: string; // String!
@@ -216,39 +133,6 @@ export interface NexusGenObjects {
     storageURL: string; // String!
     tokenURI: string; // String!
   }
-  Wallet: { // root type
-    address: string; // String!
-    createdAt: string; // String!
-    id: string; // ID!
-    key: string; // String!
-    updatedAt?: string | null; // String
-  }
-  WebHookAddressActivity: { // root type
-    asset: string; // String!
-    category: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
-    erc721TokenId?: string | null; // String
-    fromAddress: string; // String!
-    hash: string; // String!
-    rawContract: NexusGenRootTypes['WebHookRawContract']; // WebHookRawContract!
-    toAddress: string; // String!
-    value?: number | null; // Float
-  }
-  WebHookEvent: { // root type
-    activity: NexusGenRootTypes['WebHookAddressActivity'][]; // [WebHookAddressActivity!]!
-    network: string; // String!
-  }
-  WebHookRawContract: { // root type
-    address?: string | null; // String
-    decimal?: number | null; // Int
-    rawValue?: string | null; // String
-  }
-  WebHookRequestBody: { // root type
-    createdAt: string; // String!
-    event: NexusGenRootTypes['WebHookEvent']; // WebHookEvent!
-    id: string; // String!
-    type: string; // String!
-    webhookId: string; // String!
-  }
 }
 
 export interface NexusGenInterfaces {
@@ -262,21 +146,6 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
-  Account: { // field return type
-    address: string; // String!
-    createdAt: string; // String!
-    id: string; // ID!
-    type: NexusGenEnums['AccountType']; // AccountType!
-    updatedAt: string | null; // String
-  }
-  AddressActivity: { // field return type
-    event: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
-    fromAddress: string; // String!
-    id: string; // ID!
-    isAcknowledged: boolean; // Boolean!
-    toAddress: string; // String!
-    value: number | null; // Float
-  }
   BurnNFTResult: { // field return type
     status: number; // Int!
   }
@@ -289,7 +158,7 @@ export interface NexusGenFieldTypes {
   CreateLikeResult: { // field return type
     owner: string; // String!
     profileId: number; // Int!
-    pulbishId: number; // Int!
+    publishId: number; // Int!
     tokenId: number; // Int!
   }
   CreateProfileResult: { // field return type
@@ -301,15 +170,10 @@ export interface NexusGenFieldTypes {
   CreatePublishResult: { // field return type
     contentURI: string; // String!
     creatorId: number; // Int!
-    description: string; // String!
     imageURI: string; // String!
     likes: number; // Int!
     metadataURI: string; // String!
     owner: string; // String!
-    primaryCategory: NexusGenEnums['Category']; // Category!
-    secondaryCategory: NexusGenEnums['Category']; // Category!
-    tertiaryCategory: NexusGenEnums['Category']; // Category!
-    title: string; // String!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // field return type
@@ -317,38 +181,6 @@ export interface NexusGenFieldTypes {
   }
   EstimateCreateNFTGasResult: { // field return type
     gas: string; // String!
-  }
-  FetchPublishResult: { // field return type
-    contentURI: string; // String!
-    creatorId: number; // Int!
-    imageURI: string; // String!
-    likes: number; // Int!
-    metadataURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  FollowToken: { // field return type
-    createdAt: string; // String!
-    followeeId: number; // Int!
-    followerId: number; // Int!
-    id: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt: string | null; // String
-  }
-  GetAccount: { // field return type
-    account: NexusGenRootTypes['Account'] | null; // Account
-  }
-  LikeToken: { // field return type
-    createdAt: string; // String!
-    id: string; // String!
-    owner: string; // String!
-    profileId: number; // Int!
-    publishId: number; // Int!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt: string | null; // String
   }
   MetadataCustomProps: { // field return type
     contentURI: string | null; // String
@@ -374,6 +206,7 @@ export interface NexusGenFieldTypes {
     hasRolePublish: boolean; // Boolean!
     like: NexusGenRootTypes['CreateLikeResult']; // CreateLikeResult!
     setDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
+    setFollowContractForProfile: string; // String!
     setLikeContractForPublish: string; // String!
     setLikeFee: string; // String!
     setOwnerAddress: string; // String!
@@ -389,48 +222,17 @@ export interface NexusGenFieldTypes {
     validateHandle: boolean; // Boolean!
     withdrawFunds: string; // String!
   }
-  ProfileToken: { // field return type
-    createdAt: string; // String!
-    displayedHandle: string; // String!
-    handle: string; // String!
-    id: string; // String!
-    imageURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt: string | null; // String
-  }
-  PublishToken: { // field return type
-    contentURI: string; // String!
-    createdAt: string; // String!
-    creatorId: number; // Int!
-    description: string; // String!
-    id: string; // String!
-    imageURI: string; // String!
-    likes: number; // Int!
-    metadataURI: string; // String!
-    owner: string; // String!
-    primaryCategory: NexusGenEnums['Category']; // Category!
-    secondaryCategory: NexusGenEnums['Category']; // Category!
-    tertiaryCategory: NexusGenEnums['Category']; // Category!
-    title: string; // String!
-    tokenId: number; // Int!
-    uid: string; // String!
-    updatedAt: string | null; // String
-  }
   Query: { // field return type
     fetchFollowers: Array<NexusGenRootTypes['CreateFollowResult'] | null>; // [CreateFollowResult]!
-    getContractAddress: string; // String!
     getContractBalance: number; // Float!
+    getContractOwnerAddress: string; // String!
     getDefaultProfile: NexusGenRootTypes['CreateProfileResult'] | null; // CreateProfileResult
-    getFollowersCount: number; // Int!
-    getFollowingCount: number; // Int!
     getLikeFee: number; // Int!
     getMyBalance: string; // String!
-    getMyPublishes: Array<NexusGenRootTypes['FetchPublishResult'] | null>; // [FetchPublishResult]!
-    getPlatformFee: number; // Int!
-    getPublish: NexusGenRootTypes['FetchPublishResult']; // FetchPublishResult!
-    getPublishes: Array<NexusGenRootTypes['FetchPublishResult'] | null>; // [FetchPublishResult]!
+    getMyPublishes: Array<NexusGenRootTypes['CreatePublishResult'] | null>; // [CreatePublishResult]!
+    getPlatformFee: number; // Float!
+    getPublish: NexusGenRootTypes['CreatePublishResult']; // CreatePublishResult!
+    getPublishes: Array<NexusGenRootTypes['CreatePublishResult'] | null>; // [CreatePublishResult]!
     totalPublishes: number; // Int!
   }
   UploadParams: { // field return type
@@ -447,57 +249,9 @@ export interface NexusGenFieldTypes {
     storageURL: string; // String!
     tokenURI: string; // String!
   }
-  Wallet: { // field return type
-    address: string; // String!
-    createdAt: string; // String!
-    id: string; // ID!
-    key: string; // String!
-    updatedAt: string | null; // String
-  }
-  WebHookAddressActivity: { // field return type
-    asset: string; // String!
-    category: NexusGenEnums['WebHookEventCategory']; // WebHookEventCategory!
-    erc721TokenId: string | null; // String
-    fromAddress: string; // String!
-    hash: string; // String!
-    rawContract: NexusGenRootTypes['WebHookRawContract']; // WebHookRawContract!
-    toAddress: string; // String!
-    value: number | null; // Float
-  }
-  WebHookEvent: { // field return type
-    activity: NexusGenRootTypes['WebHookAddressActivity'][]; // [WebHookAddressActivity!]!
-    network: string; // String!
-  }
-  WebHookRawContract: { // field return type
-    address: string | null; // String
-    decimal: number | null; // Int
-    rawValue: string | null; // String
-  }
-  WebHookRequestBody: { // field return type
-    createdAt: string; // String!
-    event: NexusGenRootTypes['WebHookEvent']; // WebHookEvent!
-    id: string; // String!
-    type: string; // String!
-    webhookId: string; // String!
-  }
 }
 
 export interface NexusGenFieldTypeNames {
-  Account: { // field return type name
-    address: 'String'
-    createdAt: 'String'
-    id: 'ID'
-    type: 'AccountType'
-    updatedAt: 'String'
-  }
-  AddressActivity: { // field return type name
-    event: 'WebHookEventCategory'
-    fromAddress: 'String'
-    id: 'ID'
-    isAcknowledged: 'Boolean'
-    toAddress: 'String'
-    value: 'Float'
-  }
   BurnNFTResult: { // field return type name
     status: 'Int'
   }
@@ -510,7 +264,7 @@ export interface NexusGenFieldTypeNames {
   CreateLikeResult: { // field return type name
     owner: 'String'
     profileId: 'Int'
-    pulbishId: 'Int'
+    publishId: 'Int'
     tokenId: 'Int'
   }
   CreateProfileResult: { // field return type name
@@ -522,15 +276,10 @@ export interface NexusGenFieldTypeNames {
   CreatePublishResult: { // field return type name
     contentURI: 'String'
     creatorId: 'Int'
-    description: 'String'
     imageURI: 'String'
     likes: 'Int'
     metadataURI: 'String'
     owner: 'String'
-    primaryCategory: 'Category'
-    secondaryCategory: 'Category'
-    tertiaryCategory: 'Category'
-    title: 'String'
     tokenId: 'Int'
   }
   CreateWalletResult: { // field return type name
@@ -538,38 +287,6 @@ export interface NexusGenFieldTypeNames {
   }
   EstimateCreateNFTGasResult: { // field return type name
     gas: 'String'
-  }
-  FetchPublishResult: { // field return type name
-    contentURI: 'String'
-    creatorId: 'Int'
-    imageURI: 'String'
-    likes: 'Int'
-    metadataURI: 'String'
-    owner: 'String'
-    tokenId: 'Int'
-  }
-  FollowToken: { // field return type name
-    createdAt: 'String'
-    followeeId: 'Int'
-    followerId: 'Int'
-    id: 'String'
-    owner: 'String'
-    tokenId: 'Int'
-    uid: 'String'
-    updatedAt: 'String'
-  }
-  GetAccount: { // field return type name
-    account: 'Account'
-  }
-  LikeToken: { // field return type name
-    createdAt: 'String'
-    id: 'String'
-    owner: 'String'
-    profileId: 'Int'
-    publishId: 'Int'
-    tokenId: 'Int'
-    uid: 'String'
-    updatedAt: 'String'
   }
   MetadataCustomProps: { // field return type name
     contentURI: 'String'
@@ -595,6 +312,7 @@ export interface NexusGenFieldTypeNames {
     hasRolePublish: 'Boolean'
     like: 'CreateLikeResult'
     setDefaultProfile: 'CreateProfileResult'
+    setFollowContractForProfile: 'String'
     setLikeContractForPublish: 'String'
     setLikeFee: 'String'
     setOwnerAddress: 'String'
@@ -610,48 +328,17 @@ export interface NexusGenFieldTypeNames {
     validateHandle: 'Boolean'
     withdrawFunds: 'String'
   }
-  ProfileToken: { // field return type name
-    createdAt: 'String'
-    displayedHandle: 'String'
-    handle: 'String'
-    id: 'String'
-    imageURI: 'String'
-    owner: 'String'
-    tokenId: 'Int'
-    uid: 'String'
-    updatedAt: 'String'
-  }
-  PublishToken: { // field return type name
-    contentURI: 'String'
-    createdAt: 'String'
-    creatorId: 'Int'
-    description: 'String'
-    id: 'String'
-    imageURI: 'String'
-    likes: 'Int'
-    metadataURI: 'String'
-    owner: 'String'
-    primaryCategory: 'Category'
-    secondaryCategory: 'Category'
-    tertiaryCategory: 'Category'
-    title: 'String'
-    tokenId: 'Int'
-    uid: 'String'
-    updatedAt: 'String'
-  }
   Query: { // field return type name
     fetchFollowers: 'CreateFollowResult'
-    getContractAddress: 'String'
     getContractBalance: 'Float'
+    getContractOwnerAddress: 'String'
     getDefaultProfile: 'CreateProfileResult'
-    getFollowersCount: 'Int'
-    getFollowingCount: 'Int'
     getLikeFee: 'Int'
     getMyBalance: 'String'
-    getMyPublishes: 'FetchPublishResult'
-    getPlatformFee: 'Int'
-    getPublish: 'FetchPublishResult'
-    getPublishes: 'FetchPublishResult'
+    getMyPublishes: 'CreatePublishResult'
+    getPlatformFee: 'Float'
+    getPublish: 'CreatePublishResult'
+    getPublishes: 'CreatePublishResult'
     totalPublishes: 'Int'
   }
   UploadParams: { // field return type name
@@ -667,39 +354,6 @@ export interface NexusGenFieldTypeNames {
     storagePath: 'String'
     storageURL: 'String'
     tokenURI: 'String'
-  }
-  Wallet: { // field return type name
-    address: 'String'
-    createdAt: 'String'
-    id: 'ID'
-    key: 'String'
-    updatedAt: 'String'
-  }
-  WebHookAddressActivity: { // field return type name
-    asset: 'String'
-    category: 'WebHookEventCategory'
-    erc721TokenId: 'String'
-    fromAddress: 'String'
-    hash: 'String'
-    rawContract: 'WebHookRawContract'
-    toAddress: 'String'
-    value: 'Float'
-  }
-  WebHookEvent: { // field return type name
-    activity: 'WebHookAddressActivity'
-    network: 'String'
-  }
-  WebHookRawContract: { // field return type name
-    address: 'String'
-    decimal: 'Int'
-    rawValue: 'String'
-  }
-  WebHookRequestBody: { // field return type name
-    createdAt: 'String'
-    event: 'WebHookEvent'
-    id: 'String'
-    type: 'String'
-    webhookId: 'String'
   }
 }
 
@@ -747,6 +401,9 @@ export interface NexusGenArgTypes {
     setDefaultProfile: { // args
       profileId: number; // Int!
     }
+    setFollowContractForProfile: { // args
+      followContractAddress: string; // String!
+    }
     setLikeContractForPublish: { // args
       likeContractAddress: string; // String!
     }
@@ -788,12 +445,6 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
-    getFollowersCount: { // args
-      profileId: number; // Int!
-    }
-    getFollowingCount: { // args
-      profileId: number; // Int!
-    }
     getMyBalance: { // args
       address: string; // String!
     }

@@ -1,9 +1,9 @@
-import type { Request, Response } from 'express'
-import convert from 'heic-convert'
-import type { TokenInput } from 'nft.storage/dist/src/token'
+import type { Request, Response } from "express"
+import convert from "heic-convert"
+import type { TokenInput } from "nft.storage/dist/src/token"
 
-import { createUploadFile, uploadToIpfs, uploadFileToStorage } from '../lib'
-import type { NexusGenObjects } from '../apollo/typegen'
+import { createUploadFile, uploadToIpfs, uploadFileToStorage } from "../lib"
+import type { NexusGenObjects } from "../apollo/typegen"
 
 /**
  * Stores an image file on Web3.Storage, along with a small metadata.json
@@ -15,12 +15,12 @@ import type { NexusGenObjects } from '../apollo/typegen'
 export async function uploadProfileImage(req: Request, res: Response) {
   try {
     const { userId, address, fileName, handle, mime } = req.body as Pick<
-      NexusGenObjects['UploadParams'],
-      'userId' | 'address' | 'fileName' | 'handle' | 'mime'
+      NexusGenObjects["UploadParams"],
+      "userId" | "address" | "fileName" | "handle" | "mime"
     >
 
     const file = req.file
-    if (!file) throw new Error('Bad request')
+    if (!file) throw new Error("Bad request")
 
     let imageName = fileName
     let mimeType = mime
@@ -29,24 +29,24 @@ export async function uploadProfileImage(req: Request, res: Response) {
     let buffer = file.buffer
 
     // Convert .HEIC to .jpeg
-    if (imageName.toLowerCase().endsWith('heic')) {
+    if (imageName.toLowerCase().endsWith("heic")) {
       // Change buffer format
       buffer = (await convert({
         buffer,
-        format: 'JPEG',
+        format: "JPEG",
         quality: 1,
       })) as Buffer
 
       // Change file extension
-      imageName = imageName.split('.')[0] + '.JPEG'
-      mimeType = 'image/jpeg'
+      imageName = imageName.split(".")[0] + ".JPEG"
+      mimeType = "image/jpeg"
     }
 
     // 1. Upload to cloud storage
     const { storagePath, storageURL } = await uploadFileToStorage({
       userId,
       handle,
-      uploadType: 'avatar',
+      uploadType: "avatar",
       file: buffer,
       fileName: imageName,
     })
@@ -56,11 +56,11 @@ export async function uploadProfileImage(req: Request, res: Response) {
     const image = createUploadFile([buffer], imageName, mimeType)
 
     // 2.2 Create additional properties
-    const properties: NexusGenObjects['MetadataCustomProps'] = {
+    const properties: NexusGenObjects["MetadataCustomProps"] = {
       handle,
       owner: address,
-      type: 'avatar',
-      contentURI: '',
+      type: "avatar",
+      contentURI: "",
       storageURL,
       storagePath,
     }
@@ -68,7 +68,7 @@ export async function uploadProfileImage(req: Request, res: Response) {
     // 2.3 Construct metadata object
     const token: TokenInput = {
       image,
-      name: 'Profile Image',
+      name: "Profile Image",
       description: `A profile image of @${handle}.`,
       properties,
     }

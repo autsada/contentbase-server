@@ -10,12 +10,10 @@ import {
   ApolloServerPluginLandingPageLocalDefault,
 } from "apollo-server-core"
 
-import "./lib/config/firebase" // import firebase config to initialize firebase admin
+import "./lib/config/firebase" // import firebase to initialize it.
 import { schema } from "./apollo/schema"
-import { FirestoreAPI } from "./apollo/datasources/firestore-api"
 import { KmsAPI } from "./apollo/datasources/kms-api"
 import { WebhooksAPI } from "./apollo/datasources/webhooks-api"
-import { db, getUserFromAuthorizationHeader } from "./lib"
 import { router } from "./webhooks/router"
 import { restRouter } from "./rest/router"
 import type { Environment } from "./types"
@@ -55,7 +53,6 @@ async function startServer() {
       ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ],
     dataSources: () => ({
-      firestoreAPI: new FirestoreAPI({ db }),
       kmsAPI: new KmsAPI(),
       webhooksApi: new WebhooksAPI(),
     }),
@@ -64,7 +61,8 @@ async function startServer() {
       // const authorizationHeaders = req.headers["authorization"]
       // const result = await getUserFromAuthorizationHeader(authorizationHeaders)
       // return result
-      return { user: { uid: "abc123" } }
+      // return { user: { uid: "abc123" } }
+      return { user: { uid: "xyz987" } }
     },
     introspection: env !== "production", // Only in development and staging env.
   })

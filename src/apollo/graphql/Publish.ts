@@ -85,11 +85,6 @@ export const CreatePublishResult = objectType({
     t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
     t.nonNull.string("metadataURI")
-    t.nonNull.string("title")
-    t.nonNull.string("description")
-    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
   },
 })
 
@@ -109,14 +104,14 @@ export const UpdatePublishInput = inputObjectType({
   definition(t) {
     t.nonNull.int("publishId")
     t.nonNull.int("creatorId")
-    t.nonNull.string("imageURI")
-    t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
-    t.nonNull.string("title")
-    t.nonNull.string("description")
-    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
+    t.string("imageURI")
+    t.string("contentURI")
+    t.string("metadataURI")
+    t.string("title")
+    t.string("description")
+    t.field("primaryCategory", { type: "Category" })
+    t.field("secondaryCategory", { type: "Category" })
+    t.field("tertiaryCategory", { type: "Category" })
   },
 })
 
@@ -130,66 +125,6 @@ export const BurnNFTResult = objectType({
   },
 })
 
-/**
- * Returned type of publish queries.
- * @dev see PublishToken.
- * @dev use this type for the returned type for all publish quiries.
- */
-export const FetchPublishResult = objectType({
-  name: "FetchPublishResult",
-  definition(t) {
-    t.nonNull.int("tokenId")
-    t.nonNull.string("owner")
-    t.nonNull.int("creatorId")
-    t.nonNull.int("likes")
-    t.nonNull.string("imageURI")
-    t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
-  },
-})
-
-/**
- * Publish Token Type
- * @dev this is the object type for data that will be stored in Firestore.
- * @param id {string} - Firestore document id
- * @param uid {string} - a user auth uid
- * @param tokenId {number} - a Publish token id
- * @param owner {string} - a blockchain address that owns the token
- * @param creatorId {number} - a Profile token id that owns the token
- * @param likes {number} - number of likes
- * @param imageURI {string} - a publish's thumbnail image uri
- * @param contentURI {string} - a publish's content uri
- * @param metadataURI {string} - a publish's metadata file uri
- * @param title {string} - a publish's title
- * @param description {string} - a publish's description
- * @param primaryCategory {enum} - a primary category of a publish
- * @param secondaryCategory {enum} - a secondary category of a publish
- * @param tertiaryCategory {enum} - a tertiary category of a publish
- * @param createdAt {string}
- * @param updatedAt {string}
- */
-export const PublishToken = objectType({
-  name: "PublishToken",
-  definition(t) {
-    t.nonNull.string("id")
-    t.nonNull.string("uid")
-    t.nonNull.int("tokenId")
-    t.nonNull.string("owner")
-    t.nonNull.int("creatorId")
-    t.nonNull.int("likes")
-    t.nonNull.string("imageURI")
-    t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
-    t.nonNull.string("title")
-    t.nonNull.string("description")
-    t.nonNull.field("primaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
-    t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
-    t.nonNull.string("createdAt")
-    t.string("updatedAt")
-  },
-})
-
 export const PublishQuery = extendType({
   type: "Query",
   definition(t) {
@@ -198,7 +133,7 @@ export const PublishQuery = extendType({
      * @dev This query is for testing in development only.
      */
     t.field("getMyPublishes", {
-      type: nonNull(list("FetchPublishResult")),
+      type: nonNull(list("CreatePublishResult")),
       async resolve(_root, _args, { dataSources, user }) {
         try {
           if (!user) throw new AuthenticationError(authErrMessage)
@@ -224,7 +159,7 @@ export const PublishQuery = extendType({
      * @dev Get publishes
      */
     t.field("getPublishes", {
-      type: nonNull(list("FetchPublishResult")),
+      type: nonNull(list("CreatePublishResult")),
       async resolve(_root, _args, { dataSources, user }) {
         try {
           const { tokens } = await dataSources.kmsAPI.getPublishes([
@@ -242,7 +177,7 @@ export const PublishQuery = extendType({
      * @dev Get one publish
      */
     t.field("getPublish", {
-      type: nonNull("FetchPublishResult"),
+      type: nonNull("CreatePublishResult"),
       args: { publishId: nonNull("Int") },
       async resolve(_root, { publishId }, { dataSources }) {
         try {
@@ -365,12 +300,6 @@ export const PublishMutation = extendType({
 
           if (!token) throw new Error("Create publish nft failed.")
 
-          // Save new token in Firestore (publishes collection)
-          await dataSources.firestoreAPI.createPublishDoc({
-            ...token,
-            uid,
-          })
-
           return token
         } catch (error) {
           throw error
@@ -408,18 +337,24 @@ export const PublishMutation = extendType({
             tertiaryCategory,
           } = input
 
-          // description can be empty string.
+          // Require only publishId and creatorId.
           if (
             typeof publishId !== "number" ||
             !publishId ||
             typeof creatorId !== "number" ||
-            !creatorId ||
-            !imageURI ||
-            !contentURI ||
-            !metadataURI ||
-            !title ||
-            !primaryCategory ||
-            !secondaryCategory ||
+            !creatorId
+          )
+            throw new UserInputError(badRequestErrMessage)
+
+          // If non of the remaining data is provided.
+          if (
+            !imageURI &&
+            !contentURI &&
+            !metadataURI &&
+            !title &&
+            !description &&
+            !primaryCategory &&
+            !secondaryCategory &&
             !tertiaryCategory
           )
             throw new UserInputError(badRequestErrMessage)
@@ -439,41 +374,6 @@ export const PublishMutation = extendType({
           })
 
           if (!token) throw new Error("Update publish nft failed.")
-
-          // Update the publish doc in Firestore.
-          // Search the publish doc by token id to get the document id first.
-          const { publish } =
-            await dataSources.firestoreAPI.searchPublishByTokenId(publishId)
-
-          if (publish) {
-            // Only update if there is any change.
-            if (
-              token.imageURI !== publish.imageURI ||
-              token.contentURI !== publish.contentURI ||
-              token.metadataURI !== publish.metadataURI ||
-              token.title !== publish.title ||
-              token.description !== publish.description ||
-              token.primaryCategory !== publish.primaryCategory ||
-              token.secondaryCategory !== publish.secondaryCategory ||
-              token.tertiaryCategory !== publish.tertiaryCategory
-            ) {
-              await dataSources.firestoreAPI.updatePublishDoc(publish.id, {
-                ...token,
-                primaryCategory: token.primaryCategory,
-                // If secondary is "Empty" and tertiary is not, then use the tertiary as secondary and make tertiary "Empty".
-                secondaryCategory:
-                  token.secondaryCategory === "Empty" &&
-                  token.tertiaryCategory !== "Empty"
-                    ? token.tertiaryCategory
-                    : token.secondaryCategory,
-                tertiaryCategory:
-                  token.secondaryCategory === "Empty" &&
-                  token.tertiaryCategory !== "Empty"
-                    ? "Empty"
-                    : token.tertiaryCategory,
-              })
-            }
-          }
 
           return token
         } catch (error) {
@@ -504,15 +404,6 @@ export const PublishMutation = extendType({
             uid,
             publishId
           )
-
-          // Delete the publish doc in Firestore.
-          // Search the publish doc by token id to get the document id first.
-          const { publish } =
-            await dataSources.firestoreAPI.searchPublishByTokenId(publishId)
-
-          if (publish) {
-            await dataSources.firestoreAPI.deletePublishDoc(publish.id)
-          }
 
           return { status }
         } catch (error) {

@@ -32,33 +32,7 @@ export const CreateLikeResult = objectType({
     t.nonNull.string("owner")
     t.nonNull.int("tokenId")
     t.nonNull.int("profileId")
-    t.nonNull.int("pulbishId")
-  },
-})
-
-/**
- * Like Token Type
- * @dev this is the object type for data that will be stored in Firestore.
- * @param id {string} - Firestore document id
- * @param uid {string} - a user auth uid
- * @param owner {string} - a blockchain address that owns the token
- * @param tokenId {number} - a Like token id
- * @param profileId {number} - a profile token id
- * @param publishId {number} - a publish token id
- * @param createdAt {string}
- * @param updatedAt {string}
- */
-export const LikeToken = objectType({
-  name: "LikeToken",
-  definition(t) {
-    t.nonNull.string("id")
-    t.nonNull.string("uid")
-    t.nonNull.string("owner")
-    t.nonNull.int("tokenId")
-    t.nonNull.int("profileId")
     t.nonNull.int("publishId")
-    t.nonNull.string("createdAt")
-    t.string("updatedAt")
   },
 })
 
@@ -79,7 +53,7 @@ export const LikeQuery = extendType({
     })
 
     t.field("getPlatformFee", {
-      type: nonNull("Int"),
+      type: nonNull("Float"),
       async resolve(_root, _args, { dataSources }) {
         try {
           const { fee } = await dataSources.kmsAPI.getPlatformFee()
@@ -150,19 +124,13 @@ export const LikeMutation = extendType({
           )
             throw new UserInputError(badRequestErrMessage)
 
-          // Create a follow nft
+          // Create a like nft
           const { token } = await dataSources.kmsAPI.createLikeNft(uid, {
             profileId,
             publishId,
           })
 
           if (!token) throw new Error("Create follow nft failed.")
-
-          // Save new token in Firestore (likes collection)
-          await dataSources.firestoreAPI.createLikeDoc({
-            ...token,
-            uid,
-          })
 
           return token
         } catch (error) {
@@ -190,16 +158,6 @@ export const LikeMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           const { status } = await dataSources.kmsAPI.burnLikeNft(uid, tokenId)
-
-          // Delete the like doc in Firestore.
-          // Search the like doc by token id to get the document id first.
-          const { like } = await dataSources.firestoreAPI.searchLikeByTokenId(
-            tokenId
-          )
-
-          if (like) {
-            await dataSources.firestoreAPI.deleteLikeDoc(like.id)
-          }
 
           return { status }
         } catch (error) {

@@ -42,6 +42,12 @@ export class KmsAPI extends RESTDataSource {
 
   // =========================== //
   // These below functions are for only admin role, and will be used in development only, in production admin will connect to the blockchain directly from the UI for more security.
+  async setFollowForProfile(
+    followContractAddress: string
+  ): Promise<{ status: "Ok" }> {
+    return this.post("/admin/set/profile-follow", { followContractAddress })
+  }
+
   async setProfileForPublish(
     profileContractAddress: string
   ): Promise<{ status: "Ok" }> {
@@ -299,7 +305,7 @@ export class KmsAPI extends RESTDataSource {
   async getMyPublishes(
     uid: string,
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["FetchPublishResult"][] }> {
+  ): Promise<{ tokens: NexusGenObjects["CreatePublishResult"][] }> {
     return this.post(`/publishes/my-publishes/uid/${encodeURIComponent(uid)}`, {
       tokenIds,
     })
@@ -311,7 +317,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublishes(
     tokenIds: number[]
-  ): Promise<{ tokens: NexusGenObjects["FetchPublishResult"][] }> {
+  ): Promise<{ tokens: NexusGenObjects["CreatePublishResult"][] }> {
     return this.post(`/publishes/get`, {
       tokenIds,
     })
@@ -323,7 +329,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublish(
     tokenId: number
-  ): Promise<{ token: NexusGenObjects["FetchPublishResult"] }> {
+  ): Promise<{ token: NexusGenObjects["CreatePublishResult"] }> {
     return this.get(`/publishes/publishId/${tokenId}`)
   }
 
@@ -394,24 +400,6 @@ export class KmsAPI extends RESTDataSource {
       `/follows/delete/tokenId/${encodeURIComponent(
         tokenId
       )}/uid/${encodeURIComponent(uid)}`
-    )
-  }
-
-  /**
-   * @dev get following count of a specific profile
-   */
-  async getFollowingCount(profileId: number): Promise<{ count: number }> {
-    return this.get(
-      `/follows/following/profileId/${encodeURIComponent(profileId)}`
-    )
-  }
-
-  /**
-   * @dev get followers count of a specific profile
-   */
-  async getFollowersCount(profileId: number): Promise<{ count: number }> {
-    return this.get(
-      `/follows/followers/profileId/${encodeURIComponent(profileId)}`
     )
   }
 

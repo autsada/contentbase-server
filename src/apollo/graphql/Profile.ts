@@ -91,34 +91,6 @@ export const EstimateCreateNFTGasResult = objectType({
   },
 })
 
-/**
- * Profile Token Type
- * @dev this is the object type for data that will be stored in Firestore.
- * @param id {string} - Firestore document id
- * @param uid {string} - a user auth uid
- * @param tokenId {number} - a Profile token id
- * @param owner {string} - a blockchain address that owns the token
- * @param handle {string} - a handle of the profile
- * @param imageURI {string} - a profile image uri
- * @param displayedHandle {string} - original handle without lowercase string and prefix with "@"
- * @param createdAt {string}
- * @param updatedAt {string}
- */
-export const ProfileToken = objectType({
-  name: "ProfileToken",
-  definition(t) {
-    t.nonNull.string("id")
-    t.nonNull.string("uid")
-    t.nonNull.int("tokenId")
-    t.nonNull.string("owner")
-    t.nonNull.string("handle")
-    t.nonNull.string("imageURI")
-    t.nonNull.string("displayedHandle")
-    t.nonNull.string("createdAt")
-    t.string("updatedAt")
-  },
-})
-
 export const ProfileQuery = extendType({
   type: "Query",
   definition(t) {
@@ -200,30 +172,13 @@ export const ProfileMutation = extendType({
           // imageURI can be empty.
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
-          // Make sure to lower case handle or will get error.
-          const formattedHandle = handle.toLowerCase()
-
-          // Check if handle has correct length and unique.
-          const { valid } = await dataSources.kmsAPI.verifyHandle(
-            formattedHandle
-          )
-
-          if (!valid) throw new UserInputError("This handle is taken")
-
           // Create a profile
           const { token } = await dataSources.kmsAPI.createProfileNft(uid, {
-            handle: formattedHandle,
+            handle,
             imageURI: imageURI || "",
           })
 
           if (!token) throw new Error("Create profile nft failed.")
-
-          // Save new token in Firestore (profiles collection), must include original handle (the handle before lowercase prefixed with "@") for displaying on the UI.
-          await dataSources.firestoreAPI.createProfileDoc({
-            ...token,
-            uid,
-            displayedHandle: `@${handle}`,
-          })
 
           return token
         } catch (error) {
@@ -264,15 +219,6 @@ export const ProfileMutation = extendType({
           })
 
           if (!token) throw new Error("Update profile image failed.")
-
-          // Update the profile doc in Firestore.
-          // Search the profile doc by token id to get the document id first.
-          const { profile } =
-            await dataSources.firestoreAPI.searchProfileByTokenId(profileId)
-
-          if (profile) {
-            await dataSources.firestoreAPI.updateProfileDoc(profile.id, token)
-          }
 
           return token
         } catch (error) {

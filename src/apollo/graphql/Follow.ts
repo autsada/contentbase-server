@@ -36,73 +36,9 @@ export const CreateFollowResult = objectType({
   },
 })
 
-/**
- * Follow Token Type
- * @dev this is the object type for data that will be stored in Firestore.
- * @param id {string} - Firestore document id
- * @param uid {string} - a user auth uid
- * @param tokenId {number} - a Publish token id
- * @param owner {string} - a blockchain address that owns the token
- * @param followerId {number} - a profile token id of the follower
- * @param followeeId {number} - a profile token id of the followee
- * @param createdAt {string}
- * @param updatedAt {string}
- */
-export const FollowToken = objectType({
-  name: "FollowToken",
-  definition(t) {
-    t.nonNull.string("id")
-    t.nonNull.string("uid")
-    t.nonNull.int("tokenId")
-    t.nonNull.string("owner")
-    t.nonNull.int("followerId")
-    t.nonNull.int("followeeId")
-    t.nonNull.string("createdAt")
-    t.string("updatedAt")
-  },
-})
-
 export const FollowQuery = extendType({
   type: "Query",
   definition(t) {
-    t.field("getFollowingCount", {
-      type: nonNull("Int"),
-      args: { profileId: nonNull("Int") },
-      async resolve(_root, { profileId }, { dataSources, user }) {
-        try {
-          if (typeof profileId !== "number" || !profileId)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { count } = await dataSources.kmsAPI.getFollowingCount(
-            profileId
-          )
-
-          return count
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("getFollowersCount", {
-      type: nonNull("Int"),
-      args: { profileId: nonNull("Int") },
-      async resolve(_root, { profileId }, { dataSources, user }) {
-        try {
-          if (typeof profileId !== "number" || !profileId)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { count } = await dataSources.kmsAPI.getFollowersCount(
-            profileId
-          )
-
-          return count
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
     t.field("fetchFollowers", {
       type: nonNull(list("CreateFollowResult")),
       async resolve(_root, _args, { dataSources, user }) {
@@ -185,12 +121,6 @@ export const FollowMutation = extendType({
 
           if (!token) throw new Error("Create follow nft failed.")
 
-          // Save new token in Firestore (follows collection)
-          await dataSources.firestoreAPI.createFollowDoc({
-            ...token,
-            uid,
-          })
-
           return token
         } catch (error) {
           throw error
@@ -220,15 +150,6 @@ export const FollowMutation = extendType({
             uid,
             tokenId
           )
-
-          // Delete the follow doc in Firestore.
-          // Search the follow doc by token id to get the document id first.
-          const { follow } =
-            await dataSources.firestoreAPI.searchFollowByTokenId(tokenId)
-
-          if (follow) {
-            await dataSources.firestoreAPI.deleteFollowDoc(follow.id)
-          }
 
           return { status }
         } catch (error) {
