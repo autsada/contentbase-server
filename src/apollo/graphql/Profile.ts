@@ -1,7 +1,6 @@
 import {
   extendType,
   nonNull,
-  stringArg,
   inputObjectType,
   enumType,
   objectType,
@@ -52,21 +51,6 @@ export const CreateProfileInput = inputObjectType({
 })
 
 /**
- * Returned type of CreateProfileNft mutation.
- * @dev see ProfileToken.
- * @dev use this type for the returned type of other mutations that return Profile token as well.
- */
-export const CreateProfileResult = objectType({
-  name: "CreateProfileResult",
-  definition(t) {
-    t.nonNull.int("tokenId")
-    t.nonNull.string("owner")
-    t.nonNull.string("handle")
-    t.nonNull.string("imageURI")
-  },
-})
-
-/**
  * The object containing required data to update profile image.
  * @param profileId {number} - a token id of the profile token
  * @param imageURI {string} - a uri of the image to be used as a profile image
@@ -75,19 +59,69 @@ export const CreateProfileResult = objectType({
 export const UpdateProfileImageInput = inputObjectType({
   name: "UpdateProfileImageInput",
   definition(t) {
-    t.nonNull.int("profileId")
+    t.nonNull.int("tokenId")
     t.nonNull.string("imageURI")
   },
 })
 
 /**
- * The return object type for estimate create Profile NFT gas.
- * @param gas {number}
+ * The object containing required data for follow function.
+ * @param profileId {number} - a token id of the profile token
+ * @param imageURI {string} - a uri of the image to be used as a profile image
+ *
  */
-export const EstimateCreateNFTGasResult = objectType({
-  name: "EstimateCreateNFTGasResult",
+export const FollowInput = inputObjectType({
+  name: "FollowInput",
+  definition(t) {
+    t.nonNull.int("followerId")
+    t.nonNull.int("followeeId")
+  },
+})
+
+/**
+ * Returned type of all write operations.
+ */
+export const WriteResult = objectType({
+  name: "WriteResult",
+  definition(t) {
+    t.nonNull.string("status")
+  },
+})
+
+/**
+ * Profile struct object type
+ */
+export const ProfileToken = objectType({
+  name: "ProfileToken",
+  definition(t) {
+    t.nonNull.int("tokenId")
+    t.nonNull.string("owner")
+    t.nonNull.string("handle")
+    t.nonNull.string("imageURI")
+    t.nonNull.int("followers")
+    t.nonNull.int("following")
+  },
+})
+
+/**
+ * The return object type for estimate gas operations.
+ * @param gas {string}
+ */
+export const EstimateGasResult = objectType({
+  name: "EstimateGasResult",
   definition(t) {
     t.nonNull.string("gas")
+  },
+})
+
+/**
+ * The return object type for estimate gas operations.
+ * @param uri {string}
+ */
+export const TokenURIResult = objectType({
+  name: "TokenURIResult",
+  definition(t) {
+    t.nonNull.string("uri")
   },
 })
 
@@ -98,17 +132,40 @@ export const ProfileQuery = extendType({
      * @dev Get user's default profile
      */
     t.field("getDefaultProfile", {
-      type: nullable("CreateProfileResult"),
+      type: nullable("ProfileToken"),
       async resolve(_root, _args, { dataSources, user }) {
         try {
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
 
+          // Validation
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
 
+          // Call the api.
           const { token } = await dataSources.kmsAPI.getDefaultProfile(uid)
-
           return token
+        } catch (error) {
+          // Return null if no profile found or error occurred so the process can continue.
+          return null
+        }
+      },
+    })
+
+    /**
+     * @dev Get token uri.
+     */
+    t.field("getProfileTokenURI", {
+      type: nullable("TokenURIResult"),
+      args: { tokenId: nonNull("Int") },
+      async resolve(_root, { tokenId }, { dataSources }) {
+        try {
+          // Validation.
+          if (!tokenId || typeof tokenId !== "number")
+            throw new UserInputError(badRequestErrMessage)
+
+          // Call the api.
+          return dataSources.kmsAPI.getTokenURI(tokenId)
         } catch (error) {
           // Return null if no profile found or error occurred.
           return null
@@ -129,18 +186,18 @@ export const ProfileMutation = extendType({
       args: { data: nonNull("HasRoleInput") },
       async resolve(_roote, { data }, { dataSources, user }) {
         try {
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
 
+          // Validation.
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
-
           if (!data) throw new UserInputError(badRequestErrMessage)
           const { role } = data
-
           if (!role) throw new UserInputError(badRequestErrMessage)
 
+          // Call the api.
           const { hasRole } = await dataSources.kmsAPI.hasRoleProfile(uid, role)
-
           return hasRole
         } catch (error) {
           throw error
@@ -152,35 +209,27 @@ export const ProfileMutation = extendType({
      * @dev The process to create profile nft for users who signed in with traditional providers (phone | email | google).
      * @param input - see CreateProfileInput type
      */
-    t.field("createProfileNft", {
-      type: nonNull("CreateProfileResult"),
+    t.field("createProfile", {
+      type: nonNull("WriteResult"),
       args: { input: nonNull("CreateProfileInput") },
       async resolve(_root, { input }, { dataSources, user }) {
         try {
-          // User must be already logged in
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
-
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
 
-          // Validate input.
+          // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-
           const { handle, imageURI } = input
-
-          // Validate input.
           // imageURI can be empty.
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
-          // Create a profile
-          const { token } = await dataSources.kmsAPI.createProfileNft(uid, {
+          // Call the api.
+          return dataSources.kmsAPI.createProfile(uid, {
             handle,
             imageURI: imageURI || "",
           })
-
-          if (!token) throw new Error("Create profile nft failed.")
-
-          return token
         } catch (error) {
           throw error
         }
@@ -193,34 +242,26 @@ export const ProfileMutation = extendType({
      * @param input - see UpdateProfileImageInput type.
      */
     t.field("updateProfileImage", {
-      type: nonNull("CreateProfileResult"),
+      type: nonNull("WriteResult"),
       args: { input: nonNull("UpdateProfileImageInput") },
       async resolve(_root, { input }, { dataSources, user }) {
         try {
-          // User must be already logged in
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
-
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
 
-          // Validate input.
+          // Validattion.
           if (!input) throw new UserInputError(badRequestErrMessage)
-
-          const { profileId, imageURI } = input
-
-          // Validate input.
-          if (typeof profileId !== "number" || !profileId || !imageURI)
+          const { tokenId, imageURI } = input
+          if (!tokenId || typeof tokenId !== "number" || !imageURI)
             throw new UserInputError(badRequestErrMessage)
 
-          // Update the profile
-          const { token } = await dataSources.kmsAPI.updateProfileImage(uid, {
-            profileId,
+          // Call the api.
+          return dataSources.kmsAPI.updateProfileImage(uid, {
+            tokenId,
             imageURI,
           })
-
-          if (!token) throw new Error("Update profile image failed.")
-
-          return token
         } catch (error) {
           throw error
         }
@@ -232,30 +273,53 @@ export const ProfileMutation = extendType({
      * @param profileId {number} - a profile token id
      */
     t.field("setDefaultProfile", {
-      type: nonNull("CreateProfileResult"),
-      args: { profileId: nonNull("Int") },
-      async resolve(_root, { profileId }, { dataSources, user }) {
+      type: nonNull("WriteResult"),
+      args: { handle: nonNull("String") },
+      async resolve(_root, { handle }, { dataSources, user }) {
         try {
-          // User must be already logged in
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user.uid
 
+          // Validation.
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!handle) throw new UserInputError(badRequestErrMessage)
 
-          if (typeof profileId !== "number" || !profileId)
-            throw new UserInputError("Bad request")
+          // Call the api.
+          return dataSources.kmsAPI.setDefaultProfile(uid, handle)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
 
-          const { token } = await dataSources.kmsAPI.setDefaultProfile(
-            uid,
-            profileId
+    /**
+     * @dev The process to follow a profile.
+     * @param profileId {number} - a profile token id
+     */
+    t.field("follow", {
+      type: nonNull("WriteResult"),
+      args: { input: nonNull("FollowInput") },
+      async resolve(_root, { input }, { dataSources, user }) {
+        try {
+          // User must logged in.
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user.uid
+
+          // Validation.
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!input) throw new UserInputError(badRequestErrMessage)
+          const { followerId, followeeId } = input
+          if (
+            !followerId ||
+            typeof followerId !== "number" ||
+            !followeeId ||
+            typeof followeeId !== "number"
           )
+            throw new UserInputError(badRequestErrMessage)
 
-          if (!token)
-            throw new Error(
-              "Error occured while attempting to update profile image."
-            )
-
-          return token
+          // Call the api.
+          return dataSources.kmsAPI.follow(uid, { followerId, followeeId })
         } catch (error) {
           throw error
         }
@@ -268,12 +332,14 @@ export const ProfileMutation = extendType({
      */
     t.field("validateHandle", {
       type: nonNull("Boolean"),
-      args: { handle: nonNull(stringArg()) },
+      args: { handle: nonNull("String") },
       async resolve(_root, { handle }, { dataSources }) {
         try {
+          // Validation.
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
-          // Has to lowercase the handle before sending to the blockchain
+          // Call the api.
+          // Has to lowercase the handle before sending to the blockchain.
           const { valid } = await dataSources.kmsAPI.verifyHandle(
             handle.toLowerCase()
           )
@@ -288,45 +354,70 @@ export const ProfileMutation = extendType({
      * @dev Estimate gas used for creating a profile nft.
      * @param input - refer to CreateProfileInput type
      */
-    t.field("estimateCreateProfileGas", {
-      type: nonNull("EstimateCreateNFTGasResult"),
+    t.field("estimateGasCreateProfile", {
+      type: nonNull("EstimateGasResult"),
       args: { input: nonNull("CreateProfileInput") },
       async resolve(_roote, { input }, { dataSources, user }) {
         try {
-          // User must be already logged in
+          // User must logged in.
           if (!user) throw new AuthenticationError(authErrMessage)
           const uid = user?.uid
 
+          // Validation.
           if (!uid) throw new ForbiddenError(forbiddenErrMessage)
-
-          // Validate input.
           if (!input) throw new UserInputError(badRequestErrMessage)
-
           const { handle, imageURI } = input
-
-          // Validate input.
           // imageURI can be empty.
           if (!handle) throw new UserInputError(badRequestErrMessage)
-
           // Make sure to lower case handle or will get error.
           const formattedHandle = handle.toLowerCase()
-
           // Check if handle has correct length and unique.
           const { valid } = await dataSources.kmsAPI.verifyHandle(
             formattedHandle
           )
-
           if (!valid) throw new UserInputError("This handle is taken")
 
-          const { gas } = await dataSources.kmsAPI.estimateCreateProfileGas(
-            uid,
-            {
-              handle,
-              imageURI: imageURI || "",
-            }
-          )
+          // Call the api.
+          return dataSources.kmsAPI.estimateGasCreateProfile(uid, {
+            handle,
+            imageURI: imageURI || "",
+          })
+        } catch (error) {
+          throw error
+        }
+      },
+    })
 
-          return { gas }
+    /**
+     * @dev Estimate gas used to follow.
+     * @param input - refer to FollowInput type
+     */
+    t.field("estimateGasFollow", {
+      type: nonNull("EstimateGasResult"),
+      args: { input: nonNull("FollowInput") },
+      async resolve(_roote, { input }, { dataSources, user }) {
+        try {
+          // User must logged in.
+          if (!user) throw new AuthenticationError(authErrMessage)
+          const uid = user?.uid
+
+          // Validation.
+          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!input) throw new UserInputError(badRequestErrMessage)
+          const { followerId, followeeId } = input
+          if (
+            !followerId ||
+            typeof followerId !== "number" ||
+            !followeeId ||
+            typeof followeeId !== "number"
+          )
+            throw new UserInputError(badRequestErrMessage)
+
+          // Call the api.
+          return dataSources.kmsAPI.estimateGasFollow(uid, {
+            followerId,
+            followeeId,
+          })
         } catch (error) {
           throw error
         }

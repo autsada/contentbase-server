@@ -14,13 +14,10 @@ declare global {
 }
 
 export interface NexusGenInputs {
-  CreateFollowInput: { // input type
-    followeeId: number; // Int!
-    followerId: number; // Int!
-  }
-  CreateLikeInput: { // input type
-    profileId: number; // Int!
-    publishId: number; // Int!
+  CreateCommentInput: { // input type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    targetId: number; // Int!
   }
   CreateProfileInput: { // input type
     handle: string; // String!
@@ -37,24 +34,33 @@ export interface NexusGenInputs {
     tertiaryCategory: NexusGenEnums['Category']; // Category!
     title: string; // String!
   }
+  FollowInput: { // input type
+    followeeId: number; // Int!
+    followerId: number; // Int!
+  }
   HasRoleInput: { // input type
     role: NexusGenEnums['Role']; // Role!
   }
+  UpdateCommentInput: { // input type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    tokenId: number; // Int!
+  }
   UpdateProfileImageInput: { // input type
     imageURI: string; // String!
-    profileId: number; // Int!
+    tokenId: number; // Int!
   }
   UpdatePublishInput: { // input type
-    contentURI?: string | null; // String
+    contentURI: string; // String!
     creatorId: number; // Int!
     description?: string | null; // String
-    imageURI?: string | null; // String
-    metadataURI?: string | null; // String
-    primaryCategory?: NexusGenEnums['Category'] | null; // Category
-    publishId: number; // Int!
-    secondaryCategory?: NexusGenEnums['Category'] | null; // Category
-    tertiaryCategory?: NexusGenEnums['Category'] | null; // Category
-    title?: string | null; // String
+    imageURI: string; // String!
+    metadataURI: string; // String!
+    primaryCategory: NexusGenEnums['Category']; // Category!
+    secondaryCategory: NexusGenEnums['Category']; // Category!
+    tertiaryCategory: NexusGenEnums['Category']; // Category!
+    title: string; // String!
+    tokenId: number; // Int!
   }
 }
 
@@ -73,41 +79,26 @@ export interface NexusGenScalars {
 }
 
 export interface NexusGenObjects {
-  BurnNFTResult: { // root type
-    status: number; // Int!
+  AddressResult: { // root type
+    address: string; // String!
   }
-  CreateFollowResult: { // root type
-    followeeId: number; // Int!
-    followerId: number; // Int!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  CreateLikeResult: { // root type
-    owner: string; // String!
-    profileId: number; // Int!
-    publishId: number; // Int!
-    tokenId: number; // Int!
-  }
-  CreateProfileResult: { // root type
-    handle: string; // String!
-    imageURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  CreatePublishResult: { // root type
+  CommentToken: { // root type
     contentURI: string; // String!
     creatorId: number; // Int!
-    imageURI: string; // String!
+    disLikes: number; // Int!
     likes: number; // Int!
-    metadataURI: string; // String!
     owner: string; // String!
+    targetId: number; // Int!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // root type
     address: string; // String!
   }
-  EstimateCreateNFTGasResult: { // root type
+  EstimateGasResult: { // root type
     gas: string; // String!
+  }
+  FeeResult: { // root type
+    fee: number; // Float!
   }
   MetadataCustomProps: { // root type
     contentURI?: string | null; // String
@@ -118,7 +109,28 @@ export interface NexusGenObjects {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: {};
+  ProfileToken: { // root type
+    followers: number; // Int!
+    following: number; // Int!
+    handle: string; // String!
+    imageURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
+  PublishToken: { // root type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    disLikes: number; // Int!
+    imageURI: string; // String!
+    likes: number; // Int!
+    metadataURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
   Query: {};
+  TokenURIResult: { // root type
+    uri: string; // String!
+  }
   UploadParams: { // root type
     address: string; // String!
     fileName: string; // String!
@@ -133,6 +145,9 @@ export interface NexusGenObjects {
     storageURL: string; // String!
     tokenURI: string; // String!
   }
+  WriteResult: { // root type
+    status: string; // String!
+  }
 }
 
 export interface NexusGenInterfaces {
@@ -146,41 +161,26 @@ export type NexusGenRootTypes = NexusGenObjects
 export type NexusGenAllTypes = NexusGenRootTypes & NexusGenScalars & NexusGenEnums
 
 export interface NexusGenFieldTypes {
-  BurnNFTResult: { // field return type
-    status: number; // Int!
+  AddressResult: { // field return type
+    address: string; // String!
   }
-  CreateFollowResult: { // field return type
-    followeeId: number; // Int!
-    followerId: number; // Int!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  CreateLikeResult: { // field return type
-    owner: string; // String!
-    profileId: number; // Int!
-    publishId: number; // Int!
-    tokenId: number; // Int!
-  }
-  CreateProfileResult: { // field return type
-    handle: string; // String!
-    imageURI: string; // String!
-    owner: string; // String!
-    tokenId: number; // Int!
-  }
-  CreatePublishResult: { // field return type
+  CommentToken: { // field return type
     contentURI: string; // String!
     creatorId: number; // Int!
-    imageURI: string; // String!
+    disLikes: number; // Int!
     likes: number; // Int!
-    metadataURI: string; // String!
     owner: string; // String!
+    targetId: number; // Int!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // field return type
     address: string; // String!
   }
-  EstimateCreateNFTGasResult: { // field return type
+  EstimateGasResult: { // field return type
     gas: string; // String!
+  }
+  FeeResult: { // field return type
+    fee: number; // Float!
   }
   MetadataCustomProps: { // field return type
     contentURI: string | null; // String
@@ -191,49 +191,66 @@ export interface NexusGenFieldTypes {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: { // field return type
-    burnPublishNft: NexusGenRootTypes['BurnNFTResult']; // BurnNFTResult!
-    createProfileNft: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
-    createPublishNft: NexusGenRootTypes['CreatePublishResult']; // CreatePublishResult!
+    createComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    createProfile: NexusGenRootTypes['WriteResult']; // WriteResult!
+    createPublish: NexusGenRootTypes['WriteResult']; // WriteResult!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
-    estimateCreateFollowGas: NexusGenRootTypes['EstimateCreateNFTGasResult']; // EstimateCreateNFTGasResult!
-    estimateCreateLikeGas: NexusGenRootTypes['EstimateCreateNFTGasResult']; // EstimateCreateNFTGasResult!
-    estimateCreateProfileGas: NexusGenRootTypes['EstimateCreateNFTGasResult']; // EstimateCreateNFTGasResult!
-    estimateCreatePublishGas: NexusGenRootTypes['EstimateCreateNFTGasResult']; // EstimateCreateNFTGasResult!
-    follow: NexusGenRootTypes['CreateFollowResult']; // CreateFollowResult!
-    hasRoleFollow: boolean; // Boolean!
-    hasRoleLike: boolean; // Boolean!
+    deleteComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    deletePublish: NexusGenRootTypes['WriteResult']; // WriteResult!
+    disLikeComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    disLikePublish: NexusGenRootTypes['WriteResult']; // WriteResult!
+    estimateGasCreateProfile: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
+    estimateGasCreatePublish: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
+    estimateGasFollow: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
+    estimateGasLikePublish: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
+    follow: NexusGenRootTypes['WriteResult']; // WriteResult!
     hasRoleProfile: boolean; // Boolean!
     hasRolePublish: boolean; // Boolean!
-    like: NexusGenRootTypes['CreateLikeResult']; // CreateLikeResult!
-    setDefaultProfile: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
-    setFollowContractForProfile: string; // String!
-    setLikeContractForPublish: string; // String!
-    setLikeFee: string; // String!
-    setOwnerAddress: string; // String!
-    setPlatformFee: string; // String!
-    setProfileContractForFollow: string; // String!
-    setProfileContractForLike: string; // String!
-    setProfileContractForPublish: string; // String!
-    setPublishContractForLike: string; // String!
-    unFollow: NexusGenRootTypes['BurnNFTResult']; // BurnNFTResult!
-    unLike: NexusGenRootTypes['BurnNFTResult']; // BurnNFTResult!
-    updateProfileImage: NexusGenRootTypes['CreateProfileResult']; // CreateProfileResult!
-    updatePublishNft: NexusGenRootTypes['CreatePublishResult']; // CreatePublishResult!
+    likeComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    likePublish: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setDefaultProfile: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setLikeFee: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setOwnerAddress: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setPlatformFee: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setProfileContract: NexusGenRootTypes['WriteResult']; // WriteResult!
+    updateComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    updateProfileImage: NexusGenRootTypes['WriteResult']; // WriteResult!
+    updatePublish: NexusGenRootTypes['WriteResult']; // WriteResult!
     validateHandle: boolean; // Boolean!
-    withdrawFunds: string; // String!
+    withdrawFunds: NexusGenRootTypes['WriteResult']; // WriteResult!
+  }
+  ProfileToken: { // field return type
+    followers: number; // Int!
+    following: number; // Int!
+    handle: string; // String!
+    imageURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
+  }
+  PublishToken: { // field return type
+    contentURI: string; // String!
+    creatorId: number; // Int!
+    disLikes: number; // Int!
+    imageURI: string; // String!
+    likes: number; // Int!
+    metadataURI: string; // String!
+    owner: string; // String!
+    tokenId: number; // Int!
   }
   Query: { // field return type
-    fetchFollowers: Array<NexusGenRootTypes['CreateFollowResult'] | null>; // [CreateFollowResult]!
-    getContractBalance: number; // Float!
-    getContractOwnerAddress: string; // String!
-    getDefaultProfile: NexusGenRootTypes['CreateProfileResult'] | null; // CreateProfileResult
-    getLikeFee: number; // Int!
+    getComment: NexusGenRootTypes['CommentToken']; // CommentToken!
+    getDefaultProfile: NexusGenRootTypes['ProfileToken'] | null; // ProfileToken
+    getLikeFee: NexusGenRootTypes['FeeResult']; // FeeResult!
     getMyBalance: string; // String!
-    getMyPublishes: Array<NexusGenRootTypes['CreatePublishResult'] | null>; // [CreatePublishResult]!
-    getPlatformFee: number; // Float!
-    getPublish: NexusGenRootTypes['CreatePublishResult']; // CreatePublishResult!
-    getPublishes: Array<NexusGenRootTypes['CreatePublishResult'] | null>; // [CreatePublishResult]!
-    totalPublishes: number; // Int!
+    getOwnerAddress: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getPlatformFee: NexusGenRootTypes['FeeResult']; // FeeResult!
+    getProfileContractAddress: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getProfileTokenURI: NexusGenRootTypes['TokenURIResult'] | null; // TokenURIResult
+    getPublish: NexusGenRootTypes['PublishToken'] | null; // PublishToken
+    getPublishTokenURI: NexusGenRootTypes['TokenURIResult'] | null; // TokenURIResult
+  }
+  TokenURIResult: { // field return type
+    uri: string; // String!
   }
   UploadParams: { // field return type
     address: string; // String!
@@ -249,44 +266,32 @@ export interface NexusGenFieldTypes {
     storageURL: string; // String!
     tokenURI: string; // String!
   }
+  WriteResult: { // field return type
+    status: string; // String!
+  }
 }
 
 export interface NexusGenFieldTypeNames {
-  BurnNFTResult: { // field return type name
-    status: 'Int'
+  AddressResult: { // field return type name
+    address: 'String'
   }
-  CreateFollowResult: { // field return type name
-    followeeId: 'Int'
-    followerId: 'Int'
-    owner: 'String'
-    tokenId: 'Int'
-  }
-  CreateLikeResult: { // field return type name
-    owner: 'String'
-    profileId: 'Int'
-    publishId: 'Int'
-    tokenId: 'Int'
-  }
-  CreateProfileResult: { // field return type name
-    handle: 'String'
-    imageURI: 'String'
-    owner: 'String'
-    tokenId: 'Int'
-  }
-  CreatePublishResult: { // field return type name
+  CommentToken: { // field return type name
     contentURI: 'String'
     creatorId: 'Int'
-    imageURI: 'String'
+    disLikes: 'Int'
     likes: 'Int'
-    metadataURI: 'String'
     owner: 'String'
+    targetId: 'Int'
     tokenId: 'Int'
   }
   CreateWalletResult: { // field return type name
     address: 'String'
   }
-  EstimateCreateNFTGasResult: { // field return type name
+  EstimateGasResult: { // field return type name
     gas: 'String'
+  }
+  FeeResult: { // field return type name
+    fee: 'Float'
   }
   MetadataCustomProps: { // field return type name
     contentURI: 'String'
@@ -297,49 +302,66 @@ export interface NexusGenFieldTypeNames {
     type: 'UploadType'
   }
   Mutation: { // field return type name
-    burnPublishNft: 'BurnNFTResult'
-    createProfileNft: 'CreateProfileResult'
-    createPublishNft: 'CreatePublishResult'
+    createComment: 'WriteResult'
+    createProfile: 'WriteResult'
+    createPublish: 'WriteResult'
     createWallet: 'CreateWalletResult'
-    estimateCreateFollowGas: 'EstimateCreateNFTGasResult'
-    estimateCreateLikeGas: 'EstimateCreateNFTGasResult'
-    estimateCreateProfileGas: 'EstimateCreateNFTGasResult'
-    estimateCreatePublishGas: 'EstimateCreateNFTGasResult'
-    follow: 'CreateFollowResult'
-    hasRoleFollow: 'Boolean'
-    hasRoleLike: 'Boolean'
+    deleteComment: 'WriteResult'
+    deletePublish: 'WriteResult'
+    disLikeComment: 'WriteResult'
+    disLikePublish: 'WriteResult'
+    estimateGasCreateProfile: 'EstimateGasResult'
+    estimateGasCreatePublish: 'EstimateGasResult'
+    estimateGasFollow: 'EstimateGasResult'
+    estimateGasLikePublish: 'EstimateGasResult'
+    follow: 'WriteResult'
     hasRoleProfile: 'Boolean'
     hasRolePublish: 'Boolean'
-    like: 'CreateLikeResult'
-    setDefaultProfile: 'CreateProfileResult'
-    setFollowContractForProfile: 'String'
-    setLikeContractForPublish: 'String'
-    setLikeFee: 'String'
-    setOwnerAddress: 'String'
-    setPlatformFee: 'String'
-    setProfileContractForFollow: 'String'
-    setProfileContractForLike: 'String'
-    setProfileContractForPublish: 'String'
-    setPublishContractForLike: 'String'
-    unFollow: 'BurnNFTResult'
-    unLike: 'BurnNFTResult'
-    updateProfileImage: 'CreateProfileResult'
-    updatePublishNft: 'CreatePublishResult'
+    likeComment: 'WriteResult'
+    likePublish: 'WriteResult'
+    setDefaultProfile: 'WriteResult'
+    setLikeFee: 'WriteResult'
+    setOwnerAddress: 'WriteResult'
+    setPlatformFee: 'WriteResult'
+    setProfileContract: 'WriteResult'
+    updateComment: 'WriteResult'
+    updateProfileImage: 'WriteResult'
+    updatePublish: 'WriteResult'
     validateHandle: 'Boolean'
-    withdrawFunds: 'String'
+    withdrawFunds: 'WriteResult'
+  }
+  ProfileToken: { // field return type name
+    followers: 'Int'
+    following: 'Int'
+    handle: 'String'
+    imageURI: 'String'
+    owner: 'String'
+    tokenId: 'Int'
+  }
+  PublishToken: { // field return type name
+    contentURI: 'String'
+    creatorId: 'Int'
+    disLikes: 'Int'
+    imageURI: 'String'
+    likes: 'Int'
+    metadataURI: 'String'
+    owner: 'String'
+    tokenId: 'Int'
   }
   Query: { // field return type name
-    fetchFollowers: 'CreateFollowResult'
-    getContractBalance: 'Float'
-    getContractOwnerAddress: 'String'
-    getDefaultProfile: 'CreateProfileResult'
-    getLikeFee: 'Int'
+    getComment: 'CommentToken'
+    getDefaultProfile: 'ProfileToken'
+    getLikeFee: 'FeeResult'
     getMyBalance: 'String'
-    getMyPublishes: 'CreatePublishResult'
-    getPlatformFee: 'Float'
-    getPublish: 'CreatePublishResult'
-    getPublishes: 'CreatePublishResult'
-    totalPublishes: 'Int'
+    getOwnerAddress: 'AddressResult'
+    getPlatformFee: 'FeeResult'
+    getProfileContractAddress: 'AddressResult'
+    getProfileTokenURI: 'TokenURIResult'
+    getPublish: 'PublishToken'
+    getPublishTokenURI: 'TokenURIResult'
+  }
+  TokenURIResult: { // field return type name
+    uri: 'String'
   }
   UploadParams: { // field return type name
     address: 'String'
@@ -355,39 +377,53 @@ export interface NexusGenFieldTypeNames {
     storageURL: 'String'
     tokenURI: 'String'
   }
+  WriteResult: { // field return type name
+    status: 'String'
+  }
 }
 
 export interface NexusGenArgTypes {
   Mutation: {
-    burnPublishNft: { // args
+    createComment: { // args
+      input: NexusGenInputs['CreateCommentInput']; // CreateCommentInput!
+    }
+    createProfile: { // args
+      input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
+    }
+    createPublish: { // args
+      input: NexusGenInputs['CreatePublishInput']; // CreatePublishInput!
+    }
+    deleteComment: { // args
+      commentId: number; // Int!
+      creatorId: number; // Int!
+    }
+    deletePublish: { // args
+      creatorId: number; // Int!
       publishId: number; // Int!
     }
-    createProfileNft: { // args
+    disLikeComment: { // args
+      commentId: number; // Int!
+      profileId: number; // Int!
+    }
+    disLikePublish: { // args
+      profileId: number; // Int!
+      publishId: number; // Int!
+    }
+    estimateGasCreateProfile: { // args
       input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
     }
-    createPublishNft: { // args
+    estimateGasCreatePublish: { // args
       input: NexusGenInputs['CreatePublishInput']; // CreatePublishInput!
     }
-    estimateCreateFollowGas: { // args
-      input: NexusGenInputs['CreateFollowInput']; // CreateFollowInput!
+    estimateGasFollow: { // args
+      input: NexusGenInputs['FollowInput']; // FollowInput!
     }
-    estimateCreateLikeGas: { // args
-      input: NexusGenInputs['CreateLikeInput']; // CreateLikeInput!
-    }
-    estimateCreateProfileGas: { // args
-      input: NexusGenInputs['CreateProfileInput']; // CreateProfileInput!
-    }
-    estimateCreatePublishGas: { // args
-      input: NexusGenInputs['CreatePublishInput']; // CreatePublishInput!
+    estimateGasLikePublish: { // args
+      profileId: number; // Int!
+      publishId: number; // Int!
     }
     follow: { // args
-      input: NexusGenInputs['CreateFollowInput']; // CreateFollowInput!
-    }
-    hasRoleFollow: { // args
-      data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
-    }
-    hasRoleLike: { // args
-      data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
+      input: NexusGenInputs['FollowInput']; // FollowInput!
     }
     hasRoleProfile: { // args
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
@@ -395,17 +431,16 @@ export interface NexusGenArgTypes {
     hasRolePublish: { // args
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
     }
-    like: { // args
-      input: NexusGenInputs['CreateLikeInput']; // CreateLikeInput!
-    }
-    setDefaultProfile: { // args
+    likeComment: { // args
+      commentId: number; // Int!
       profileId: number; // Int!
     }
-    setFollowContractForProfile: { // args
-      followContractAddress: string; // String!
+    likePublish: { // args
+      profileId: number; // Int!
+      publishId: number; // Int!
     }
-    setLikeContractForPublish: { // args
-      likeContractAddress: string; // String!
+    setDefaultProfile: { // args
+      handle: string; // String!
     }
     setLikeFee: { // args
       fee: number; // Float!
@@ -416,28 +451,16 @@ export interface NexusGenArgTypes {
     setPlatformFee: { // args
       fee: number; // Float!
     }
-    setProfileContractForFollow: { // args
-      profileContractAddress: string; // String!
+    setProfileContract: { // args
+      contractAddress: string; // String!
     }
-    setProfileContractForLike: { // args
-      profileContractAddress: string; // String!
-    }
-    setProfileContractForPublish: { // args
-      profileContractAddress: string; // String!
-    }
-    setPublishContractForLike: { // args
-      publishContractAddress: string; // String!
-    }
-    unFollow: { // args
-      tokenId: number; // Int!
-    }
-    unLike: { // args
-      tokenId: number; // Int!
+    updateComment: { // args
+      input: NexusGenInputs['UpdateCommentInput']; // UpdateCommentInput!
     }
     updateProfileImage: { // args
       input: NexusGenInputs['UpdateProfileImageInput']; // UpdateProfileImageInput!
     }
-    updatePublishNft: { // args
+    updatePublish: { // args
       input: NexusGenInputs['UpdatePublishInput']; // UpdatePublishInput!
     }
     validateHandle: { // args
@@ -445,11 +468,20 @@ export interface NexusGenArgTypes {
     }
   }
   Query: {
+    getComment: { // args
+      commentId: number; // Int!
+    }
     getMyBalance: { // args
       address: string; // String!
     }
+    getProfileTokenURI: { // args
+      tokenId: number; // Int!
+    }
     getPublish: { // args
       publishId: number; // Int!
+    }
+    getPublishTokenURI: { // args
+      tokenId: number; // Int!
     }
   }
 }

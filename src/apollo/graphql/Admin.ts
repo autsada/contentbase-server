@@ -3,179 +3,60 @@ import { UserInputError } from "apollo-server-express"
 
 const badRequestErrMessage = "Bad Request"
 
-export const AdmidQuery = extendType({
-  type: "Query",
-  definition(t) {
-    t.field("getContractOwnerAddress", {
-      type: nonNull("String"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          const { address } = await dataSources.kmsAPI.getOwnerAddress()
+// export const AdmidQuery = extendType({
+//   type: "Query",
+//   definition(t) {
+//     t.field("getContractOwnerAddress", {
+//       type: nonNull("String"),
+//       async resolve(_root, _args, { dataSources }) {
+//         try {
+//           const { address } = await dataSources.kmsAPI.getOwnerAddress()
 
-          return address
-        } catch (error) {
-          throw error
-        }
-      },
-    })
+//           return address
+//         } catch (error) {
+//           throw error
+//         }
+//       },
+//     })
 
-    t.field("getContractBalance", {
-      type: nonNull("Float"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          const { balance } = await dataSources.kmsAPI.getContactBalance()
+//     t.field("getContractBalance", {
+//       type: nonNull("Float"),
+//       async resolve(_root, _args, { dataSources }) {
+//         try {
+//           const { balance } = await dataSources.kmsAPI.getContactBalance()
 
-          return balance
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-  },
-})
+//           return balance
+//         } catch (error) {
+//           throw error
+//         }
+//       },
+//     })
+//   },
+// })
 
 export const AdminMutation = extendType({
   type: "Mutation",
   definition(t) {
-    t.field("setFollowContractForProfile", {
-      type: nonNull("String"),
-      args: { followContractAddress: nonNull("String") },
-      async resolve(_roote, { followContractAddress }, { dataSources, user }) {
-        try {
-          if (!followContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setFollowForProfile(
-            followContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("setProfileContractForPublish", {
-      type: nonNull("String"),
-      args: { profileContractAddress: nonNull("String") },
-      async resolve(_roote, { profileContractAddress }, { dataSources, user }) {
-        try {
-          if (!profileContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setProfileForPublish(
-            profileContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("setLikeContractForPublish", {
-      type: nonNull("String"),
-      args: { likeContractAddress: nonNull("String") },
-      async resolve(_roote, { likeContractAddress }, { dataSources, user }) {
-        try {
-          if (!likeContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setLikeForPublish(
-            likeContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("setProfileContractForFollow", {
-      type: nonNull("String"),
-      args: { profileContractAddress: nonNull("String") },
-      async resolve(_roote, { profileContractAddress }, { dataSources, user }) {
-        try {
-          if (!profileContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setProfileForFollow(
-            profileContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("setProfileContractForLike", {
-      type: nonNull("String"),
-      args: { profileContractAddress: nonNull("String") },
-      async resolve(_roote, { profileContractAddress }, { dataSources, user }) {
-        try {
-          if (!profileContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setProfileForLike(
-            profileContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    t.field("setPublishContractForLike", {
-      type: nonNull("String"),
-      args: { publishContractAddress: nonNull("String") },
-      async resolve(_roote, { publishContractAddress }, { dataSources, user }) {
-        try {
-          if (!publishContractAddress)
-            throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setPublishForLike(
-            publishContractAddress
-          )
-
-          return status
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
     t.field("setOwnerAddress", {
-      type: nonNull("String"),
+      type: nonNull("WriteResult"),
       args: { ownerAddress: nonNull("String") },
-      async resolve(_roote, { ownerAddress }, { dataSources, user }) {
+      async resolve(_roote, { ownerAddress }, { dataSources }) {
         try {
           if (!ownerAddress) throw new UserInputError(badRequestErrMessage)
-
-          const { status } = await dataSources.kmsAPI.setContractOwnerAddress(
-            ownerAddress
-          )
-
-          return status
+          return dataSources.kmsAPI.setOwnerAddress(ownerAddress)
         } catch (error) {
           throw error
         }
       },
     })
 
-    t.field("withdrawFunds", {
-      type: nonNull("String"),
-      async resolve(_roote, _args, { dataSources, user }) {
+    t.field("setProfileContract", {
+      type: nonNull("WriteResult"),
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          const { status } = await dataSources.kmsAPI.withdrawFunds()
-
-          return status
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setProfileAddress(contractAddress)
         } catch (error) {
           throw error
         }
@@ -183,15 +64,12 @@ export const AdminMutation = extendType({
     })
 
     t.field("setLikeFee", {
-      type: nonNull("String"),
+      type: nonNull("WriteResult"),
       args: { fee: nonNull("Float") },
-      async resolve(_roote, { fee }, { dataSources, user }) {
+      async resolve(_roote, { fee }, { dataSources }) {
         try {
           if (!fee || typeof fee !== "number") throw new Error("Bad input")
-
-          const { status } = await dataSources.kmsAPI.setLikeFee(fee)
-
-          return status
+          return dataSources.kmsAPI.setLikeFee(fee)
         } catch (error) {
           throw error
         }
@@ -199,15 +77,23 @@ export const AdminMutation = extendType({
     })
 
     t.field("setPlatformFee", {
-      type: nonNull("String"),
+      type: nonNull("WriteResult"),
       args: { fee: nonNull("Float") },
-      async resolve(_roote, { fee }, { dataSources, user }) {
+      async resolve(_roote, { fee }, { dataSources }) {
         try {
           if (!fee || typeof fee !== "number") throw new Error("Bad input")
+          return dataSources.kmsAPI.setPlatformFee(fee)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
 
-          const { status } = await dataSources.kmsAPI.setPlatformFee(fee)
-
-          return status
+    t.field("withdrawFunds", {
+      type: nonNull("WriteResult"),
+      async resolve(_roote, _args, { dataSources }) {
+        try {
+          return dataSources.kmsAPI.withdrawFunds()
         } catch (error) {
           throw error
         }
