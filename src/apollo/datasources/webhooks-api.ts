@@ -1,21 +1,13 @@
-import { RESTDataSource, RequestOptions } from 'apollo-datasource-rest'
+import { RESTDataSource, RequestOptions } from "apollo-datasource-rest"
 
 const { ALCHEMY_WEBHOOK_ID, ALCHEMY_WEBHOOK_AUTH_TOKEN } = process.env
-
-export interface CreateProfileNftArgs {
-  key: string
-  uid: string
-  handle: string
-  imageURI: string
-  isDefault: boolean
-}
 
 export class WebhooksAPI extends RESTDataSource {
   constructor() {
     super()
-    this.baseURL = 'https://dashboard.alchemyapi.io/api'
+    this.baseURL = "https://dashboard.alchemyapi.io/api"
     this.willSendRequest = (req: RequestOptions) => {
-      req.headers.set('x-alchemy-token', ALCHEMY_WEBHOOK_AUTH_TOKEN!)
+      req.headers.set("x-alchemy-token", ALCHEMY_WEBHOOK_AUTH_TOKEN!)
     }
   }
 
@@ -29,6 +21,6 @@ export class WebhooksAPI extends RESTDataSource {
       addresses_to_remove: [],
     }
 
-    return this.patch('/update-webhook-addresses', body)
+    return this.patch("/update-webhook-addresses", body)
   }
 }

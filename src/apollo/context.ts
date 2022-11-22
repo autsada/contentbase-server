@@ -1,5 +1,3 @@
-import { UserRecord } from "firebase-admin/auth"
-
 import { KmsAPI } from "./datasources/kms-api"
 import { WebhooksAPI } from "./datasources/webhooks-api"
 
@@ -8,5 +6,5 @@ export interface Context {
     kmsAPI: KmsAPI
     webhooksApi: WebhooksAPI
   }
-  user: UserRecord | null
+  idToken: string | undefined
 }

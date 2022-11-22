@@ -10,7 +10,6 @@ import {
   ApolloServerPluginLandingPageLocalDefault,
 } from "apollo-server-core"
 
-import "./lib/config/firebase" // import firebase to initialize it.
 import { schema } from "./apollo/schema"
 import { KmsAPI } from "./apollo/datasources/kms-api"
 import { WebhooksAPI } from "./apollo/datasources/webhooks-api"
@@ -57,12 +56,10 @@ async function startServer() {
       webhooksApi: new WebhooksAPI(),
     }),
     context: async ({ req }) => {
-      // // Get the user token from the headers.
-      // const authorizationHeaders = req.headers["authorization"]
-      // const result = await getUserFromAuthorizationHeader(authorizationHeaders)
-      // return result
-      // return { user: { uid: "abc123" } }
-      return { user: { uid: "xyz987" } }
+      // Get the user token from the headers.
+      const headers = req.headers["authorization"]
+      const token = headers?.split(" ")[1]
+      return { idToken: token || "abc123" }
     },
     introspection: env !== "production", // Only in development and staging env.
   })

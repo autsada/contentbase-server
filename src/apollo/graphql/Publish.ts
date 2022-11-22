@@ -247,20 +247,18 @@ export const PublishMutation = extendType({
     t.field("hasRolePublish", {
       type: nonNull("Boolean"),
       args: { data: nonNull("HasRoleInput") },
-      async resolve(_roote, { data }, { dataSources, user }) {
+      async resolve(_roote, { data }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!data) throw new UserInputError(badRequestErrMessage)
           const { role } = data
           if (!role) throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          const { hasRole } = await dataSources.kmsAPI.hasRolePublish(uid, role)
+          const { hasRole } = await dataSources.kmsAPI.hasRolePublish(role)
           return hasRole
         } catch (error) {
           throw error
@@ -275,14 +273,12 @@ export const PublishMutation = extendType({
     t.field("createPublish", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("CreatePublishInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const {
             creatorId,
@@ -309,7 +305,7 @@ export const PublishMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.createPublish(uid, input)
+          return dataSources.kmsAPI.createPublish(input)
         } catch (error) {
           throw error
         }
@@ -323,14 +319,12 @@ export const PublishMutation = extendType({
     t.field("updatePublish", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("UpdatePublishInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const {
             tokenId,
@@ -360,7 +354,7 @@ export const PublishMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.updatePublish(uid, input)
+          return dataSources.kmsAPI.updatePublish(input)
         } catch (error) {
           throw error
         }
@@ -373,14 +367,12 @@ export const PublishMutation = extendType({
     t.field("deletePublish", {
       type: nonNull("WriteResult"),
       args: { publishId: nonNull("Int"), creatorId: nonNull("Int") },
-      async resolve(_root, { publishId, creatorId }, { dataSources, user }) {
+      async resolve(_root, { publishId, creatorId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !publishId ||
             typeof publishId !== "number" ||
@@ -390,7 +382,7 @@ export const PublishMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.deletePublish(uid, publishId, creatorId)
+          return dataSources.kmsAPI.deletePublish(publishId, creatorId)
         } catch (error) {
           throw error
         }
@@ -403,14 +395,12 @@ export const PublishMutation = extendType({
     t.field("likePublish", {
       type: nonNull("WriteResult"),
       args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { publishId, profileId }, { dataSources, user }) {
+      async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !publishId ||
             typeof publishId !== "number" ||
@@ -420,7 +410,7 @@ export const PublishMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.likePublish(uid, publishId, profileId)
+          return dataSources.kmsAPI.likePublish(publishId, profileId)
         } catch (error) {
           throw error
         }
@@ -433,14 +423,11 @@ export const PublishMutation = extendType({
     t.field("disLikePublish", {
       type: nonNull("WriteResult"),
       args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { publishId, profileId }, { dataSources, user }) {
+      async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-
+          if (!idToken) throw new AuthenticationError(authErrMessage)
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !publishId ||
             typeof publishId !== "number" ||
@@ -450,7 +437,7 @@ export const PublishMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.disLikePublish(uid, publishId, profileId)
+          return dataSources.kmsAPI.disLikePublish(publishId, profileId)
         } catch (error) {
           throw error
         }
@@ -464,14 +451,12 @@ export const PublishMutation = extendType({
     t.field("estimateGasCreatePublish", {
       type: nonNull("EstimateGasResult"),
       args: { input: nonNull("CreatePublishInput") },
-      async resolve(_roote, { input }, { dataSources, user }) {
+      async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user?.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const {
             creatorId,
@@ -499,7 +484,6 @@ export const PublishMutation = extendType({
 
           // Call the api.
           const { gas } = await dataSources.kmsAPI.estimateGasCreatePublish(
-            uid,
             input
           )
           return { gas }
@@ -515,14 +499,16 @@ export const PublishMutation = extendType({
     t.field("estimateGasLikePublish", {
       type: nonNull("EstimateGasResult"),
       args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_roote, { publishId, profileId }, { dataSources, user }) {
+      async resolve(
+        _roote,
+        { publishId, profileId },
+        { dataSources, idToken }
+      ) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user?.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !publishId ||
             typeof publishId !== "number" ||
@@ -533,7 +519,6 @@ export const PublishMutation = extendType({
 
           // Call the api.
           const { gas } = await dataSources.kmsAPI.estimateGasLikePublish(
-            uid,
             publishId,
             profileId
           )

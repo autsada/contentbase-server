@@ -91,14 +91,12 @@ export const CommentMutation = extendType({
     t.field("createComment", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("CreateCommentInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const { targetId, creatorId, contentURI } = input
           if (
@@ -111,7 +109,7 @@ export const CommentMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.createComment(uid, input)
+          return dataSources.kmsAPI.createComment(input)
         } catch (error) {
           throw error
         }
@@ -125,14 +123,12 @@ export const CommentMutation = extendType({
     t.field("updateComment", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("UpdateCommentInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const { tokenId, creatorId, contentURI } = input
           if (
@@ -145,7 +141,7 @@ export const CommentMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.updateComment(uid, input)
+          return dataSources.kmsAPI.updateComment(input)
         } catch (error) {
           throw error
         }
@@ -158,14 +154,12 @@ export const CommentMutation = extendType({
     t.field("deleteComment", {
       type: nonNull("WriteResult"),
       args: { commentId: nonNull("Int"), creatorId: nonNull("Int") },
-      async resolve(_root, { commentId, creatorId }, { dataSources, user }) {
+      async resolve(_root, { commentId, creatorId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !commentId ||
             typeof commentId !== "number" ||
@@ -175,7 +169,7 @@ export const CommentMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.deleteComment(uid, commentId, creatorId)
+          return dataSources.kmsAPI.deleteComment(commentId, creatorId)
         } catch (error) {
           throw error
         }
@@ -188,14 +182,12 @@ export const CommentMutation = extendType({
     t.field("likeComment", {
       type: nonNull("WriteResult"),
       args: { commentId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { commentId, profileId }, { dataSources, user }) {
+      async resolve(_root, { commentId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !commentId ||
             typeof commentId !== "number" ||
@@ -205,7 +197,7 @@ export const CommentMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.likeComment(uid, commentId, profileId)
+          return dataSources.kmsAPI.likeComment(commentId, profileId)
         } catch (error) {
           throw error
         }
@@ -218,14 +210,12 @@ export const CommentMutation = extendType({
     t.field("disLikeComment", {
       type: nonNull("WriteResult"),
       args: { commentId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { commentId, profileId }, { dataSources, user }) {
+      async resolve(_root, { commentId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (
             !commentId ||
             typeof commentId !== "number" ||
@@ -235,7 +225,7 @@ export const CommentMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.disLikeComment(uid, commentId, profileId)
+          return dataSources.kmsAPI.disLikeComment(commentId, profileId)
         } catch (error) {
           throw error
         }

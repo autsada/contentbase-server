@@ -133,17 +133,13 @@ export const ProfileQuery = extendType({
      */
     t.field("getDefaultProfile", {
       type: nullable("ProfileToken"),
-      async resolve(_root, _args, { dataSources, user }) {
+      async resolve(_root, _args, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-
-          // Validation
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Call the api.
-          const { token } = await dataSources.kmsAPI.getDefaultProfile(uid)
+          const { token } = await dataSources.kmsAPI.getDefaultProfile()
           return token
         } catch (error) {
           // Return null if no profile found or error occurred so the process can continue.
@@ -184,20 +180,15 @@ export const ProfileMutation = extendType({
     t.field("hasRoleProfile", {
       type: nonNull("Boolean"),
       args: { data: nonNull("HasRoleInput") },
-      async resolve(_roote, { data }, { dataSources, user }) {
+      async resolve(_roote, { data }, { dataSources }) {
         try {
-          // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!data) throw new UserInputError(badRequestErrMessage)
           const { role } = data
           if (!role) throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          const { hasRole } = await dataSources.kmsAPI.hasRoleProfile(uid, role)
+          const { hasRole } = await dataSources.kmsAPI.hasRoleProfile(role)
           return hasRole
         } catch (error) {
           throw error
@@ -212,12 +203,10 @@ export const ProfileMutation = extendType({
     t.field("createProfile", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("CreateProfileInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
@@ -226,7 +215,7 @@ export const ProfileMutation = extendType({
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.createProfile(uid, {
+          return dataSources.kmsAPI.createProfile({
             handle,
             imageURI: imageURI || "",
           })
@@ -244,12 +233,10 @@ export const ProfileMutation = extendType({
     t.field("updateProfileImage", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("UpdateProfileImageInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validattion.
           if (!input) throw new UserInputError(badRequestErrMessage)
@@ -258,7 +245,7 @@ export const ProfileMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.updateProfileImage(uid, {
+          return dataSources.kmsAPI.updateProfileImage({
             tokenId,
             imageURI,
           })
@@ -275,18 +262,16 @@ export const ProfileMutation = extendType({
     t.field("setDefaultProfile", {
       type: nonNull("WriteResult"),
       args: { handle: nonNull("String") },
-      async resolve(_root, { handle }, { dataSources, user }) {
+      async resolve(_root, { handle }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!handle) throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.setDefaultProfile(uid, handle)
+          return dataSources.kmsAPI.setDefaultProfile(handle)
         } catch (error) {
           throw error
         }
@@ -300,14 +285,12 @@ export const ProfileMutation = extendType({
     t.field("follow", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("FollowInput") },
-      async resolve(_root, { input }, { dataSources, user }) {
+      async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const { followerId, followeeId } = input
           if (
@@ -319,7 +302,7 @@ export const ProfileMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.follow(uid, { followerId, followeeId })
+          return dataSources.kmsAPI.follow({ followerId, followeeId })
         } catch (error) {
           throw error
         }
@@ -357,14 +340,12 @@ export const ProfileMutation = extendType({
     t.field("estimateGasCreateProfile", {
       type: nonNull("EstimateGasResult"),
       args: { input: nonNull("CreateProfileInput") },
-      async resolve(_roote, { input }, { dataSources, user }) {
+      async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user?.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const { handle, imageURI } = input
           // imageURI can be empty.
@@ -378,7 +359,7 @@ export const ProfileMutation = extendType({
           if (!valid) throw new UserInputError("This handle is taken")
 
           // Call the api.
-          return dataSources.kmsAPI.estimateGasCreateProfile(uid, {
+          return dataSources.kmsAPI.estimateGasCreateProfile({
             handle,
             imageURI: imageURI || "",
           })
@@ -395,14 +376,12 @@ export const ProfileMutation = extendType({
     t.field("estimateGasFollow", {
       type: nonNull("EstimateGasResult"),
       args: { input: nonNull("FollowInput") },
-      async resolve(_roote, { input }, { dataSources, user }) {
+      async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user?.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!uid) throw new ForbiddenError(forbiddenErrMessage)
           if (!input) throw new UserInputError(badRequestErrMessage)
           const { followerId, followeeId } = input
           if (
@@ -414,7 +393,7 @@ export const ProfileMutation = extendType({
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.estimateGasFollow(uid, {
+          return dataSources.kmsAPI.estimateGasFollow({
             followerId,
             followeeId,
           })

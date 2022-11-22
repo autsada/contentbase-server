@@ -80,10 +80,8 @@ export const AccountQuery = extendType({
     t.field("getMyBalance", {
       type: nonNull("String"),
       args: { address: nonNull("String") },
-      async resolve(_root, { address }, { dataSources, user }) {
+      async resolve(_root, { address }, { dataSources }) {
         try {
-          // if (!user) throw new AuthenticationError(authErrMessage)
-
           if (!address) throw new UserInputError(badRequestErrMessage)
 
           const { balance } = await dataSources.kmsAPI.getBalance(address)
@@ -106,13 +104,12 @@ export const AccountMutation = extendType({
      */
     t.field("createWallet", {
       type: nonNull("CreateWalletResult"),
-      async resolve(_root, _args, { dataSources, user }) {
+      async resolve(_root, _args, { dataSources, idToken }) {
         try {
-          if (!user) throw new AuthenticationError(authErrMessage)
-          const uid = user.uid
+          if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Call kms api to create a new wallet.
-          const walletResult = await dataSources.kmsAPI.createWallet(uid)
+          const walletResult = await dataSources.kmsAPI.createWallet()
 
           if (!walletResult) throw new Error("Create wallet failed")
           const { address } = walletResult

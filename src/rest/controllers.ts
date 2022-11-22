@@ -2,7 +2,7 @@ import type { Request, Response } from "express"
 import convert from "heic-convert"
 import type { TokenInput } from "nft.storage/dist/src/token"
 
-import { createUploadFile, uploadToIpfs, uploadFileToStorage } from "../lib"
+import { createUploadFile, uploadToIpfs } from "../lib"
 import type { NexusGenObjects } from "../apollo/typegen"
 
 /**
@@ -42,35 +42,35 @@ export async function uploadProfileImage(req: Request, res: Response) {
       mimeType = "image/jpeg"
     }
 
-    // 1. Upload to cloud storage
-    const { storagePath, storageURL } = await uploadFileToStorage({
-      userId,
-      handle,
-      uploadType: "avatar",
-      file: buffer,
-      fileName: imageName,
-    })
+    // // 1. Upload to cloud storage
+    // const { storagePath, storageURL } = await uploadFileToStorage({
+    //   userId,
+    //   handle,
+    //   uploadType: "avatar",
+    //   file: buffer,
+    //   fileName: imageName,
+    // })
 
     // 2. Upload to ipfs (nft.storage)
     // 2.1 Create an image file
     const image = createUploadFile([buffer], imageName, mimeType)
 
-    // 2.2 Create additional properties
-    const properties: NexusGenObjects["MetadataCustomProps"] = {
-      handle,
-      owner: address,
-      type: "avatar",
-      contentURI: "",
-      storageURL,
-      storagePath,
-    }
+    // // 2.2 Create additional properties
+    // const properties: NexusGenObjects["MetadataCustomProps"] = {
+    //   handle,
+    //   owner: address,
+    //   type: "avatar",
+    //   contentURI: "",
+    //   storageURL,
+    //   storagePath,
+    // }
 
     // 2.3 Construct metadata object
     const token: TokenInput = {
       image,
       name: "Profile Image",
       description: `A profile image of @${handle}.`,
-      properties,
+      // properties,
     }
 
     // Upload image and metadata to nft.storage
@@ -79,8 +79,8 @@ export async function uploadProfileImage(req: Request, res: Response) {
     res.status(200).json({
       cid: ipnft,
       tokenURI: url,
-      storagePath,
-      storageURL,
+      // storagePath,
+      // storageURL,
     })
   } catch (error) {
     res.status(500).send((error as any).message)

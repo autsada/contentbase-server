@@ -1,18 +1,11 @@
-import { Router } from 'express'
-import multer from 'multer'
-
-import { verifyAuth } from './middlewares'
+import { Router } from "express"
+import multer from "multer"
 
 const storage = multer.memoryStorage()
 const upload = multer({ storage })
 
-import { uploadProfileImage } from './controllers'
+import { uploadProfileImage } from "./controllers"
 
 export const restRouter = Router()
 
-restRouter.post(
-  '/uploads/profile',
-  verifyAuth,
-  upload.single('avatar'),
-  uploadProfileImage
-)
+restRouter.post("/uploads/profile", upload.single("avatar"), uploadProfileImage)
