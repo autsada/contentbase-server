@@ -3,60 +3,68 @@ import { UserInputError } from "apollo-server-express"
 
 const badRequestErrMessage = "Bad Request"
 
-// export const AdmidQuery = extendType({
-//   type: "Query",
-//   definition(t) {
-//     t.field("getContractOwnerAddress", {
-//       type: nonNull("String"),
-//       async resolve(_root, _args, { dataSources }) {
-//         try {
-//           const { address } = await dataSources.kmsAPI.getOwnerAddress()
-
-//           return address
-//         } catch (error) {
-//           throw error
-//         }
-//       },
-//     })
-
-//     t.field("getContractBalance", {
-//       type: nonNull("Float"),
-//       async resolve(_root, _args, { dataSources }) {
-//         try {
-//           const { balance } = await dataSources.kmsAPI.getContactBalance()
-
-//           return balance
-//         } catch (error) {
-//           throw error
-//         }
-//       },
-//     })
-//   },
-// })
-
 export const AdminMutation = extendType({
   type: "Mutation",
   definition(t) {
-    t.field("setOwnerAddress", {
+    t.field("setProfileForFollow", {
       type: nonNull("WriteResult"),
-      args: { ownerAddress: nonNull("String") },
-      async resolve(_roote, { ownerAddress }, { dataSources }) {
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!ownerAddress) throw new UserInputError(badRequestErrMessage)
-          return dataSources.kmsAPI.setOwnerAddress(ownerAddress)
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setProfileForFollow(contractAddress)
         } catch (error) {
           throw error
         }
       },
     })
 
-    t.field("setProfileContract", {
+    t.field("setProfileForPublish", {
       type: nonNull("WriteResult"),
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
           if (!contractAddress) throw new UserInputError(badRequestErrMessage)
-          return dataSources.kmsAPI.setProfileAddress(contractAddress)
+          return dataSources.kmsAPI.setProfileForPublish(contractAddress)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    t.field("setOwnerAddress", {
+      type: nonNull("WriteResult"),
+      args: { ownerAddress: nonNull("String") },
+      async resolve(_roote, { ownerAddress }, { dataSources }) {
+        try {
+          if (!ownerAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setOwner(ownerAddress)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    t.field("setProfileForLike", {
+      type: nonNull("WriteResult"),
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
+        try {
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setProfileForLike(contractAddress)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    t.field("setPublishForLike", {
+      type: nonNull("WriteResult"),
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
+        try {
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setPublishForLike(contractAddress)
         } catch (error) {
           throw error
         }
@@ -78,7 +86,7 @@ export const AdminMutation = extendType({
 
     t.field("setPlatformFee", {
       type: nonNull("WriteResult"),
-      args: { fee: nonNull("Float") },
+      args: { fee: nonNull("Int") },
       async resolve(_roote, { fee }, { dataSources }) {
         try {
           if (!fee || typeof fee !== "number") throw new Error("Bad input")
@@ -94,6 +102,32 @@ export const AdminMutation = extendType({
       async resolve(_roote, _args, { dataSources }) {
         try {
           return dataSources.kmsAPI.withdrawFunds()
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    t.field("setProfileForComment", {
+      type: nonNull("WriteResult"),
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
+        try {
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setProfileForComment(contractAddress)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    t.field("setPublishForComment", {
+      type: nonNull("WriteResult"),
+      args: { contractAddress: nonNull("String") },
+      async resolve(_roote, { contractAddress }, { dataSources }) {
+        try {
+          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          return dataSources.kmsAPI.setPublishForComment(contractAddress)
         } catch (error) {
           throw error
         }

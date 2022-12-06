@@ -31,19 +31,25 @@ enum Category {
 }
 
 type CommentToken {
+  commentType: CommentType!
   contentURI: String!
   creatorId: Int!
-  disLikes: Int!
-  likes: Int!
   owner: String!
-  targetId: Int!
+  parentId: Int!
   tokenId: Int!
+}
+
+enum CommentType {
+  COMMENT
+  PUBLISH
 }
 
 input CreateCommentInput {
   contentURI: String!
   creatorId: Int!
-  targetId: Int!
+  mediaURI: String
+  parentId: Int!
+  text: String
 }
 
 input CreateProfileInput {
@@ -80,6 +86,11 @@ input FollowInput {
   followerId: Int!
 }
 
+type GetFollowsResult {
+  followers: Int!
+  following: Int!
+}
+
 input HasRoleInput {
   role: Role!
 }
@@ -94,7 +105,8 @@ type MetadataCustomProps {
 }
 
 type Mutation {
-  createComment(input: CreateCommentInput!): WriteResult!
+  commentOnComment(input: CreateCommentInput!): WriteResult!
+  commentOnPublish(input: CreateCommentInput!): WriteResult!
   createProfile(input: CreateProfileInput!): WriteResult!
   createPublish(input: CreatePublishInput!): WriteResult!
   createWallet: CreateWalletResult!
@@ -107,6 +119,8 @@ type Mutation {
   estimateGasFollow(input: FollowInput!): EstimateGasResult!
   estimateGasLikePublish(profileId: Int!, publishId: Int!): EstimateGasResult!
   follow(input: FollowInput!): WriteResult!
+  hasRoleFollow(data: HasRoleInput!): Boolean!
+  hasRoleLike(data: HasRoleInput!): Boolean!
   hasRoleProfile(data: HasRoleInput!): Boolean!
   hasRolePublish(data: HasRoleInput!): Boolean!
   likeComment(commentId: Int!, profileId: Int!): WriteResult!
@@ -114,8 +128,13 @@ type Mutation {
   setDefaultProfile(handle: String!): WriteResult!
   setLikeFee(fee: Float!): WriteResult!
   setOwnerAddress(ownerAddress: String!): WriteResult!
-  setPlatformFee(fee: Float!): WriteResult!
-  setProfileContract(contractAddress: String!): WriteResult!
+  setPlatformFee(fee: Int!): WriteResult!
+  setProfileForComment(contractAddress: String!): WriteResult!
+  setProfileForFollow(contractAddress: String!): WriteResult!
+  setProfileForLike(contractAddress: String!): WriteResult!
+  setProfileForPublish(contractAddress: String!): WriteResult!
+  setPublishForComment(contractAddress: String!): WriteResult!
+  setPublishForLike(contractAddress: String!): WriteResult!
   updateComment(input: UpdateCommentInput!): WriteResult!
   updateProfileImage(input: UpdateProfileImageInput!): WriteResult!
   updatePublish(input: UpdatePublishInput!): WriteResult!
@@ -124,8 +143,6 @@ type Mutation {
 }
 
 type ProfileToken {
-  followers: Int!
-  following: Int!
   handle: String!
   imageURI: String!
   owner: String!
@@ -135,9 +152,7 @@ type ProfileToken {
 type PublishToken {
   contentURI: String!
   creatorId: Int!
-  disLikes: Int!
   imageURI: String!
-  likes: Int!
   metadataURI: String!
   owner: String!
   tokenId: Int!
@@ -145,14 +160,20 @@ type PublishToken {
 
 type Query {
   getComment(commentId: Int!): CommentToken!
+  getCommentTokenURI(tokenId: Int!): TokenURIResult!
   getDefaultProfile: ProfileToken
+  getFollows(profileId: Int!): GetFollowsResult
   getLikeFee: FeeResult!
   getMyBalance(address: String!): String!
   getOwnerAddress: AddressResult!
   getPlatformFee: FeeResult!
-  getProfileContractAddress: AddressResult!
-  getProfileTokenURI(tokenId: Int!): TokenURIResult
+  getProfileAddressFromComment: AddressResult!
+  getProfileAddressFromLike: AddressResult!
+  getProfileAddressFromPuiblish: AddressResult!
+  getProfileImageURI(tokenId: Int!): TokenURIResult
   getPublish(publishId: Int!): PublishToken
+  getPublishAddressFromComment: AddressResult!
+  getPublishAddressFromLike: AddressResult!
   getPublishTokenURI(tokenId: Int!): TokenURIResult
 }
 
@@ -169,6 +190,8 @@ type TokenURIResult {
 input UpdateCommentInput {
   contentURI: String!
   creatorId: Int!
+  mediaURI: String
+  text: String
   tokenId: Int!
 }
 

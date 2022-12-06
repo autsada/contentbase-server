@@ -2,6 +2,7 @@ import { RESTDataSource, RequestOptions } from "apollo-datasource-rest"
 
 import { NexusGenObjects, NexusGenEnums, NexusGenInputs } from "../typegen"
 import type { Environment } from "../../types"
+import { authClient } from "../../lib"
 
 const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
   process.env
@@ -14,11 +15,14 @@ export class KmsAPI extends RESTDataSource {
         : KMS_PROD_BASE_URL!
 
     this.willSendRequest = async (req: RequestOptions) => {
-      // const token = await authClient.getIdToken()
       req.headers.set("x-access-key", KMS_ACCESS_KEY!)
-      // req.headers.set('Authorization', token || '')
-      // This token will be used to verify user.
-      // req.headers.set("id-token", this.context.idToken || "")
+      // The token for use to authenticate between services in GCP
+      if (NODE_ENV !== "development") {
+        const token = await authClient.getIdToken()
+        req.headers.set("Authorization", token || "")
+      }
+      // The id token that to be sent from the UI for use to verify user.
+      req.headers.set("id-token", this.context.idToken || "")
     }
   }
 
@@ -42,27 +46,59 @@ export class KmsAPI extends RESTDataSource {
 
   // =========================== //
   // These below functions are for only admin role, and will be used in development only, in production admin will connect to the blockchain directly from the UI for more security.
-  async setOwnerAddress(ownerAddress: string): Promise<{ status: string }> {
-    return this.post("/admin/address/owner", { ownerAddress })
-  }
-
-  async setProfileAddress(
+  async setProfileForFollow(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/address/profile", { contractAddress })
+    return this.post("/admin/set/profile-follow", { contractAddress })
+  }
+
+  async setProfileForPublish(
+    contractAddress: string
+  ): Promise<{ status: string }> {
+    return this.post("/admin/set/profile-publish", { contractAddress })
+  }
+
+  async setOwner(ownerAddress: string): Promise<{ status: string }> {
+    return this.post("/admin/set/owner", { ownerAddress })
+  }
+
+  async setProfileForLike(
+    contractAddress: string
+  ): Promise<{ status: string }> {
+    return this.post("/admin/set/profile-like", { contractAddress })
+  }
+
+  async setPublishForLike(
+    contractAddress: string
+  ): Promise<{ status: string }> {
+    return this.post("/admin/set/publish-like", { contractAddress })
   }
 
   async setLikeFee(fee: number): Promise<{ status: string }> {
-    return this.post("/admin/fee/like", { fee })
+    return this.post("/admin/set/fee/like", { fee })
   }
 
   async setPlatformFee(fee: number): Promise<{ status: string }> {
-    return this.post("/admin/fee/platform", { fee })
+    return this.post("/admin/set/fee/platform", { fee })
   }
 
   async withdrawFunds(): Promise<{ status: string }> {
-    return this.post("/admin/funds/withdraw")
+    return this.post("/admin/withdraw")
   }
+
+  async setProfileForComment(
+    contractAddress: string
+  ): Promise<{ status: string }> {
+    return this.post("/admin/set/profile-comment", { contractAddress })
+  }
+
+  async setPublishForComment(
+    contractAddress: string
+  ): Promise<{ status: string }> {
+    return this.post("/admin/set/publish-comment", { contractAddress })
+  }
+
+  // ======================= //
 
   /// ***********************
   /// ***** Profile Contract *****
@@ -81,7 +117,7 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Create profile nft.
+   * @dev Create profile NFT.
    * @param input see CreateProfileInput type
    */
   async createProfile(
@@ -111,16 +147,6 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Follow.
-   * @param input see FollowInput
-   */
-  async follow(
-    input: NexusGenInputs["FollowInput"]
-  ): Promise<{ status: string }> {
-    return this.post(`/profiles/follow`, input)
-  }
-
-  /**
    * @dev Call validate handle on the contract which will validate length and uniqueness.
    * @param handle {string}
    */
@@ -135,17 +161,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasCreateProfile(
     input: NexusGenInputs["CreateProfileInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`/profiles/gas/profile`, input)
-  }
-
-  /**
-   * @dev Estimate gas for follow operation.
-   * @param input see FollowInput type
-   */
-  async estimateGasFollow(
-    input: NexusGenInputs["FollowInput"]
-  ): Promise<{ gas: string }> {
-    return this.post(`/profiles/gas/follow`, input)
+    return this.post(`/profiles/gas/create`, input)
   }
 
   /**
@@ -158,10 +174,10 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Get profile/follow nft token uri.
+   * @dev Get profile's image uri.
    * @param tokenId {number}
    */
-  async getTokenURI(tokenId: number): Promise<{ uri: string }> {
+  async getProfileImage(tokenId: number): Promise<{ uri: string }> {
     return this.get(
       `/profiles/token-uri/tokenId/${encodeURIComponent(tokenId)}`
     )
@@ -170,7 +186,53 @@ export class KmsAPI extends RESTDataSource {
   // ======================= //
 
   /// ***********************
-  /// ***** Publish Token *****
+  /// ***** Follow Contract *****
+  /// ***********************
+
+  /**
+   * @dev The route to check if an address has specified role.
+   * @param role {Role} - see Role enum
+   */
+  async hasRoleFollow(
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/follows/role`, {
+      role,
+    })
+  }
+
+  /**
+   * @dev A function to follow a profile.
+   * @param input see FollowInput
+   */
+  async follow(
+    input: NexusGenInputs["FollowInput"]
+  ): Promise<{ status: string }> {
+    return this.post(`/follows/following`, input)
+  }
+
+  /**
+   * @dev Estimate gas for follow operation.
+   * @param input see FollowInput type
+   */
+  async estimateGasFollow(
+    input: NexusGenInputs["FollowInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(`/follows/gas/following`, input)
+  }
+
+  /**
+   * @dev Get profile's followers and following.
+   * @param profileId {number}
+   */
+  async getProfileFollows(profileId: number): Promise<{ uri: string }> {
+    return this.get(`/follows/profileId/${encodeURIComponent(profileId)}`)
+  }
+
+  // ======================= //
+
+  /// ***********************
+  /// ***** Publish Contract *****
   /// ***********************
 
   /**
@@ -221,43 +283,77 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Like a publish
-   * @param publishId {number} - a publish token id
-   * @param profileId {number} - a profile token id
+   * @dev Estimate gas for creating a publish nft.
+   * @param input see CreateProfileInput type
    */
-  async likePublish(
-    publishId: number,
-    profileId: number
-  ): Promise<{ status: string }> {
-    return this.post(`/publishes/like`, {
-      publishId,
-      profileId,
+  async estimateGasCreatePublish(
+    input: NexusGenInputs["CreatePublishInput"]
+  ): Promise<{ gas: string }> {
+    return this.post(`/publishes/gas/create`, input)
+  }
+
+  /**
+   * @dev Get one publish by provided token id
+   */
+  async getPublish(
+    tokenId: number
+  ): Promise<{ token: NexusGenObjects["PublishToken"] }> {
+    return this.get(`/publishes/publishId/${encodeURIComponent(tokenId)}`)
+  }
+
+  /**
+   * @dev Get publish nft token uri.
+   * @param tokenId {number}
+   */
+  async getPublishTokenURI(tokenId: number): Promise<{ uri: string }> {
+    return this.get(
+      `/publishes/token-uri/tokenId/${encodeURIComponent(tokenId)}`
+    )
+  }
+
+  /**
+   * @dev Get the Profile contract address stored on the Publish contract.
+   */
+  async getProfileAddressFromPublish(): Promise<{ address: string }> {
+    return this.get(`/publishes/profile-contract`)
+  }
+
+  // ======================= //
+
+  /// ***********************
+  /// ***** Comment Contract *****
+  /// ***********************
+
+  /**
+   * @dev The route to check if an address has specified role.
+   * @param role {Role} - see Role enum
+   */
+  async hasRoleComment(
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/comments/role`, {
+      role,
     })
   }
 
   /**
-   * @dev DisLike a publish
-   * @param publishId {number} - a publish token id
-   * @param profileId {number} - a profile token id
+   * @dev Make a comment on a publish
+   * @param input see CreateCommentOnPublishInput type
    */
-  async disLikePublish(
-    publishId: number,
-    profileId: number
+  async commentOnPublish(
+    input: NexusGenInputs["CreateCommentOnPublishInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/disLike`, {
-      publishId,
-      profileId,
-    })
+    return this.post(`/comments/publish`, input)
   }
 
   /**
-   * @dev Create comment nft
-   * @param input see CreateCommentInput type
+   * @dev Make a comment on a comment
+   * @param input see CreateCommentOnCommentInput type
    */
-  async createComment(
-    input: NexusGenInputs["CreateCommentInput"]
+  async commentOnComment(
+    input: NexusGenInputs["CreateCommentOnCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/comment/create`, input)
+    return this.post(`/comments/comment`, input)
   }
 
   /**
@@ -267,7 +363,7 @@ export class KmsAPI extends RESTDataSource {
   async updateComment(
     input: NexusGenInputs["UpdateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/comment/update`, input)
+    return this.post(`/comments/update`, input)
   }
 
   /**
@@ -279,7 +375,7 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     creatorId: number
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/comment/delete`, {
+    return this.post(`/comments/delete`, {
       commentId,
       creatorId,
     })
@@ -294,7 +390,7 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/comment/like`, {
+    return this.post(`/comments/like`, {
       commentId,
       profileId,
     })
@@ -309,20 +405,91 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/comment/disLike`, {
+    return this.post(`/comments/disLike`, {
       commentId,
       profileId,
     })
   }
 
   /**
-   * @dev Estimate gas for creating a publish nft.
-   * @param input see CreateProfileInput type
+   * @dev Get one comment by provided token id
    */
-  async estimateGasCreatePublish(
-    input: NexusGenInputs["CreatePublishInput"]
-  ): Promise<{ gas: string }> {
-    return this.post(`/publishes/gas/publish/create`, input)
+  async getComment(
+    tokenId: number
+  ): Promise<{ token: NexusGenObjects["CommentToken"] }> {
+    return this.get(`/comments/commentId/${encodeURIComponent(tokenId)}`)
+  }
+
+  /**
+   * @dev Get comment nft token uri.
+   * @param tokenId {number}
+   */
+  async getCommentTokenURI(tokenId: number): Promise<{ uri: string }> {
+    return this.get(
+      `/comments/token-uri/tokenId/${encodeURIComponent(tokenId)}`
+    )
+  }
+
+  /**
+   * @dev Get the Profile contract address stored on the Comment contract.
+   */
+  async getProfileAddressFromComment(): Promise<{ address: string }> {
+    return this.get(`/comments/profile-contract`)
+  }
+
+  /**
+   * @dev Get the Publish contract address stored on the Comment contract.
+   */
+  async getPublishAddressFromComment(): Promise<{ address: string }> {
+    return this.get(`/comments/publish-contract`)
+  }
+
+  // ======================= //
+
+  /// ***********************
+  /// ***** Like Contract *****
+  /// ***********************
+
+  /**
+   * @dev The route to check if an address has specified role.
+   * @param role {Role} - see Role enum
+   */
+  async hasRoleLike(
+    role: NexusGenEnums["Role"]
+  ): Promise<{ hasRole: boolean }> {
+    return this.post(`/likes/role`, {
+      role,
+    })
+  }
+
+  /**
+   * @dev Like a publish
+   * @param publishId {number} - a publish token id
+   * @param profileId {number} - a profile token id
+   */
+  async likePublish(
+    publishId: number,
+    profileId: number
+  ): Promise<{ status: string }> {
+    return this.post(`/likes/like`, {
+      publishId,
+      profileId,
+    })
+  }
+
+  /**
+   * @dev DisLike a publish
+   * @param publishId {number} - a publish token id
+   * @param profileId {number} - a profile token id
+   */
+  async disLikePublish(
+    publishId: number,
+    profileId: number
+  ): Promise<{ status: string }> {
+    return this.post(`/likes/disLike`, {
+      publishId,
+      profileId,
+    })
   }
 
   /**
@@ -334,52 +501,26 @@ export class KmsAPI extends RESTDataSource {
     publishId: number,
     profileId: number
   ): Promise<{ gas: string }> {
-    return this.post(`/publishes/gas/publish/like`, { publishId, profileId })
-  }
-
-  /**
-   * @dev Get one publish by provided token id
-   */
-  async getPublish(
-    tokenId: number
-  ): Promise<{ token: NexusGenObjects["PublishToken"] }> {
-    return this.get(`/publishes/publishId/${encodeURIComponent(tokenId)}`)
-  }
-
-  /**
-   * @dev Get one comment by provided token id
-   */
-  async getComment(
-    tokenId: number
-  ): Promise<{ token: NexusGenObjects["CommentToken"] }> {
-    return this.get(
-      `/publishes/comment/commentId/${encodeURIComponent(tokenId)}`
-    )
-  }
-
-  /**
-   * @dev Get publish/comment nft token uri.
-   * @param tokenId {number}
-   */
-  async getPublishTokenURI(tokenId: number): Promise<{ uri: string }> {
-    return this.get(
-      `/publishes/token-uri/tokenId/${encodeURIComponent(tokenId)}`
-    )
+    return this.post(`/likes/gas/like`, { publishId, profileId })
   }
 
   async getOwnerAddress(): Promise<{ address: string }> {
-    return this.get("/publishes/address/owner")
+    return this.get("/likes/platform-owner")
   }
 
-  async getProfileAddress(): Promise<{ address: string }> {
-    return this.get("/publishes/address/profile")
+  async getProfileAddressFromLike(): Promise<{ address: string }> {
+    return this.get("/likes/profile-contract")
+  }
+
+  async getPublishAddressFromLike(): Promise<{ address: string }> {
+    return this.get("/likes/publish-contract")
   }
 
   async getLikeFee(): Promise<{ fee: number }> {
-    return this.get("/publishes/fee/like")
+    return this.get("/likes/fee/like")
   }
 
   async getPlatformFee(): Promise<{ fee: number }> {
-    return this.get("/publishes/fee/platform")
+    return this.get("/likes/fee/platform")
   }
 }

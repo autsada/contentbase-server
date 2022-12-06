@@ -1,4 +1,10 @@
-import { objectType, inputObjectType, extendType, nonNull } from "nexus"
+import {
+  objectType,
+  inputObjectType,
+  extendType,
+  nonNull,
+  enumType,
+} from "nexus"
 import {
   AuthenticationError,
   UserInputError,
@@ -10,17 +16,21 @@ const badRequestErrMessage = "Bad Request"
 const forbiddenErrMessage = "Forbidden"
 
 /**",
- * The object containing required data to create a comment.
- * @param targetId {number} - a token id to be commented on (it's a publish or comment token)
+ * The object containing required data to comment on a publish.
+ * @param parentId {number} - a publish token id
  * @param creatorId {number} - a token id of the creator's profile
- * @param contentURI {string} - a publish's content uri
+ * @param contentURI {string} - a comment's content uri
+ * @param text {string} - a comment's text
+ * @param mediaURI {string} - a comment's media uri
  */
 export const CreateCommentInput = inputObjectType({
   name: "CreateCommentInput",
   definition(t) {
-    t.nonNull.int("targetId")
+    t.nonNull.int("parentId")
     t.nonNull.int("creatorId")
     t.nonNull.string("contentURI")
+    t.string("text")
+    t.string("mediaURI")
   },
 })
 
@@ -29,6 +39,8 @@ export const CreateCommentInput = inputObjectType({
  * @param tokenId {number} - a token id to be updated
  * @param creatorId {number} - a token id of the creator's profile
  * @param contentURI {string} - a publish's content uri
+ * @param text {string} - a comment's text
+ * @param mediaURI {string} - a comment's media uri
  */
 export const UpdateCommentInput = inputObjectType({
   name: "UpdateCommentInput",
@@ -36,7 +48,14 @@ export const UpdateCommentInput = inputObjectType({
     t.nonNull.int("tokenId")
     t.nonNull.int("creatorId")
     t.nonNull.string("contentURI")
+    t.string("text")
+    t.string("mediaURI")
   },
+})
+
+export const CommentType = enumType({
+  name: "CommentType",
+  members: ["PUBLISH", "COMMENT"],
 })
 
 /**
@@ -48,10 +67,9 @@ export const CommentToken = objectType({
     t.nonNull.int("tokenId")
     t.nonNull.string("owner")
     t.nonNull.int("creatorId")
-    t.nonNull.int("targetId")
-    t.nonNull.int("likes")
-    t.nonNull.int("disLikes")
+    t.nonNull.int("parentId")
     t.nonNull.string("contentURI")
+    t.nonNull.field("commentType", { type: nonNull("CommentType") })
   },
 })
 
@@ -78,6 +96,56 @@ export const CommentQuery = extendType({
         }
       },
     })
+
+    /**
+     * @dev Get token uri.
+     */
+    t.field("getCommentTokenURI", {
+      type: nonNull("TokenURIResult"),
+      args: { tokenId: nonNull("Int") },
+      async resolve(_root, { tokenId }, { dataSources }) {
+        try {
+          // Validation.
+          if (!tokenId || typeof tokenId !== "number")
+            throw new UserInputError(badRequestErrMessage)
+
+          // Call the api.
+          return dataSources.kmsAPI.getCommentTokenURI(tokenId)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev Get profile contract address.
+     */
+    t.field("getProfileAddressFromComment", {
+      type: nonNull("AddressResult"),
+      async resolve(_root, _args, { dataSources }) {
+        try {
+          // Call the api.
+          return dataSources.kmsAPI.getProfileAddressFromComment()
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev Get publish contract address.
+     */
+    t.field("getPublishAddressFromComment", {
+      type: nonNull("AddressResult"),
+      async resolve(_root, _args, { dataSources }) {
+        try {
+          // Call the api.
+          return dataSources.kmsAPI.getPublishAddressFromComment()
+        } catch (error) {
+          throw error
+        }
+      },
+    })
   },
 })
 
@@ -85,10 +153,10 @@ export const CommentMutation = extendType({
   type: "Mutation",
   definition(t) {
     /**
-     * @dev The process to create comment nft
-     * @param input see CreateCommentInput
+     * @dev The process to comment on a publish.
+     * @param input see CreateCommentOnPublishInput
      */
-    t.field("createComment", {
+    t.field("commentOnPublish", {
       type: nonNull("WriteResult"),
       args: { input: nonNull("CreateCommentInput") },
       async resolve(_root, { input }, { dataSources, idToken }) {
@@ -98,18 +166,52 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-          const { targetId, creatorId, contentURI } = input
+          const { parentId, creatorId, contentURI, text, mediaURI } = input
           if (
-            !targetId ||
-            typeof targetId !== "number" ||
+            !parentId ||
+            typeof parentId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !contentURI
+            !contentURI ||
+            (!text && !mediaURI)
           )
             throw new UserInputError(badRequestErrMessage)
 
           // Call the api.
-          return dataSources.kmsAPI.createComment(input)
+          return dataSources.kmsAPI.commentOnPublish(input)
+        } catch (error) {
+          throw error
+        }
+      },
+    })
+
+    /**
+     * @dev The process to comment on a comment.
+     * @param input see CreateCommentOnCommentInput
+     */
+    t.field("commentOnComment", {
+      type: nonNull("WriteResult"),
+      args: { input: nonNull("CreateCommentInput") },
+      async resolve(_root, { input }, { dataSources, idToken }) {
+        try {
+          // User must logged in.
+          if (!idToken) throw new AuthenticationError(authErrMessage)
+
+          // Validation.
+          if (!input) throw new UserInputError(badRequestErrMessage)
+          const { parentId, creatorId, contentURI, text, mediaURI } = input
+          if (
+            !parentId ||
+            typeof parentId !== "number" ||
+            !creatorId ||
+            typeof creatorId !== "number" ||
+            !contentURI ||
+            (!text && !mediaURI)
+          )
+            throw new UserInputError(badRequestErrMessage)
+
+          // Call the api.
+          return dataSources.kmsAPI.commentOnComment(input)
         } catch (error) {
           throw error
         }
@@ -130,13 +232,14 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-          const { tokenId, creatorId, contentURI } = input
+          const { tokenId, creatorId, contentURI, text, mediaURI } = input
           if (
             !tokenId ||
             typeof tokenId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !contentURI
+            !contentURI ||
+            (!text && !mediaURI)
           )
             throw new UserInputError(badRequestErrMessage)
 

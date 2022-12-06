@@ -108,8 +108,6 @@ export const PublishToken = objectType({
     t.nonNull.int("tokenId")
     t.nonNull.string("owner")
     t.nonNull.int("creatorId")
-    t.nonNull.int("likes")
-    t.nonNull.int("disLikes")
     t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
     t.nonNull.string("metadataURI")
@@ -120,13 +118,6 @@ export const AddressResult = objectType({
   name: "AddressResult",
   definition(t) {
     t.nonNull.string("address")
-  },
-})
-
-export const FeeResult = objectType({
-  name: "FeeResult",
-  definition(t) {
-    t.nonNull.float("fee")
   },
 })
 
@@ -177,59 +168,14 @@ export const PublishQuery = extendType({
     })
 
     /**
-     * @dev Get owner address.
-     */
-    t.field("getOwnerAddress", {
-      type: nonNull("AddressResult"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          // Call the api.
-          return dataSources.kmsAPI.getOwnerAddress()
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
      * @dev Get profile contract address.
      */
-    t.field("getProfileContractAddress", {
+    t.field("getProfileAddressFromPuiblish", {
       type: nonNull("AddressResult"),
       async resolve(_root, _args, { dataSources }) {
         try {
           // Call the api.
-          return dataSources.kmsAPI.getProfileAddress()
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev Get like fee.
-     */
-    t.field("getLikeFee", {
-      type: nonNull("FeeResult"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          // Call the api.
-          return dataSources.kmsAPI.getLikeFee()
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev Get platform fee.
-     */
-    t.field("getPlatformFee", {
-      type: nonNull("FeeResult"),
-      async resolve(_root, _args, { dataSources }) {
-        try {
-          // Call the api.
-          return dataSources.kmsAPI.getPlatformFee()
+          return dataSources.kmsAPI.getProfileAddressFromPublish()
         } catch (error) {
           throw error
         }
@@ -299,10 +245,17 @@ export const PublishMutation = extendType({
             !metadataURI ||
             !title ||
             !primaryCategory ||
+            primaryCategory === "Empty" ||
             !secondaryCategory ||
             !tertiaryCategory
           )
             throw new UserInputError(badRequestErrMessage)
+
+          // If the `secondaryCategory` is `Empty` and the `tertiaryCategory` is not, swap it so the smart contract will not throw.
+          if (secondaryCategory === "Empty" && tertiaryCategory !== "Empty") {
+            input.secondaryCategory = tertiaryCategory
+            input.tertiaryCategory = "Empty"
+          }
 
           // Call the api.
           return dataSources.kmsAPI.createPublish(input)
@@ -348,10 +301,17 @@ export const PublishMutation = extendType({
             !metadataURI ||
             !title ||
             !primaryCategory ||
+            primaryCategory === "Empty" ||
             !secondaryCategory ||
             !tertiaryCategory
           )
             throw new UserInputError(badRequestErrMessage)
+
+          // If the `secondaryCategory` is `Empty` and the `tertiaryCategory` is not, swap it so the smart contract will not throw.
+          if (secondaryCategory === "Empty" && tertiaryCategory !== "Empty") {
+            input.secondaryCategory = tertiaryCategory
+            input.tertiaryCategory = "Empty"
+          }
 
           // Call the api.
           return dataSources.kmsAPI.updatePublish(input)
@@ -383,61 +343,6 @@ export const PublishMutation = extendType({
 
           // Call the api.
           return dataSources.kmsAPI.deletePublish(publishId, creatorId)
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev The process to like a publish
-     */
-    t.field("likePublish", {
-      type: nonNull("WriteResult"),
-      args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
-        try {
-          // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
-
-          // Validation.
-          if (
-            !publishId ||
-            typeof publishId !== "number" ||
-            !profileId ||
-            typeof profileId !== "number"
-          )
-            throw new UserInputError(badRequestErrMessage)
-
-          // Call the api.
-          return dataSources.kmsAPI.likePublish(publishId, profileId)
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev The process to dis-like a publish
-     */
-    t.field("disLikePublish", {
-      type: nonNull("WriteResult"),
-      args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
-        try {
-          // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
-          // Validation.
-          if (
-            !publishId ||
-            typeof publishId !== "number" ||
-            !profileId ||
-            typeof profileId !== "number"
-          )
-            throw new UserInputError(badRequestErrMessage)
-
-          // Call the api.
-          return dataSources.kmsAPI.disLikePublish(publishId, profileId)
         } catch (error) {
           throw error
         }
@@ -485,42 +390,6 @@ export const PublishMutation = extendType({
           // Call the api.
           const { gas } = await dataSources.kmsAPI.estimateGasCreatePublish(
             input
-          )
-          return { gas }
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev Estimate gas used to like a publish.
-     */
-    t.field("estimateGasLikePublish", {
-      type: nonNull("EstimateGasResult"),
-      args: { publishId: nonNull("Int"), profileId: nonNull("Int") },
-      async resolve(
-        _roote,
-        { publishId, profileId },
-        { dataSources, idToken }
-      ) {
-        try {
-          // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
-
-          // Validation.
-          if (
-            !publishId ||
-            typeof publishId !== "number" ||
-            !profileId ||
-            typeof profileId !== "number"
-          )
-            throw new UserInputError(badRequestErrMessage)
-
-          // Call the api.
-          const { gas } = await dataSources.kmsAPI.estimateGasLikePublish(
-            publishId,
-            profileId
           )
           return { gas }
         } catch (error) {

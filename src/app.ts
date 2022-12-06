@@ -59,7 +59,7 @@ async function startServer() {
       // Get the user token from the headers.
       const headers = req.headers["authorization"]
       const token = headers?.split(" ")[1]
-      return { idToken: token || "abc123" }
+      return { idToken: token }
     },
     introspection: env !== "production", // Only in development and staging env.
   })

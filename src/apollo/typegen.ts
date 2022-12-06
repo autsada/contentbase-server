@@ -17,7 +17,9 @@ export interface NexusGenInputs {
   CreateCommentInput: { // input type
     contentURI: string; // String!
     creatorId: number; // Int!
-    targetId: number; // Int!
+    mediaURI?: string | null; // String
+    parentId: number; // Int!
+    text?: string | null; // String
   }
   CreateProfileInput: { // input type
     handle: string; // String!
@@ -44,6 +46,8 @@ export interface NexusGenInputs {
   UpdateCommentInput: { // input type
     contentURI: string; // String!
     creatorId: number; // Int!
+    mediaURI?: string | null; // String
+    text?: string | null; // String
     tokenId: number; // Int!
   }
   UpdateProfileImageInput: { // input type
@@ -66,6 +70,7 @@ export interface NexusGenInputs {
 
 export interface NexusGenEnums {
   Category: "Animals" | "Children" | "Education" | "Empty" | "Entertainment" | "Food" | "Gaming" | "LifeStyle" | "Men" | "Movies" | "Music" | "News" | "NotExist" | "Other" | "Programming" | "Science" | "Sports" | "Technology" | "Travel" | "Vehicles" | "Women"
+  CommentType: "COMMENT" | "PUBLISH"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
   UploadType: "avatar" | "post"
 }
@@ -83,12 +88,11 @@ export interface NexusGenObjects {
     address: string; // String!
   }
   CommentToken: { // root type
+    commentType: NexusGenEnums['CommentType']; // CommentType!
     contentURI: string; // String!
     creatorId: number; // Int!
-    disLikes: number; // Int!
-    likes: number; // Int!
     owner: string; // String!
-    targetId: number; // Int!
+    parentId: number; // Int!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // root type
@@ -100,6 +104,10 @@ export interface NexusGenObjects {
   FeeResult: { // root type
     fee: number; // Float!
   }
+  GetFollowsResult: { // root type
+    followers: number; // Int!
+    following: number; // Int!
+  }
   MetadataCustomProps: { // root type
     contentURI?: string | null; // String
     handle: string; // String!
@@ -110,8 +118,6 @@ export interface NexusGenObjects {
   }
   Mutation: {};
   ProfileToken: { // root type
-    followers: number; // Int!
-    following: number; // Int!
     handle: string; // String!
     imageURI: string; // String!
     owner: string; // String!
@@ -120,9 +126,7 @@ export interface NexusGenObjects {
   PublishToken: { // root type
     contentURI: string; // String!
     creatorId: number; // Int!
-    disLikes: number; // Int!
     imageURI: string; // String!
-    likes: number; // Int!
     metadataURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
@@ -165,12 +169,11 @@ export interface NexusGenFieldTypes {
     address: string; // String!
   }
   CommentToken: { // field return type
+    commentType: NexusGenEnums['CommentType']; // CommentType!
     contentURI: string; // String!
     creatorId: number; // Int!
-    disLikes: number; // Int!
-    likes: number; // Int!
     owner: string; // String!
-    targetId: number; // Int!
+    parentId: number; // Int!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // field return type
@@ -182,6 +185,10 @@ export interface NexusGenFieldTypes {
   FeeResult: { // field return type
     fee: number; // Float!
   }
+  GetFollowsResult: { // field return type
+    followers: number; // Int!
+    following: number; // Int!
+  }
   MetadataCustomProps: { // field return type
     contentURI: string | null; // String
     handle: string; // String!
@@ -191,7 +198,8 @@ export interface NexusGenFieldTypes {
     type: NexusGenEnums['UploadType']; // UploadType!
   }
   Mutation: { // field return type
-    createComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    commentOnComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    commentOnPublish: NexusGenRootTypes['WriteResult']; // WriteResult!
     createProfile: NexusGenRootTypes['WriteResult']; // WriteResult!
     createPublish: NexusGenRootTypes['WriteResult']; // WriteResult!
     createWallet: NexusGenRootTypes['CreateWalletResult']; // CreateWalletResult!
@@ -204,6 +212,8 @@ export interface NexusGenFieldTypes {
     estimateGasFollow: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
     estimateGasLikePublish: NexusGenRootTypes['EstimateGasResult']; // EstimateGasResult!
     follow: NexusGenRootTypes['WriteResult']; // WriteResult!
+    hasRoleFollow: boolean; // Boolean!
+    hasRoleLike: boolean; // Boolean!
     hasRoleProfile: boolean; // Boolean!
     hasRolePublish: boolean; // Boolean!
     likeComment: NexusGenRootTypes['WriteResult']; // WriteResult!
@@ -212,7 +222,12 @@ export interface NexusGenFieldTypes {
     setLikeFee: NexusGenRootTypes['WriteResult']; // WriteResult!
     setOwnerAddress: NexusGenRootTypes['WriteResult']; // WriteResult!
     setPlatformFee: NexusGenRootTypes['WriteResult']; // WriteResult!
-    setProfileContract: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setProfileForComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setProfileForFollow: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setProfileForLike: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setProfileForPublish: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setPublishForComment: NexusGenRootTypes['WriteResult']; // WriteResult!
+    setPublishForLike: NexusGenRootTypes['WriteResult']; // WriteResult!
     updateComment: NexusGenRootTypes['WriteResult']; // WriteResult!
     updateProfileImage: NexusGenRootTypes['WriteResult']; // WriteResult!
     updatePublish: NexusGenRootTypes['WriteResult']; // WriteResult!
@@ -220,8 +235,6 @@ export interface NexusGenFieldTypes {
     withdrawFunds: NexusGenRootTypes['WriteResult']; // WriteResult!
   }
   ProfileToken: { // field return type
-    followers: number; // Int!
-    following: number; // Int!
     handle: string; // String!
     imageURI: string; // String!
     owner: string; // String!
@@ -230,23 +243,27 @@ export interface NexusGenFieldTypes {
   PublishToken: { // field return type
     contentURI: string; // String!
     creatorId: number; // Int!
-    disLikes: number; // Int!
     imageURI: string; // String!
-    likes: number; // Int!
     metadataURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
   }
   Query: { // field return type
     getComment: NexusGenRootTypes['CommentToken']; // CommentToken!
+    getCommentTokenURI: NexusGenRootTypes['TokenURIResult']; // TokenURIResult!
     getDefaultProfile: NexusGenRootTypes['ProfileToken'] | null; // ProfileToken
+    getFollows: NexusGenRootTypes['GetFollowsResult'] | null; // GetFollowsResult
     getLikeFee: NexusGenRootTypes['FeeResult']; // FeeResult!
     getMyBalance: string; // String!
     getOwnerAddress: NexusGenRootTypes['AddressResult']; // AddressResult!
     getPlatformFee: NexusGenRootTypes['FeeResult']; // FeeResult!
-    getProfileContractAddress: NexusGenRootTypes['AddressResult']; // AddressResult!
-    getProfileTokenURI: NexusGenRootTypes['TokenURIResult'] | null; // TokenURIResult
+    getProfileAddressFromComment: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getProfileAddressFromLike: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getProfileAddressFromPuiblish: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getProfileImageURI: NexusGenRootTypes['TokenURIResult'] | null; // TokenURIResult
     getPublish: NexusGenRootTypes['PublishToken'] | null; // PublishToken
+    getPublishAddressFromComment: NexusGenRootTypes['AddressResult']; // AddressResult!
+    getPublishAddressFromLike: NexusGenRootTypes['AddressResult']; // AddressResult!
     getPublishTokenURI: NexusGenRootTypes['TokenURIResult'] | null; // TokenURIResult
   }
   TokenURIResult: { // field return type
@@ -276,12 +293,11 @@ export interface NexusGenFieldTypeNames {
     address: 'String'
   }
   CommentToken: { // field return type name
+    commentType: 'CommentType'
     contentURI: 'String'
     creatorId: 'Int'
-    disLikes: 'Int'
-    likes: 'Int'
     owner: 'String'
-    targetId: 'Int'
+    parentId: 'Int'
     tokenId: 'Int'
   }
   CreateWalletResult: { // field return type name
@@ -293,6 +309,10 @@ export interface NexusGenFieldTypeNames {
   FeeResult: { // field return type name
     fee: 'Float'
   }
+  GetFollowsResult: { // field return type name
+    followers: 'Int'
+    following: 'Int'
+  }
   MetadataCustomProps: { // field return type name
     contentURI: 'String'
     handle: 'String'
@@ -302,7 +322,8 @@ export interface NexusGenFieldTypeNames {
     type: 'UploadType'
   }
   Mutation: { // field return type name
-    createComment: 'WriteResult'
+    commentOnComment: 'WriteResult'
+    commentOnPublish: 'WriteResult'
     createProfile: 'WriteResult'
     createPublish: 'WriteResult'
     createWallet: 'CreateWalletResult'
@@ -315,6 +336,8 @@ export interface NexusGenFieldTypeNames {
     estimateGasFollow: 'EstimateGasResult'
     estimateGasLikePublish: 'EstimateGasResult'
     follow: 'WriteResult'
+    hasRoleFollow: 'Boolean'
+    hasRoleLike: 'Boolean'
     hasRoleProfile: 'Boolean'
     hasRolePublish: 'Boolean'
     likeComment: 'WriteResult'
@@ -323,7 +346,12 @@ export interface NexusGenFieldTypeNames {
     setLikeFee: 'WriteResult'
     setOwnerAddress: 'WriteResult'
     setPlatformFee: 'WriteResult'
-    setProfileContract: 'WriteResult'
+    setProfileForComment: 'WriteResult'
+    setProfileForFollow: 'WriteResult'
+    setProfileForLike: 'WriteResult'
+    setProfileForPublish: 'WriteResult'
+    setPublishForComment: 'WriteResult'
+    setPublishForLike: 'WriteResult'
     updateComment: 'WriteResult'
     updateProfileImage: 'WriteResult'
     updatePublish: 'WriteResult'
@@ -331,8 +359,6 @@ export interface NexusGenFieldTypeNames {
     withdrawFunds: 'WriteResult'
   }
   ProfileToken: { // field return type name
-    followers: 'Int'
-    following: 'Int'
     handle: 'String'
     imageURI: 'String'
     owner: 'String'
@@ -341,23 +367,27 @@ export interface NexusGenFieldTypeNames {
   PublishToken: { // field return type name
     contentURI: 'String'
     creatorId: 'Int'
-    disLikes: 'Int'
     imageURI: 'String'
-    likes: 'Int'
     metadataURI: 'String'
     owner: 'String'
     tokenId: 'Int'
   }
   Query: { // field return type name
     getComment: 'CommentToken'
+    getCommentTokenURI: 'TokenURIResult'
     getDefaultProfile: 'ProfileToken'
+    getFollows: 'GetFollowsResult'
     getLikeFee: 'FeeResult'
     getMyBalance: 'String'
     getOwnerAddress: 'AddressResult'
     getPlatformFee: 'FeeResult'
-    getProfileContractAddress: 'AddressResult'
-    getProfileTokenURI: 'TokenURIResult'
+    getProfileAddressFromComment: 'AddressResult'
+    getProfileAddressFromLike: 'AddressResult'
+    getProfileAddressFromPuiblish: 'AddressResult'
+    getProfileImageURI: 'TokenURIResult'
     getPublish: 'PublishToken'
+    getPublishAddressFromComment: 'AddressResult'
+    getPublishAddressFromLike: 'AddressResult'
     getPublishTokenURI: 'TokenURIResult'
   }
   TokenURIResult: { // field return type name
@@ -384,7 +414,10 @@ export interface NexusGenFieldTypeNames {
 
 export interface NexusGenArgTypes {
   Mutation: {
-    createComment: { // args
+    commentOnComment: { // args
+      input: NexusGenInputs['CreateCommentInput']; // CreateCommentInput!
+    }
+    commentOnPublish: { // args
       input: NexusGenInputs['CreateCommentInput']; // CreateCommentInput!
     }
     createProfile: { // args
@@ -425,6 +458,12 @@ export interface NexusGenArgTypes {
     follow: { // args
       input: NexusGenInputs['FollowInput']; // FollowInput!
     }
+    hasRoleFollow: { // args
+      data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
+    }
+    hasRoleLike: { // args
+      data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
+    }
     hasRoleProfile: { // args
       data: NexusGenInputs['HasRoleInput']; // HasRoleInput!
     }
@@ -449,9 +488,24 @@ export interface NexusGenArgTypes {
       ownerAddress: string; // String!
     }
     setPlatformFee: { // args
-      fee: number; // Float!
+      fee: number; // Int!
     }
-    setProfileContract: { // args
+    setProfileForComment: { // args
+      contractAddress: string; // String!
+    }
+    setProfileForFollow: { // args
+      contractAddress: string; // String!
+    }
+    setProfileForLike: { // args
+      contractAddress: string; // String!
+    }
+    setProfileForPublish: { // args
+      contractAddress: string; // String!
+    }
+    setPublishForComment: { // args
+      contractAddress: string; // String!
+    }
+    setPublishForLike: { // args
       contractAddress: string; // String!
     }
     updateComment: { // args
@@ -471,10 +525,16 @@ export interface NexusGenArgTypes {
     getComment: { // args
       commentId: number; // Int!
     }
+    getCommentTokenURI: { // args
+      tokenId: number; // Int!
+    }
+    getFollows: { // args
+      profileId: number; // Int!
+    }
     getMyBalance: { // args
       address: string; // String!
     }
-    getProfileTokenURI: { // args
+    getProfileImageURI: { // args
       tokenId: number; // Int!
     }
     getPublish: { // args

@@ -1,5 +1,7 @@
 export * from "./Account"
 export * from "./Admin"
 export * from "./Profile"
+export * from "./Follow"
 export * from "./Publish"
 export * from "./Comment"
+export * from "./Like"
