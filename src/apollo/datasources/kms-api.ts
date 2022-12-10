@@ -341,7 +341,7 @@ export class KmsAPI extends RESTDataSource {
    * @param input see CreateCommentOnPublishInput type
    */
   async commentOnPublish(
-    input: NexusGenInputs["CreateCommentOnPublishInput"]
+    input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
     return this.post(`/comments/publish`, input)
   }
@@ -351,7 +351,7 @@ export class KmsAPI extends RESTDataSource {
    * @param input see CreateCommentOnCommentInput type
    */
   async commentOnComment(
-    input: NexusGenInputs["CreateCommentOnCommentInput"]
+    input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
     return this.post(`/comments/comment`, input)
   }
