@@ -47,9 +47,8 @@ enum CommentType {
 input CreateCommentInput {
   contentURI: String!
   creatorId: Int!
-  mediaURI: String
   parentId: Int!
-  text: String
+  text: String!
 }
 
 input CreateProfileInput {
@@ -190,8 +189,7 @@ type TokenURIResult {
 input UpdateCommentInput {
   contentURI: String!
   creatorId: Int!
-  mediaURI: String
-  text: String
+  text: String!
   tokenId: Int!
 }
 

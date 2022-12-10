@@ -17,9 +17,8 @@ export interface NexusGenInputs {
   CreateCommentInput: { // input type
     contentURI: string; // String!
     creatorId: number; // Int!
-    mediaURI?: string | null; // String
     parentId: number; // Int!
-    text?: string | null; // String
+    text: string; // String!
   }
   CreateProfileInput: { // input type
     handle: string; // String!
@@ -46,8 +45,7 @@ export interface NexusGenInputs {
   UpdateCommentInput: { // input type
     contentURI: string; // String!
     creatorId: number; // Int!
-    mediaURI?: string | null; // String
-    text?: string | null; // String
+    text: string; // String!
     tokenId: number; // Int!
   }
   UpdateProfileImageInput: { // input type

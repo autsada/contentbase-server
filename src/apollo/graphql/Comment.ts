@@ -21,7 +21,6 @@ const forbiddenErrMessage = "Forbidden"
  * @param creatorId {number} - a token id of the creator's profile
  * @param contentURI {string} - a comment's content uri
  * @param text {string} - a comment's text
- * @param mediaURI {string} - a comment's media uri
  */
 export const CreateCommentInput = inputObjectType({
   name: "CreateCommentInput",
@@ -29,8 +28,7 @@ export const CreateCommentInput = inputObjectType({
     t.nonNull.int("parentId")
     t.nonNull.int("creatorId")
     t.nonNull.string("contentURI")
-    t.string("text")
-    t.string("mediaURI")
+    t.nonNull.string("text")
   },
 })
 
@@ -40,7 +38,6 @@ export const CreateCommentInput = inputObjectType({
  * @param creatorId {number} - a token id of the creator's profile
  * @param contentURI {string} - a publish's content uri
  * @param text {string} - a comment's text
- * @param mediaURI {string} - a comment's media uri
  */
 export const UpdateCommentInput = inputObjectType({
   name: "UpdateCommentInput",
@@ -48,8 +45,7 @@ export const UpdateCommentInput = inputObjectType({
     t.nonNull.int("tokenId")
     t.nonNull.int("creatorId")
     t.nonNull.string("contentURI")
-    t.string("text")
-    t.string("mediaURI")
+    t.nonNull.string("text")
   },
 })
 
@@ -166,14 +162,14 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-          const { parentId, creatorId, contentURI, text, mediaURI } = input
+          const { parentId, creatorId, contentURI, text } = input
           if (
             !parentId ||
             typeof parentId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
             !contentURI ||
-            (!text && !mediaURI)
+            !text
           )
             throw new UserInputError(badRequestErrMessage)
 
@@ -199,14 +195,14 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-          const { parentId, creatorId, contentURI, text, mediaURI } = input
+          const { parentId, creatorId, contentURI, text } = input
           if (
             !parentId ||
             typeof parentId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
             !contentURI ||
-            (!text && !mediaURI)
+            !text
           )
             throw new UserInputError(badRequestErrMessage)
 
@@ -232,14 +228,14 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throw new UserInputError(badRequestErrMessage)
-          const { tokenId, creatorId, contentURI, text, mediaURI } = input
+          const { tokenId, creatorId, contentURI, text } = input
           if (
             !tokenId ||
             typeof tokenId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
             !contentURI ||
-            (!text && !mediaURI)
+            !text
           )
             throw new UserInputError(badRequestErrMessage)
 
