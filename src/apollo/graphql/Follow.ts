@@ -56,10 +56,9 @@ export const FollowQuery = extendType({
 
           // Call the api.
           const result = await dataSources.kmsAPI.getProfileFollows(profileId)
-          console.log("result -->", result)
+
           return result
         } catch (error) {
-          console.log("error -->", error)
           // Return null if no profile found or error occurred so the process can continue.
           return null
         }

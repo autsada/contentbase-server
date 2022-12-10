@@ -225,7 +225,9 @@ export class KmsAPI extends RESTDataSource {
    * @dev Get profile's followers and following.
    * @param profileId {number}
    */
-  async getProfileFollows(profileId: number): Promise<{ uri: string }> {
+  async getProfileFollows(
+    profileId: number
+  ): Promise<NexusGenObjects["GetFollowsResult"]> {
     return this.get(`/follows/profileId/${encodeURIComponent(profileId)}`)
   }
 
