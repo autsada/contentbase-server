@@ -27,7 +27,7 @@ export class KmsAPI extends RESTDataSource {
   }
 
   // async createCryptoKey(): Promise<{ keyName: string }> {
-  //   return this.post('/kms/createKey')
+  //   return this.post('/admin/key/create/master')
   // }
 
   /**

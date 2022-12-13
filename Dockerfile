@@ -1,6 +1,7 @@
 # Build stage
 FROM node:latest AS build
 RUN apt-get update && apt-get install -y dumb-init
+
 WORKDIR /usr/src/app
 COPY package*.json ./
 RUN npm install
@@ -19,4 +20,4 @@ COPY --chown=node:node --from=build /usr/src/app/package*.json ./
 COPY --chown=node:node --from=build /usr/src/app/dist ./
 RUN npm ci --omit=dev
 EXPOSE 4000
-CMD ["dumb-init", "node", "app.js"]
+CMD ["dumb-init", "node", "src/app.js"]

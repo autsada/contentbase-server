@@ -1,12 +1,12 @@
 {
-  "name": "ctb-server-service",
+  "name": "contentbase-server",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/app.js",
+  "main": "src/app.js",
   "scripts": {
     "dev": "nodemon",
     "build": "rimraf dist && tsc -p .",
-    "start": "node dist/app.js"
+    "start": "node src/app.js"
   },
   "keywords": [],
   "author": "",
