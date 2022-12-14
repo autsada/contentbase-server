@@ -3,6 +3,8 @@ dist
 node_modules
 .dockerignore
 .env
+.env.prod
+.env.staging
 Dockerfile.dev
 pubsubServiceAccount.json
 test.js

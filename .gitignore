@@ -3,6 +3,8 @@
 dist
 node_modules
 .env
+.env.prod
+.env.staging
 pubsubServiceAccount.json
 test.js
 .DS_Store
