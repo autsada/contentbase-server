@@ -154,7 +154,6 @@ export const LikeMutation = extendType({
           // Call the api.
           return dataSources.kmsAPI.likePublish(publishId, profileId)
         } catch (error) {
-          console.log("error -->", error)
           throw error
         }
       },
@@ -224,10 +223,3 @@ export const LikeMutation = extendType({
     })
   },
 })
-
-// liker = 0x7a1d66037d5644aa14f721441156fe9541dbbc5d = 0.050310069473460144
-// liker = 0x7a1d66037d5644aa14f721441156fe9541dbbc5d = 0.052110069473460144
-// liker = 0x7a1d66037d5644aa14f721441156fe9541dbbc5d = 0.053910069473460144
-// creator = 0x792731dd5034f4ab8359879dcbc0172fcb3fabe9 = 0.042808302837237179
-// creator = 0x792731dd5034f4ab8359879dcbc0172fcb3fabe9 = 0.040444610440899504
-// creator = 0x792731dd5034f4ab8359879dcbc0172fcb3fabe9 = 0.036846487260492423

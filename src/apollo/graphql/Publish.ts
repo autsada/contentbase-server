@@ -43,6 +43,11 @@ export const Category = enumType({
   ],
 })
 
+export const PublishKind = enumType({
+  name: "PublishKind",
+  members: ["Video", "Short", "Audio", "Blog", "Post"],
+})
+
 /**",
  * The object containing required data to create a publish.
  * @param creatorId {number} - a token id of the creator's profile
@@ -54,6 +59,7 @@ export const Category = enumType({
  * @param primaryCategory {enum} - a primary category of a publish
  * @param secondaryCategory {enum} - a secondary category of a publish
  * @param tertiaryCategory {enum} - a tertiary category of a publish
+ * @param kind {enum} - a kind of a publish
  */
 export const CreatePublishInput = inputObjectType({
   name: "CreatePublishInput",
@@ -67,6 +73,7 @@ export const CreatePublishInput = inputObjectType({
     t.nonNull.field("primaryCategory", { type: nonNull("Category") })
     t.nonNull.field("secondaryCategory", { type: nonNull("Category") })
     t.nonNull.field("tertiaryCategory", { type: nonNull("Category") })
+    t.nonNull.field("kind", { type: nonNull("PublishKind") })
   },
 })
 
@@ -235,6 +242,7 @@ export const PublishMutation = extendType({
             primaryCategory,
             secondaryCategory,
             tertiaryCategory,
+            kind,
           } = input
           // description can be empty string.
           if (
@@ -247,7 +255,13 @@ export const PublishMutation = extendType({
             !primaryCategory ||
             primaryCategory === "Empty" ||
             !secondaryCategory ||
-            !tertiaryCategory
+            !tertiaryCategory ||
+            !kind ||
+            (kind !== "Video" &&
+              kind !== "Short" &&
+              kind !== "Audio" &&
+              kind !== "Blog" &&
+              kind !== "Post")
           )
             throw new UserInputError(badRequestErrMessage)
 

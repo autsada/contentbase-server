@@ -61,6 +61,7 @@ input CreatePublishInput {
   creatorId: Int!
   description: String!
   imageURI: String!
+  kind: PublishKind!
   metadataURI: String!
   primaryCategory: Category!
   secondaryCategory: Category!
@@ -146,6 +147,14 @@ type ProfileToken {
   imageURI: String!
   owner: String!
   tokenId: Int!
+}
+
+enum PublishKind {
+  Audio
+  Blog
+  Post
+  Short
+  Video
 }
 
 type PublishToken {

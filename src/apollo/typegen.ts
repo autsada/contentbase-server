@@ -29,6 +29,7 @@ export interface NexusGenInputs {
     creatorId: number; // Int!
     description: string; // String!
     imageURI: string; // String!
+    kind: NexusGenEnums['PublishKind']; // PublishKind!
     metadataURI: string; // String!
     primaryCategory: NexusGenEnums['Category']; // Category!
     secondaryCategory: NexusGenEnums['Category']; // Category!
@@ -69,6 +70,7 @@ export interface NexusGenInputs {
 export interface NexusGenEnums {
   Category: "Animals" | "Children" | "Education" | "Empty" | "Entertainment" | "Food" | "Gaming" | "LifeStyle" | "Men" | "Movies" | "Music" | "News" | "NotExist" | "Other" | "Programming" | "Science" | "Sports" | "Technology" | "Travel" | "Vehicles" | "Women"
   CommentType: "COMMENT" | "PUBLISH"
+  PublishKind: "Audio" | "Blog" | "Post" | "Short" | "Video"
   Role: "ADMIN_ROLE" | "DEFAULT_ADMIN_ROLE" | "UPGRADER_ROLE"
   UploadType: "avatar" | "post"
 }
