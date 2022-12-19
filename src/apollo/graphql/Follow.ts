@@ -5,15 +5,8 @@ import {
   objectType,
   nullable,
 } from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
-const forbiddenErrMessage = "Forbidden"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 /**
  * The object containing required data for follow function.
@@ -52,7 +45,7 @@ export const FollowQuery = extendType({
       async resolve(_root, { profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Call the api.
           const result = await dataSources.kmsAPI.getProfileFollows(profileId)
@@ -79,9 +72,9 @@ export const FollowMutation = extendType({
       async resolve(_roote, { data }, { dataSources }) {
         try {
           // Validation.
-          if (!data) throw new UserInputError(badRequestErrMessage)
+          if (!data) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { role } = data
-          if (!role) throw new UserInputError(badRequestErrMessage)
+          if (!role) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { hasRole } = await dataSources.kmsAPI.hasRoleFollow(role)
@@ -102,10 +95,10 @@ export const FollowMutation = extendType({
       async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { followerId, followeeId } = input
           if (
             !followerId ||
@@ -113,7 +106,7 @@ export const FollowMutation = extendType({
             !followeeId ||
             typeof followeeId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.follow({ followerId, followeeId })
@@ -133,10 +126,10 @@ export const FollowMutation = extendType({
       async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { followerId, followeeId } = input
           if (
             !followerId ||
@@ -144,7 +137,7 @@ export const FollowMutation = extendType({
             !followeeId ||
             typeof followeeId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.estimateGasFollow({

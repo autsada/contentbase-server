@@ -1,8 +1,6 @@
-import { objectType, extendType, nonNull, list, enumType } from "nexus"
-import { AuthenticationError, UserInputError } from "apollo-server-express"
+import { objectType, extendType, nonNull, enumType } from "nexus"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 export const CreateWalletResult = objectType({
   name: "CreateWalletResult",
@@ -82,7 +80,7 @@ export const AccountQuery = extendType({
       args: { address: nonNull("String") },
       async resolve(_root, { address }, { dataSources }) {
         try {
-          if (!address) throw new UserInputError(badRequestErrMessage)
+          if (!address) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           const { balance } = await dataSources.kmsAPI.getBalance(address)
 
@@ -106,7 +104,7 @@ export const AccountMutation = extendType({
       type: nonNull("CreateWalletResult"),
       async resolve(_root, _args, { dataSources, idToken }) {
         try {
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Call kms api to create a new wallet.
           const walletResult = await dataSources.kmsAPI.createWallet()

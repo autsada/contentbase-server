@@ -1,14 +1,20 @@
-import { RESTDataSource, RequestOptions } from "apollo-datasource-rest"
+import { RESTDataSource, WillSendRequestOptions } from "@apollo/datasource-rest"
+// KeyValueCache is the type of Apollo server's default cache
+import type { KeyValueCache } from "@apollo/utils.keyvaluecache"
 
 const { ALCHEMY_WEBHOOK_ID, ALCHEMY_WEBHOOK_AUTH_TOKEN } = process.env
 
 export class WebhooksAPI extends RESTDataSource {
-  constructor() {
-    super()
-    this.baseURL = "https://dashboard.alchemyapi.io/api"
-    this.willSendRequest = (req: RequestOptions) => {
-      req.headers.set("x-alchemy-token", ALCHEMY_WEBHOOK_AUTH_TOKEN!)
-    }
+  override baseURL = "https://dashboard.alchemyapi.io/api/"
+
+  constructor(options: { cache: KeyValueCache }) {
+    super(options) // this sends our server's `cache` through
+  }
+
+  protected override async willSendRequest(
+    req: WillSendRequestOptions
+  ): Promise<void> {
+    req.headers["x-alchemy-token"] = ALCHEMY_WEBHOOK_AUTH_TOKEN || ""
   }
 
   /**
@@ -21,6 +27,6 @@ export class WebhooksAPI extends RESTDataSource {
       addresses_to_remove: [],
     }
 
-    return this.patch("/update-webhook-addresses", body)
+    return this.patch("update-webhook-addresses", { body })
   }
 }

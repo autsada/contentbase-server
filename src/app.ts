@@ -4,11 +4,10 @@ dotenv.config({ path: path.join(__dirname, "../.env") })
 import express from "express"
 import cors from "cors"
 import http from "http"
-import { ApolloServer } from "apollo-server-express"
-import {
-  ApolloServerPluginDrainHttpServer,
-  ApolloServerPluginLandingPageLocalDefault,
-} from "apollo-server-core"
+import { ApolloServer } from "@apollo/server"
+import { expressMiddleware } from "@apollo/server/express4"
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer"
+import { ApolloServerPluginLandingPageLocalDefault } from "@apollo/server/plugin/landingPage/default"
 
 import { schema } from "./apollo/schema"
 import { KmsAPI } from "./apollo/datasources/kms-api"
@@ -16,6 +15,7 @@ import { WebhooksAPI } from "./apollo/datasources/webhooks-api"
 import { router } from "./webhooks/router"
 import { restRouter } from "./rest/router"
 import type { Environment } from "./types"
+import type { Context } from "./apollo/context"
 
 const { PORT, NODE_ENV } = process.env
 const env = NODE_ENV as Environment
@@ -31,7 +31,7 @@ async function startServer() {
     })
   ) // for parsing application/json
   app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
-  app.use(cors())
+  app.use(cors<cors.CorsRequest>())
 
   // Rest APIs route
   app.use("/api", restRouter)
@@ -42,7 +42,7 @@ async function startServer() {
   const httpServer = http.createServer(app)
 
   // Set up ApolloServer.
-  const server = new ApolloServer({
+  const server = new ApolloServer<Context>({
     schema,
     csrfPrevention: true,
     cache: "bounded",
@@ -51,21 +51,29 @@ async function startServer() {
       ApolloServerPluginDrainHttpServer({ httpServer }),
       ApolloServerPluginLandingPageLocalDefault({ embed: true }),
     ],
-    dataSources: () => ({
-      kmsAPI: new KmsAPI(),
-      webhooksApi: new WebhooksAPI(),
-    }),
-    context: async ({ req }) => {
-      // Get the user token from the headers.
-      const headers = req.headers["authorization"]
-      const token = headers?.split(" ")[1]
-      return { idToken: token }
-    },
     introspection: env !== "production", // Only in development and staging env.
   })
 
   await server.start()
-  server.applyMiddleware({ app })
+  app.use(
+    "/graphql",
+    expressMiddleware(server, {
+      context: async ({ req }) => {
+        const { cache } = server
+        // Get the user token from the headers.
+        const headers = req.headers["authorization"]
+        const idToken = headers?.split(" ")[1]
+
+        return {
+          idToken,
+          dataSources: {
+            kmsAPI: new KmsAPI({ idToken, cache }),
+            webhooksApi: new WebhooksAPI({ cache }),
+          },
+        }
+      },
+    })
+  )
 
   await new Promise<void>((resolver) => {
     httpServer.listen({ port: Number(PORT) }, resolver)

@@ -1,3 +1,4 @@
+import { AuthenticationError } from "@apollo/datasource-rest/dist/RESTDataSource"
 import {
   objectType,
   inputObjectType,
@@ -5,15 +6,8 @@ import {
   nonNull,
   enumType,
 } from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
-const forbiddenErrMessage = "Forbidden"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 /**",
  * The object containing required data to comment on a publish.
@@ -82,7 +76,7 @@ export const CommentQuery = extendType({
         try {
           // Validation.
           if (!commentId || typeof commentId !== "number")
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { token } = await dataSources.kmsAPI.getComment(commentId)
@@ -103,7 +97,7 @@ export const CommentQuery = extendType({
         try {
           // Validation.
           if (!tokenId || typeof tokenId !== "number")
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.getCommentTokenURI(tokenId)
@@ -161,7 +155,7 @@ export const CommentMutation = extendType({
           if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { parentId, creatorId, contentURI, text } = input
           if (
             !parentId ||
@@ -171,7 +165,7 @@ export const CommentMutation = extendType({
             !contentURI ||
             !text
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.commentOnPublish(input)
@@ -194,7 +188,7 @@ export const CommentMutation = extendType({
           if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { parentId, creatorId, contentURI, text } = input
           if (
             !parentId ||
@@ -204,7 +198,7 @@ export const CommentMutation = extendType({
             !contentURI ||
             !text
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.commentOnComment(input)
@@ -227,7 +221,7 @@ export const CommentMutation = extendType({
           if (!idToken) throw new AuthenticationError(authErrMessage)
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { tokenId, creatorId, contentURI, text } = input
           if (
             !tokenId ||
@@ -237,7 +231,7 @@ export const CommentMutation = extendType({
             !contentURI ||
             !text
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.updateComment(input)
@@ -265,7 +259,7 @@ export const CommentMutation = extendType({
             !creatorId ||
             typeof creatorId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.deleteComment(commentId, creatorId)
@@ -293,7 +287,7 @@ export const CommentMutation = extendType({
             !profileId ||
             typeof profileId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.likeComment(commentId, profileId)
@@ -321,7 +315,7 @@ export const CommentMutation = extendType({
             !profileId ||
             typeof profileId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.disLikeComment(commentId, profileId)

@@ -1,20 +1,6 @@
-import {
-  enumType,
-  objectType,
-  inputObjectType,
-  extendType,
-  nonNull,
-  nullable,
-} from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
+import { objectType, extendType, nonNull } from "nexus"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
-const forbiddenErrMessage = "Forbidden"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 export const FeeResult = objectType({
   name: "FeeResult",
@@ -115,12 +101,12 @@ export const LikeMutation = extendType({
       async resolve(_roote, { data }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!data) throw new UserInputError(badRequestErrMessage)
+          if (!data) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { role } = data
-          if (!role) throw new UserInputError(badRequestErrMessage)
+          if (!role) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { hasRole } = await dataSources.kmsAPI.hasRoleLike(role)
@@ -140,7 +126,7 @@ export const LikeMutation = extendType({
       async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
           if (
@@ -149,7 +135,7 @@ export const LikeMutation = extendType({
             !profileId ||
             typeof profileId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.likePublish(publishId, profileId)
@@ -168,7 +154,7 @@ export const LikeMutation = extendType({
       async resolve(_root, { publishId, profileId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
           // Validation.
           if (
             !publishId ||
@@ -176,7 +162,7 @@ export const LikeMutation = extendType({
             !profileId ||
             typeof profileId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.disLikePublish(publishId, profileId)
@@ -199,7 +185,7 @@ export const LikeMutation = extendType({
       ) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
           if (
@@ -208,7 +194,7 @@ export const LikeMutation = extendType({
             !profileId ||
             typeof profileId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { gas } = await dataSources.kmsAPI.estimateGasLikePublish(

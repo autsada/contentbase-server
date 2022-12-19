@@ -6,15 +6,8 @@ import {
   objectType,
   nullable,
 } from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
-const forbiddenErrMessage = "Forbidden"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 /**
  * Role enum
@@ -120,7 +113,7 @@ export const ProfileQuery = extendType({
       async resolve(_root, _args, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Call the api.
           const { token } = await dataSources.kmsAPI.getDefaultProfile()
@@ -143,7 +136,7 @@ export const ProfileQuery = extendType({
         try {
           // Validation.
           if (!tokenId || typeof tokenId !== "number")
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.getProfileImage(tokenId)
@@ -168,9 +161,9 @@ export const ProfileMutation = extendType({
       async resolve(_roote, { data }, { dataSources }) {
         try {
           // Validation.
-          if (!data) throw new UserInputError(badRequestErrMessage)
+          if (!data) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { role } = data
-          if (!role) throw new UserInputError(badRequestErrMessage)
+          if (!role) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { hasRole } = await dataSources.kmsAPI.hasRoleProfile(role)
@@ -191,13 +184,13 @@ export const ProfileMutation = extendType({
       async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { handle, imageURI } = input
           // imageURI can be empty.
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.createProfile({
@@ -221,13 +214,13 @@ export const ProfileMutation = extendType({
       async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validattion.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { tokenId, imageURI } = input
           if (!tokenId || typeof tokenId !== "number" || !imageURI)
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.updateProfileImage({
@@ -250,10 +243,10 @@ export const ProfileMutation = extendType({
       async resolve(_root, { handle }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.setDefaultProfile(handle)
@@ -273,7 +266,7 @@ export const ProfileMutation = extendType({
       async resolve(_root, { handle }, { dataSources }) {
         try {
           // Validation.
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           // Has to lowercase the handle before sending to the blockchain.
@@ -297,20 +290,20 @@ export const ProfileMutation = extendType({
       async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { handle, imageURI } = input
           // imageURI can be empty.
-          if (!handle) throw new UserInputError(badRequestErrMessage)
+          if (!handle) throwError(badInputErrMessage, "BAD_USER_INPUT")
           // Make sure to lower case handle or will get error.
           const formattedHandle = handle.toLowerCase()
           // Check if handle has correct length and unique.
           const { valid } = await dataSources.kmsAPI.verifyHandle(
             formattedHandle
           )
-          if (!valid) throw new UserInputError("This handle is taken")
+          if (!valid) throw new Error("This handle is taken")
 
           // Call the api.
           return dataSources.kmsAPI.estimateGasCreateProfile({
@@ -318,7 +311,6 @@ export const ProfileMutation = extendType({
             imageURI: imageURI || "",
           })
         } catch (error) {
-          console.log("error -->", error)
           throw error
         }
       },

@@ -1,4 +1,6 @@
-import { RESTDataSource, RequestOptions } from "apollo-datasource-rest"
+import { RESTDataSource, WillSendRequestOptions } from "@apollo/datasource-rest"
+// KeyValueCache is the type of Apollo server's default cache
+import type { KeyValueCache } from "@apollo/utils.keyvaluecache"
 
 import { NexusGenObjects, NexusGenEnums, NexusGenInputs } from "../typegen"
 import type { Environment } from "../../types"
@@ -8,38 +10,45 @@ const { KMS_ACCESS_KEY, NODE_ENV, KMS_BASE_URL } = process.env
 
 const env = NODE_ENV as Environment
 export class KmsAPI extends RESTDataSource {
-  constructor() {
-    super()
-    this.baseURL = KMS_BASE_URL || "http://localhost:8000"
+  override baseURL = KMS_BASE_URL || "http://localhost:8000/"
+  private idToken: string | undefined
 
-    this.willSendRequest = async (req: RequestOptions) => {
-      req.headers.set("x-access-key", KMS_ACCESS_KEY!)
-      // The token for use to authenticate between services in GCP
-      if (env !== "development") {
-        const token = await authClient.getIdToken()
-        req.headers.set("Authorization", token || "")
-      }
-      // The id token that to be sent from the UI for use to verify user.
-      req.headers.set("id-token", this.context.idToken || "")
+  constructor(options: { idToken: string | undefined; cache: KeyValueCache }) {
+    super(options) // this sends our server's `cache` through
+    this.idToken = options.idToken
+  }
+
+  protected override async willSendRequest(
+    req: WillSendRequestOptions
+  ): Promise<void> {
+    req.headers["x-access-key"] = KMS_ACCESS_KEY || ""
+
+    // The token for use to authenticate between services in GCP
+    if (env !== "development") {
+      const token = await authClient.getIdToken()
+      req.headers["authorization"] = token || ""
     }
+
+    // The id token that to be sent from the UI for use to verify user.
+    req.headers["id-token"] = this.idToken || ""
   }
 
   // async createCryptoKey(): Promise<{ keyName: string }> {
-  //   return this.post('/admin/key/create/master')
+  //   return this.post('admin/key/create/master')
   // }
 
   /**
    * @dev The route to create blockchain wallet.
    */
   async createWallet(): Promise<NexusGenObjects["CreateWalletResult"] | null> {
-    return this.post("/wallet/create")
+    return this.post("wallet/create")
   }
 
   /**
    * @dev The route to get balance of a specific address.
    */
   async getBalance(address: string): Promise<{ balance: string }> {
-    return this.get(`/wallet/balance/${encodeURIComponent(address)}`)
+    return this.get(`wallet/balance/${encodeURIComponent(address)}`)
   }
 
   // =========================== //
@@ -47,53 +56,53 @@ export class KmsAPI extends RESTDataSource {
   async setProfileForFollow(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/profile-follow", { contractAddress })
+    return this.post("admin/set/profile-follow", { body: { contractAddress } })
   }
 
   async setProfileForPublish(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/profile-publish", { contractAddress })
+    return this.post("admin/set/profile-publish", { body: { contractAddress } })
   }
 
   async setOwner(ownerAddress: string): Promise<{ status: string }> {
-    return this.post("/admin/set/owner", { ownerAddress })
+    return this.post("admin/set/owner", { body: { ownerAddress } })
   }
 
   async setProfileForLike(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/profile-like", { contractAddress })
+    return this.post("admin/set/profile-like", { body: { contractAddress } })
   }
 
   async setPublishForLike(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/publish-like", { contractAddress })
+    return this.post("admin/set/publish-like", { body: { contractAddress } })
   }
 
   async setLikeFee(fee: number): Promise<{ status: string }> {
-    return this.post("/admin/set/fee/like", { fee })
+    return this.post("admin/set/fee/like", { body: { fee } })
   }
 
   async setPlatformFee(fee: number): Promise<{ status: string }> {
-    return this.post("/admin/set/fee/platform", { fee })
+    return this.post("admin/set/fee/platform", { body: { fee } })
   }
 
   async withdrawFunds(): Promise<{ status: string }> {
-    return this.post("/admin/withdraw")
+    return this.post("admin/withdraw")
   }
 
   async setProfileForComment(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/profile-comment", { contractAddress })
+    return this.post("admin/set/profile-comment", { body: { contractAddress } })
   }
 
   async setPublishForComment(
     contractAddress: string
   ): Promise<{ status: string }> {
-    return this.post("/admin/set/publish-comment", { contractAddress })
+    return this.post("admin/set/publish-comment", { body: { contractAddress } })
   }
 
   // ======================= //
@@ -109,8 +118,8 @@ export class KmsAPI extends RESTDataSource {
   async hasRoleProfile(
     role: NexusGenEnums["Role"]
   ): Promise<{ hasRole: boolean }> {
-    return this.post(`/profiles/role`, {
-      role,
+    return this.post(`profiles/role`, {
+      body: { role },
     })
   }
 
@@ -121,7 +130,7 @@ export class KmsAPI extends RESTDataSource {
   async createProfile(
     input: NexusGenInputs["CreateProfileInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/profiles/create`, input)
+    return this.post(`profiles/create`, { body: { input } })
   }
 
   /**
@@ -131,7 +140,7 @@ export class KmsAPI extends RESTDataSource {
   async updateProfileImage(
     input: NexusGenInputs["UpdateProfileImageInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/profiles/update`, input)
+    return this.post(`profiles/update`, { body: { input } })
   }
 
   /**
@@ -139,8 +148,8 @@ export class KmsAPI extends RESTDataSource {
    * @param handle {string} - the handle to be set as default
    */
   async setDefaultProfile(handle: string): Promise<{ status: string }> {
-    return this.post(`/profiles/default`, {
-      handle,
+    return this.post(`profiles/default`, {
+      body: { handle },
     })
   }
 
@@ -149,7 +158,7 @@ export class KmsAPI extends RESTDataSource {
    * @param handle {string}
    */
   async verifyHandle(handle: string): Promise<{ valid: boolean }> {
-    return this.post("/profiles/handle/verify", { handle })
+    return this.post("profiles/handle/verify", { body: { handle } })
   }
 
   /**
@@ -159,7 +168,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasCreateProfile(
     input: NexusGenInputs["CreateProfileInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`/profiles/gas/create`, input)
+    return this.post(`profiles/gas/create`, { body: { input } })
   }
 
   /**
@@ -168,7 +177,7 @@ export class KmsAPI extends RESTDataSource {
   async getDefaultProfile(): Promise<{
     token: NexusGenObjects["ProfileToken"]
   }> {
-    return this.get(`/profiles/default`)
+    return this.get(`profiles/default`)
   }
 
   /**
@@ -176,9 +185,7 @@ export class KmsAPI extends RESTDataSource {
    * @param tokenId {number}
    */
   async getProfileImage(tokenId: number): Promise<{ uri: string }> {
-    return this.get(
-      `/profiles/token-uri/tokenId/${encodeURIComponent(tokenId)}`
-    )
+    return this.get(`profiles/token-uri/tokenId/${encodeURIComponent(tokenId)}`)
   }
 
   // ======================= //
@@ -194,8 +201,8 @@ export class KmsAPI extends RESTDataSource {
   async hasRoleFollow(
     role: NexusGenEnums["Role"]
   ): Promise<{ hasRole: boolean }> {
-    return this.post(`/follows/role`, {
-      role,
+    return this.post(`follows/role`, {
+      body: { role },
     })
   }
 
@@ -206,7 +213,7 @@ export class KmsAPI extends RESTDataSource {
   async follow(
     input: NexusGenInputs["FollowInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/follows/following`, input)
+    return this.post(`follows/following`, { body: { input } })
   }
 
   /**
@@ -216,7 +223,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasFollow(
     input: NexusGenInputs["FollowInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`/follows/gas/following`, input)
+    return this.post(`follows/gas/following`, { body: { input } })
   }
 
   /**
@@ -226,7 +233,7 @@ export class KmsAPI extends RESTDataSource {
   async getProfileFollows(
     profileId: number
   ): Promise<NexusGenObjects["GetFollowsResult"]> {
-    return this.get(`/follows/profileId/${encodeURIComponent(profileId)}`)
+    return this.get(`follows/profileId/${encodeURIComponent(profileId)}`)
   }
 
   // ======================= //
@@ -242,8 +249,8 @@ export class KmsAPI extends RESTDataSource {
   async hasRolePublish(
     role: NexusGenEnums["Role"]
   ): Promise<{ hasRole: boolean }> {
-    return this.post(`/publishes/role`, {
-      role,
+    return this.post(`publishes/role`, {
+      body: { role },
     })
   }
 
@@ -254,7 +261,7 @@ export class KmsAPI extends RESTDataSource {
   async createPublish(
     input: NexusGenInputs["CreatePublishInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/create`, input)
+    return this.post(`publishes/create`, { body: { input } })
   }
 
   /**
@@ -264,7 +271,7 @@ export class KmsAPI extends RESTDataSource {
   async updatePublish(
     input: NexusGenInputs["UpdatePublishInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/update`, input)
+    return this.post(`publishes/update`, { body: { input } })
   }
 
   /**
@@ -276,9 +283,11 @@ export class KmsAPI extends RESTDataSource {
     publishId: number,
     creatorId: number
   ): Promise<{ status: string }> {
-    return this.post(`/publishes/delete`, {
-      publishId,
-      creatorId,
+    return this.post(`publishes/delete`, {
+      body: {
+        publishId,
+        creatorId,
+      },
     })
   }
 
@@ -289,7 +298,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasCreatePublish(
     input: NexusGenInputs["CreatePublishInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`/publishes/gas/create`, input)
+    return this.post(`publishes/gas/create`, { body: { input } })
   }
 
   /**
@@ -298,7 +307,7 @@ export class KmsAPI extends RESTDataSource {
   async getPublish(
     tokenId: number
   ): Promise<{ token: NexusGenObjects["PublishToken"] }> {
-    return this.get(`/publishes/publishId/${encodeURIComponent(tokenId)}`)
+    return this.get(`publishes/publishId/${encodeURIComponent(tokenId)}`)
   }
 
   /**
@@ -307,7 +316,7 @@ export class KmsAPI extends RESTDataSource {
    */
   async getPublishTokenURI(tokenId: number): Promise<{ uri: string }> {
     return this.get(
-      `/publishes/token-uri/tokenId/${encodeURIComponent(tokenId)}`
+      `publishes/token-uri/tokenId/${encodeURIComponent(tokenId)}`
     )
   }
 
@@ -315,7 +324,7 @@ export class KmsAPI extends RESTDataSource {
    * @dev Get the Profile contract address stored on the Publish contract.
    */
   async getProfileAddressFromPublish(): Promise<{ address: string }> {
-    return this.get(`/publishes/profile-contract`)
+    return this.get(`publishes/profile-contract`)
   }
 
   // ======================= //
@@ -331,8 +340,8 @@ export class KmsAPI extends RESTDataSource {
   async hasRoleComment(
     role: NexusGenEnums["Role"]
   ): Promise<{ hasRole: boolean }> {
-    return this.post(`/comments/role`, {
-      role,
+    return this.post(`comments/role`, {
+      body: { role },
     })
   }
 
@@ -343,7 +352,7 @@ export class KmsAPI extends RESTDataSource {
   async commentOnPublish(
     input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/comments/publish`, input)
+    return this.post(`comments/publish`, { body: { input } })
   }
 
   /**
@@ -353,7 +362,7 @@ export class KmsAPI extends RESTDataSource {
   async commentOnComment(
     input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/comments/comment`, input)
+    return this.post(`comments/comment`, { body: { input } })
   }
 
   /**
@@ -363,7 +372,7 @@ export class KmsAPI extends RESTDataSource {
   async updateComment(
     input: NexusGenInputs["UpdateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`/comments/update`, input)
+    return this.post(`comments/update`, { body: { input } })
   }
 
   /**
@@ -375,9 +384,11 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     creatorId: number
   ): Promise<{ status: string }> {
-    return this.post(`/comments/delete`, {
-      commentId,
-      creatorId,
+    return this.post(`comments/delete`, {
+      body: {
+        commentId,
+        creatorId,
+      },
     })
   }
 
@@ -390,9 +401,11 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/comments/like`, {
-      commentId,
-      profileId,
+    return this.post(`comments/like`, {
+      body: {
+        commentId,
+        profileId,
+      },
     })
   }
 
@@ -405,9 +418,11 @@ export class KmsAPI extends RESTDataSource {
     commentId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/comments/disLike`, {
-      commentId,
-      profileId,
+    return this.post(`comments/disLike`, {
+      body: {
+        commentId,
+        profileId,
+      },
     })
   }
 
@@ -417,7 +432,7 @@ export class KmsAPI extends RESTDataSource {
   async getComment(
     tokenId: number
   ): Promise<{ token: NexusGenObjects["CommentToken"] }> {
-    return this.get(`/comments/commentId/${encodeURIComponent(tokenId)}`)
+    return this.get(`comments/commentId/${encodeURIComponent(tokenId)}`)
   }
 
   /**
@@ -425,23 +440,21 @@ export class KmsAPI extends RESTDataSource {
    * @param tokenId {number}
    */
   async getCommentTokenURI(tokenId: number): Promise<{ uri: string }> {
-    return this.get(
-      `/comments/token-uri/tokenId/${encodeURIComponent(tokenId)}`
-    )
+    return this.get(`comments/token-uri/tokenId/${encodeURIComponent(tokenId)}`)
   }
 
   /**
    * @dev Get the Profile contract address stored on the Comment contract.
    */
   async getProfileAddressFromComment(): Promise<{ address: string }> {
-    return this.get(`/comments/profile-contract`)
+    return this.get(`comments/profile-contract`)
   }
 
   /**
    * @dev Get the Publish contract address stored on the Comment contract.
    */
   async getPublishAddressFromComment(): Promise<{ address: string }> {
-    return this.get(`/comments/publish-contract`)
+    return this.get(`comments/publish-contract`)
   }
 
   // ======================= //
@@ -457,8 +470,8 @@ export class KmsAPI extends RESTDataSource {
   async hasRoleLike(
     role: NexusGenEnums["Role"]
   ): Promise<{ hasRole: boolean }> {
-    return this.post(`/likes/role`, {
-      role,
+    return this.post(`likes/role`, {
+      body: { role },
     })
   }
 
@@ -471,9 +484,11 @@ export class KmsAPI extends RESTDataSource {
     publishId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/likes/like`, {
-      publishId,
-      profileId,
+    return this.post(`likes/like`, {
+      body: {
+        publishId,
+        profileId,
+      },
     })
   }
 
@@ -486,9 +501,11 @@ export class KmsAPI extends RESTDataSource {
     publishId: number,
     profileId: number
   ): Promise<{ status: string }> {
-    return this.post(`/likes/disLike`, {
-      publishId,
-      profileId,
+    return this.post(`likes/disLike`, {
+      body: {
+        publishId,
+        profileId,
+      },
     })
   }
 
@@ -501,26 +518,31 @@ export class KmsAPI extends RESTDataSource {
     publishId: number,
     profileId: number
   ): Promise<{ gas: string }> {
-    return this.post(`/likes/gas/like`, { publishId, profileId })
+    return this.post(`likes/gas/like`, {
+      body: {
+        publishId,
+        profileId,
+      },
+    })
   }
 
   async getOwnerAddress(): Promise<{ address: string }> {
-    return this.get("/likes/platform-owner")
+    return this.get("likes/platform-owner")
   }
 
   async getProfileAddressFromLike(): Promise<{ address: string }> {
-    return this.get("/likes/profile-contract")
+    return this.get("likes/profile-contract")
   }
 
   async getPublishAddressFromLike(): Promise<{ address: string }> {
-    return this.get("/likes/publish-contract")
+    return this.get("likes/publish-contract")
   }
 
   async getLikeFee(): Promise<{ fee: number }> {
-    return this.get("/likes/fee/like")
+    return this.get("likes/fee/like")
   }
 
   async getPlatformFee(): Promise<{ fee: number }> {
-    return this.get("/likes/fee/platform")
+    return this.get("likes/fee/platform")
   }
 }

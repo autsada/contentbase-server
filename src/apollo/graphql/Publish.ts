@@ -6,15 +6,8 @@ import {
   nonNull,
   nullable,
 } from "nexus"
-import {
-  AuthenticationError,
-  UserInputError,
-  ForbiddenError,
-} from "apollo-server-express"
 
-const authErrMessage = "*** You must be logged in ***"
-const badRequestErrMessage = "Bad Request"
-const forbiddenErrMessage = "Forbidden"
+import { authErrMessage, badInputErrMessage, throwError } from "./Error"
 
 export const Category = enumType({
   name: "Category",
@@ -141,7 +134,7 @@ export const PublishQuery = extendType({
         try {
           // Validation.
           if (!publishId || typeof publishId !== "number")
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { token } = await dataSources.kmsAPI.getPublish(publishId)
@@ -163,7 +156,7 @@ export const PublishQuery = extendType({
         try {
           // Validation.
           if (!tokenId || typeof tokenId !== "number")
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.getPublishTokenURI(tokenId)
@@ -203,12 +196,12 @@ export const PublishMutation = extendType({
       async resolve(_roote, { data }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!data) throw new UserInputError(badRequestErrMessage)
+          if (!data) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const { role } = data
-          if (!role) throw new UserInputError(badRequestErrMessage)
+          if (!role) throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { hasRole } = await dataSources.kmsAPI.hasRolePublish(role)
@@ -229,10 +222,10 @@ export const PublishMutation = extendType({
       async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const {
             creatorId,
             imageURI,
@@ -263,7 +256,7 @@ export const PublishMutation = extendType({
               kind !== "Blog" &&
               kind !== "Post")
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // If the `secondaryCategory` is `Empty` and the `tertiaryCategory` is not, swap it so the smart contract will not throw.
           if (secondaryCategory === "Empty" && tertiaryCategory !== "Empty") {
@@ -289,10 +282,10 @@ export const PublishMutation = extendType({
       async resolve(_root, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const {
             tokenId,
             creatorId,
@@ -319,7 +312,7 @@ export const PublishMutation = extendType({
             !secondaryCategory ||
             !tertiaryCategory
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // If the `secondaryCategory` is `Empty` and the `tertiaryCategory` is not, swap it so the smart contract will not throw.
           if (secondaryCategory === "Empty" && tertiaryCategory !== "Empty") {
@@ -344,7 +337,7 @@ export const PublishMutation = extendType({
       async resolve(_root, { publishId, creatorId }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
           if (
@@ -353,7 +346,7 @@ export const PublishMutation = extendType({
             !creatorId ||
             typeof creatorId !== "number"
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           return dataSources.kmsAPI.deletePublish(publishId, creatorId)
@@ -373,10 +366,10 @@ export const PublishMutation = extendType({
       async resolve(_roote, { input }, { dataSources, idToken }) {
         try {
           // User must logged in.
-          if (!idToken) throw new AuthenticationError(authErrMessage)
+          if (!idToken) throwError(authErrMessage, "UNAUTHENTICATED")
 
           // Validation.
-          if (!input) throw new UserInputError(badRequestErrMessage)
+          if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const {
             creatorId,
             imageURI,
@@ -399,7 +392,7 @@ export const PublishMutation = extendType({
             !secondaryCategory ||
             !tertiaryCategory
           )
-            throw new UserInputError(badRequestErrMessage)
+            throwError(badInputErrMessage, "BAD_USER_INPUT")
 
           // Call the api.
           const { gas } = await dataSources.kmsAPI.estimateGasCreatePublish(

@@ -1,7 +1,6 @@
 import { extendType, nonNull } from "nexus"
-import { UserInputError } from "apollo-server-express"
 
-const badRequestErrMessage = "Bad Request"
+import { badInputErrMessage, throwError } from "./Error"
 
 export const AdminMutation = extendType({
   type: "Mutation",
@@ -11,7 +10,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setProfileForFollow(contractAddress)
         } catch (error) {
           throw error
@@ -24,7 +23,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setProfileForPublish(contractAddress)
         } catch (error) {
           throw error
@@ -37,7 +36,7 @@ export const AdminMutation = extendType({
       args: { ownerAddress: nonNull("String") },
       async resolve(_roote, { ownerAddress }, { dataSources }) {
         try {
-          if (!ownerAddress) throw new UserInputError(badRequestErrMessage)
+          if (!ownerAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setOwner(ownerAddress)
         } catch (error) {
           throw error
@@ -50,7 +49,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setProfileForLike(contractAddress)
         } catch (error) {
           throw error
@@ -63,7 +62,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setPublishForLike(contractAddress)
         } catch (error) {
           throw error
@@ -113,7 +112,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setProfileForComment(contractAddress)
         } catch (error) {
           throw error
@@ -126,7 +125,7 @@ export const AdminMutation = extendType({
       args: { contractAddress: nonNull("String") },
       async resolve(_roote, { contractAddress }, { dataSources }) {
         try {
-          if (!contractAddress) throw new UserInputError(badRequestErrMessage)
+          if (!contractAddress) throwError(badInputErrMessage, "BAD_USER_INPUT")
           return dataSources.kmsAPI.setPublishForComment(contractAddress)
         } catch (error) {
           throw error
