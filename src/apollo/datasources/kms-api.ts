@@ -130,7 +130,7 @@ export class KmsAPI extends RESTDataSource {
   async createProfile(
     input: NexusGenInputs["CreateProfileInput"]
   ): Promise<{ status: string }> {
-    return this.post(`profiles/create`, { body: { input } })
+    return this.post(`profiles/create`, { body: { ...input } })
   }
 
   /**
@@ -140,7 +140,7 @@ export class KmsAPI extends RESTDataSource {
   async updateProfileImage(
     input: NexusGenInputs["UpdateProfileImageInput"]
   ): Promise<{ status: string }> {
-    return this.post(`profiles/update`, { body: { input } })
+    return this.post(`profiles/update`, { body: { ...input } })
   }
 
   /**
@@ -168,7 +168,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasCreateProfile(
     input: NexusGenInputs["CreateProfileInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`profiles/gas/create`, { body: { input } })
+    return this.post(`profiles/gas/create`, { body: { ...input } })
   }
 
   /**
@@ -213,7 +213,7 @@ export class KmsAPI extends RESTDataSource {
   async follow(
     input: NexusGenInputs["FollowInput"]
   ): Promise<{ status: string }> {
-    return this.post(`follows/following`, { body: { input } })
+    return this.post(`follows/following`, { body: { ...input } })
   }
 
   /**
@@ -223,7 +223,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasFollow(
     input: NexusGenInputs["FollowInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`follows/gas/following`, { body: { input } })
+    return this.post(`follows/gas/following`, { body: { ...input } })
   }
 
   /**
@@ -261,7 +261,7 @@ export class KmsAPI extends RESTDataSource {
   async createPublish(
     input: NexusGenInputs["CreatePublishInput"]
   ): Promise<{ status: string }> {
-    return this.post(`publishes/create`, { body: { input } })
+    return this.post(`publishes/create`, { body: { ...input } })
   }
 
   /**
@@ -271,7 +271,7 @@ export class KmsAPI extends RESTDataSource {
   async updatePublish(
     input: NexusGenInputs["UpdatePublishInput"]
   ): Promise<{ status: string }> {
-    return this.post(`publishes/update`, { body: { input } })
+    return this.post(`publishes/update`, { body: { ...input } })
   }
 
   /**
@@ -298,7 +298,7 @@ export class KmsAPI extends RESTDataSource {
   async estimateGasCreatePublish(
     input: NexusGenInputs["CreatePublishInput"]
   ): Promise<{ gas: string }> {
-    return this.post(`publishes/gas/create`, { body: { input } })
+    return this.post(`publishes/gas/create`, { body: { ...input } })
   }
 
   /**
@@ -352,7 +352,7 @@ export class KmsAPI extends RESTDataSource {
   async commentOnPublish(
     input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`comments/publish`, { body: { input } })
+    return this.post(`comments/publish`, { body: { ...input } })
   }
 
   /**
@@ -362,7 +362,7 @@ export class KmsAPI extends RESTDataSource {
   async commentOnComment(
     input: NexusGenInputs["CreateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`comments/comment`, { body: { input } })
+    return this.post(`comments/comment`, { body: { ...input } })
   }
 
   /**
@@ -372,7 +372,7 @@ export class KmsAPI extends RESTDataSource {
   async updateComment(
     input: NexusGenInputs["UpdateCommentInput"]
   ): Promise<{ status: string }> {
-    return this.post(`comments/update`, { body: { input } })
+    return this.post(`comments/update`, { body: { ...input } })
   }
 
   /**
