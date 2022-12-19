@@ -2,13 +2,10 @@ import type { Request, Response } from "express"
 import axios from "axios"
 
 import { isValidSignatureForStringBody, authClient } from "../lib"
-import type { Environment } from "../types"
 
-const { KMS_DEV_BASE_URL, KMS_PROD_BASE_URL, NODE_ENV, KMS_ACCESS_KEY } =
-  process.env
+const { KMS_BASE_URL, KMS_ACCESS_KEY } = process.env
 
-const env = NODE_ENV as Environment
-const kmsBaseUrl = env === "development" ? KMS_DEV_BASE_URL : KMS_PROD_BASE_URL
+const kmsBaseUrl = KMS_BASE_URL || "http://localhost:8000"
 
 export async function onAddressUpdated(req: Request, res: Response) {
   try {

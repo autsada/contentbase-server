@@ -1,6 +1,6 @@
-import { GoogleAuth } from 'google-auth-library'
+import { GoogleAuth } from "google-auth-library"
 
-const { KMS_PROD_BASE_URL } = process.env
+const { KMS_BASE_URL } = process.env
 
 class AuthClient {
   private auth: GoogleAuth
@@ -10,10 +10,10 @@ class AuthClient {
   }
 
   async getIdToken() {
-    const client = await this.auth.getIdTokenClient(KMS_PROD_BASE_URL!)
+    const client = await this.auth.getIdTokenClient(KMS_BASE_URL!)
     const headers = await client.getRequestHeaders()
 
-    return headers ? headers['Authorization'] : ''
+    return headers ? headers["Authorization"] : ""
   }
 }
 

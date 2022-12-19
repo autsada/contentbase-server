@@ -4,20 +4,18 @@ import { NexusGenObjects, NexusGenEnums, NexusGenInputs } from "../typegen"
 import type { Environment } from "../../types"
 import { authClient } from "../../lib"
 
-const { KMS_ACCESS_KEY, NODE_ENV, KMS_DEV_BASE_URL, KMS_PROD_BASE_URL } =
-  process.env
+const { KMS_ACCESS_KEY, NODE_ENV, KMS_BASE_URL } = process.env
+
+const env = NODE_ENV as Environment
 export class KmsAPI extends RESTDataSource {
   constructor() {
     super()
-    this.baseURL =
-      (NODE_ENV as Environment) === "development"
-        ? KMS_DEV_BASE_URL!
-        : KMS_PROD_BASE_URL!
+    this.baseURL = KMS_BASE_URL || "http://localhost:8000"
 
     this.willSendRequest = async (req: RequestOptions) => {
       req.headers.set("x-access-key", KMS_ACCESS_KEY!)
       // The token for use to authenticate between services in GCP
-      if (NODE_ENV !== "development") {
+      if (env !== "development") {
         const token = await authClient.getIdToken()
         req.headers.set("Authorization", token || "")
       }
