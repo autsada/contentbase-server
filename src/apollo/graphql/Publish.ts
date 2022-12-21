@@ -44,9 +44,7 @@ export const PublishKind = enumType({
 /**",
  * The object containing required data to create a publish.
  * @param creatorId {number} - a token id of the creator's profile
- * @param imageURI {string} - a publish's thumbnail image uri
  * @param contentURI {string} - a publish's content uri
- * @param metadataURI {string} - a publish's metadata file uri
  * @param title {string} - a publish's title
  * @param description {string} - a publish's description
  * @param primaryCategory {enum} - a primary category of a publish
@@ -58,9 +56,7 @@ export const CreatePublishInput = inputObjectType({
   name: "CreatePublishInput",
   definition(t) {
     t.nonNull.int("creatorId")
-    t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
     t.nonNull.string("title")
     t.nonNull.string("description")
     t.nonNull.field("primaryCategory", { type: nonNull("Category") })
@@ -74,11 +70,9 @@ export const CreatePublishInput = inputObjectType({
  * The object containing required data to update a publish.
  * @param tokenId {number} - a token id of the publish to be updated
  * @param creatorId {number} - a profile token id that owns the publish
- * @param imageURI {string} - a publish's thumbnail image uri
  * @param contentURI {string} - a publish's content uri
  * @param title {string} - a publish's title
  * @param description {string} - a publish's description
- * @param metadataURI {string} - a publish's metadata file uri
  * @param primaryCategory {enum} - a primary category of a publish
  * @param secondaryCategory {enum} - a secondary category of a publish
  * @param tertiaryCategory {enum} - a tertiary category of a publish
@@ -88,9 +82,7 @@ export const UpdatePublishInput = inputObjectType({
   definition(t) {
     t.nonNull.int("tokenId")
     t.nonNull.int("creatorId")
-    t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
     t.nonNull.string("title")
     t.string("description")
     t.nonNull.field("primaryCategory", { type: "Category" })
@@ -108,9 +100,7 @@ export const PublishToken = objectType({
     t.nonNull.int("tokenId")
     t.nonNull.string("owner")
     t.nonNull.int("creatorId")
-    t.nonNull.string("imageURI")
     t.nonNull.string("contentURI")
-    t.nonNull.string("metadataURI")
   },
 })
 
@@ -228,9 +218,7 @@ export const PublishMutation = extendType({
           if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const {
             creatorId,
-            imageURI,
             contentURI,
-            metadataURI,
             title,
             primaryCategory,
             secondaryCategory,
@@ -241,9 +229,7 @@ export const PublishMutation = extendType({
           if (
             typeof creatorId !== "number" ||
             !creatorId ||
-            !imageURI ||
             !contentURI ||
-            !metadataURI ||
             !title ||
             !primaryCategory ||
             primaryCategory === "Empty" ||
@@ -289,9 +275,7 @@ export const PublishMutation = extendType({
           const {
             tokenId,
             creatorId,
-            imageURI,
             contentURI,
-            metadataURI,
             title,
             primaryCategory,
             secondaryCategory,
@@ -303,9 +287,7 @@ export const PublishMutation = extendType({
             typeof tokenId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !imageURI ||
             !contentURI ||
-            !metadataURI ||
             !title ||
             !primaryCategory ||
             primaryCategory === "Empty" ||
@@ -372,9 +354,7 @@ export const PublishMutation = extendType({
           if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
           const {
             creatorId,
-            imageURI,
             contentURI,
-            metadataURI,
             title,
             primaryCategory,
             secondaryCategory,
@@ -384,9 +364,7 @@ export const PublishMutation = extendType({
           if (
             typeof creatorId !== "number" ||
             !creatorId ||
-            !imageURI ||
             !contentURI ||
-            !metadataURI ||
             !title ||
             !primaryCategory ||
             !secondaryCategory ||

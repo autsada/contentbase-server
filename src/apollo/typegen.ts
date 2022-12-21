@@ -15,7 +15,6 @@ declare global {
 
 export interface NexusGenInputs {
   CreateCommentInput: { // input type
-    contentURI: string; // String!
     creatorId: number; // Int!
     parentId: number; // Int!
     text: string; // String!
@@ -28,9 +27,7 @@ export interface NexusGenInputs {
     contentURI: string; // String!
     creatorId: number; // Int!
     description: string; // String!
-    imageURI: string; // String!
     kind: NexusGenEnums['PublishKind']; // PublishKind!
-    metadataURI: string; // String!
     primaryCategory: NexusGenEnums['Category']; // Category!
     secondaryCategory: NexusGenEnums['Category']; // Category!
     tertiaryCategory: NexusGenEnums['Category']; // Category!
@@ -57,8 +54,6 @@ export interface NexusGenInputs {
     contentURI: string; // String!
     creatorId: number; // Int!
     description?: string | null; // String
-    imageURI: string; // String!
-    metadataURI: string; // String!
     primaryCategory: NexusGenEnums['Category']; // Category!
     secondaryCategory: NexusGenEnums['Category']; // Category!
     tertiaryCategory: NexusGenEnums['Category']; // Category!
@@ -89,10 +84,10 @@ export interface NexusGenObjects {
   }
   CommentToken: { // root type
     commentType: NexusGenEnums['CommentType']; // CommentType!
-    contentURI: string; // String!
     creatorId: number; // Int!
     owner: string; // String!
     parentId: number; // Int!
+    text: string; // String!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // root type
@@ -126,8 +121,6 @@ export interface NexusGenObjects {
   PublishToken: { // root type
     contentURI: string; // String!
     creatorId: number; // Int!
-    imageURI: string; // String!
-    metadataURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
   }
@@ -170,10 +163,10 @@ export interface NexusGenFieldTypes {
   }
   CommentToken: { // field return type
     commentType: NexusGenEnums['CommentType']; // CommentType!
-    contentURI: string; // String!
     creatorId: number; // Int!
     owner: string; // String!
     parentId: number; // Int!
+    text: string; // String!
     tokenId: number; // Int!
   }
   CreateWalletResult: { // field return type
@@ -243,14 +236,11 @@ export interface NexusGenFieldTypes {
   PublishToken: { // field return type
     contentURI: string; // String!
     creatorId: number; // Int!
-    imageURI: string; // String!
-    metadataURI: string; // String!
     owner: string; // String!
     tokenId: number; // Int!
   }
   Query: { // field return type
     getComment: NexusGenRootTypes['CommentToken']; // CommentToken!
-    getCommentTokenURI: NexusGenRootTypes['TokenURIResult']; // TokenURIResult!
     getDefaultProfile: NexusGenRootTypes['ProfileToken'] | null; // ProfileToken
     getFollows: NexusGenRootTypes['GetFollowsResult'] | null; // GetFollowsResult
     getLikeFee: NexusGenRootTypes['FeeResult']; // FeeResult!
@@ -294,10 +284,10 @@ export interface NexusGenFieldTypeNames {
   }
   CommentToken: { // field return type name
     commentType: 'CommentType'
-    contentURI: 'String'
     creatorId: 'Int'
     owner: 'String'
     parentId: 'Int'
+    text: 'String'
     tokenId: 'Int'
   }
   CreateWalletResult: { // field return type name
@@ -367,14 +357,11 @@ export interface NexusGenFieldTypeNames {
   PublishToken: { // field return type name
     contentURI: 'String'
     creatorId: 'Int'
-    imageURI: 'String'
-    metadataURI: 'String'
     owner: 'String'
     tokenId: 'Int'
   }
   Query: { // field return type name
     getComment: 'CommentToken'
-    getCommentTokenURI: 'TokenURIResult'
     getDefaultProfile: 'ProfileToken'
     getFollows: 'GetFollowsResult'
     getLikeFee: 'FeeResult'
@@ -524,9 +511,6 @@ export interface NexusGenArgTypes {
   Query: {
     getComment: { // args
       commentId: number; // Int!
-    }
-    getCommentTokenURI: { // args
-      tokenId: number; // Int!
     }
     getFollows: { // args
       profileId: number; // Int!

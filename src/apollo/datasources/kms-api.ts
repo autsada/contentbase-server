@@ -436,14 +436,6 @@ export class KmsAPI extends RESTDataSource {
   }
 
   /**
-   * @dev Get comment nft token uri.
-   * @param tokenId {number}
-   */
-  async getCommentTokenURI(tokenId: number): Promise<{ uri: string }> {
-    return this.get(`comments/token-uri/tokenId/${encodeURIComponent(tokenId)}`)
-  }
-
-  /**
    * @dev Get the Profile contract address stored on the Comment contract.
    */
   async getProfileAddressFromComment(): Promise<{ address: string }> {

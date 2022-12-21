@@ -32,10 +32,10 @@ enum Category {
 
 type CommentToken {
   commentType: CommentType!
-  contentURI: String!
   creatorId: Int!
   owner: String!
   parentId: Int!
+  text: String!
   tokenId: Int!
 }
 
@@ -45,7 +45,6 @@ enum CommentType {
 }
 
 input CreateCommentInput {
-  contentURI: String!
   creatorId: Int!
   parentId: Int!
   text: String!
@@ -60,9 +59,7 @@ input CreatePublishInput {
   contentURI: String!
   creatorId: Int!
   description: String!
-  imageURI: String!
   kind: PublishKind!
-  metadataURI: String!
   primaryCategory: Category!
   secondaryCategory: Category!
   tertiaryCategory: Category!
@@ -160,15 +157,12 @@ enum PublishKind {
 type PublishToken {
   contentURI: String!
   creatorId: Int!
-  imageURI: String!
-  metadataURI: String!
   owner: String!
   tokenId: Int!
 }
 
 type Query {
   getComment(commentId: Int!): CommentToken!
-  getCommentTokenURI(tokenId: Int!): TokenURIResult!
   getDefaultProfile: ProfileToken
   getFollows(profileId: Int!): GetFollowsResult
   getLikeFee: FeeResult!
@@ -211,8 +205,6 @@ input UpdatePublishInput {
   contentURI: String!
   creatorId: Int!
   description: String
-  imageURI: String!
-  metadataURI: String!
   primaryCategory: Category!
   secondaryCategory: Category!
   tertiaryCategory: Category!

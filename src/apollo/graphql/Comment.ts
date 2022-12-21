@@ -21,7 +21,6 @@ export const CreateCommentInput = inputObjectType({
   definition(t) {
     t.nonNull.int("parentId")
     t.nonNull.int("creatorId")
-    t.nonNull.string("contentURI")
     t.nonNull.string("text")
   },
 })
@@ -30,7 +29,6 @@ export const CreateCommentInput = inputObjectType({
  * The object containing required data to create a comment.
  * @param tokenId {number} - a token id to be updated
  * @param creatorId {number} - a token id of the creator's profile
- * @param contentURI {string} - a publish's content uri
  * @param text {string} - a comment's text
  */
 export const UpdateCommentInput = inputObjectType({
@@ -58,7 +56,7 @@ export const CommentToken = objectType({
     t.nonNull.string("owner")
     t.nonNull.int("creatorId")
     t.nonNull.int("parentId")
-    t.nonNull.string("contentURI")
+    t.nonNull.string("text")
     t.nonNull.field("commentType", { type: nonNull("CommentType") })
   },
 })
@@ -81,26 +79,6 @@ export const CommentQuery = extendType({
           // Call the api.
           const { token } = await dataSources.kmsAPI.getComment(commentId)
           return token
-        } catch (error) {
-          throw error
-        }
-      },
-    })
-
-    /**
-     * @dev Get token uri.
-     */
-    t.field("getCommentTokenURI", {
-      type: nonNull("TokenURIResult"),
-      args: { tokenId: nonNull("Int") },
-      async resolve(_root, { tokenId }, { dataSources }) {
-        try {
-          // Validation.
-          if (!tokenId || typeof tokenId !== "number")
-            throwError(badInputErrMessage, "BAD_USER_INPUT")
-
-          // Call the api.
-          return dataSources.kmsAPI.getCommentTokenURI(tokenId)
         } catch (error) {
           throw error
         }
@@ -156,13 +134,12 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
-          const { parentId, creatorId, contentURI, text } = input
+          const { parentId, creatorId, text } = input
           if (
             !parentId ||
             typeof parentId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !contentURI ||
             !text
           )
             throwError(badInputErrMessage, "BAD_USER_INPUT")
@@ -189,13 +166,12 @@ export const CommentMutation = extendType({
 
           // Validation.
           if (!input) throwError(badInputErrMessage, "BAD_USER_INPUT")
-          const { parentId, creatorId, contentURI, text } = input
+          const { parentId, creatorId, text } = input
           if (
             !parentId ||
             typeof parentId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !contentURI ||
             !text
           )
             throwError(badInputErrMessage, "BAD_USER_INPUT")
