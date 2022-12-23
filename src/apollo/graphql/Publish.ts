@@ -45,6 +45,7 @@ export const PublishKind = enumType({
  * The object containing required data to create a publish.
  * @param creatorId {number} - a token id of the creator's profile
  * @param contentURI {string} - a publish's content uri
+ * @param contentRef {string} - a path to the content stored on the cloud or ipfs
  * @param title {string} - a publish's title
  * @param description {string} - a publish's description
  * @param primaryCategory {enum} - a primary category of a publish
@@ -57,6 +58,7 @@ export const CreatePublishInput = inputObjectType({
   definition(t) {
     t.nonNull.int("creatorId")
     t.nonNull.string("contentURI")
+    t.nonNull.string("contentRef")
     t.nonNull.string("title")
     t.nonNull.string("description")
     t.nonNull.field("primaryCategory", { type: nonNull("Category") })
@@ -70,7 +72,6 @@ export const CreatePublishInput = inputObjectType({
  * The object containing required data to update a publish.
  * @param tokenId {number} - a token id of the publish to be updated
  * @param creatorId {number} - a profile token id that owns the publish
- * @param contentURI {string} - a publish's content uri
  * @param title {string} - a publish's title
  * @param description {string} - a publish's description
  * @param primaryCategory {enum} - a primary category of a publish
@@ -82,7 +83,6 @@ export const UpdatePublishInput = inputObjectType({
   definition(t) {
     t.nonNull.int("tokenId")
     t.nonNull.int("creatorId")
-    t.nonNull.string("contentURI")
     t.nonNull.string("title")
     t.string("description")
     t.nonNull.field("primaryCategory", { type: "Category" })
@@ -219,6 +219,7 @@ export const PublishMutation = extendType({
           const {
             creatorId,
             contentURI,
+            contentRef,
             title,
             primaryCategory,
             secondaryCategory,
@@ -230,6 +231,7 @@ export const PublishMutation = extendType({
             typeof creatorId !== "number" ||
             !creatorId ||
             !contentURI ||
+            !contentRef ||
             !title ||
             !primaryCategory ||
             primaryCategory === "Empty" ||
@@ -275,7 +277,6 @@ export const PublishMutation = extendType({
           const {
             tokenId,
             creatorId,
-            contentURI,
             title,
             primaryCategory,
             secondaryCategory,
@@ -287,7 +288,6 @@ export const PublishMutation = extendType({
             typeof tokenId !== "number" ||
             !creatorId ||
             typeof creatorId !== "number" ||
-            !contentURI ||
             !title ||
             !primaryCategory ||
             primaryCategory === "Empty" ||

@@ -24,6 +24,7 @@ export interface NexusGenInputs {
     imageURI?: string | null; // String
   }
   CreatePublishInput: { // input type
+    contentRef: string; // String!
     contentURI: string; // String!
     creatorId: number; // Int!
     description: string; // String!
@@ -51,7 +52,6 @@ export interface NexusGenInputs {
     tokenId: number; // Int!
   }
   UpdatePublishInput: { // input type
-    contentURI: string; // String!
     creatorId: number; // Int!
     description?: string | null; // String
     primaryCategory: NexusGenEnums['Category']; // Category!
